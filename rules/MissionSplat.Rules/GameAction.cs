@@ -29,3 +29,14 @@ public sealed record Place(int TileX, int TileY, int QuarterTurnsClockwise) : Ga
     {
     }
 }
+
+// Only while the match awaits a reshuffle: the full set of board tiles, visible and buried, in the new draw order.
+// The first becomes the start tile at the origin and the rest the draw deck.
+public sealed record ReshuffleBoard(IReadOnlyList<TileId> Order) : GameAction
+{
+    public IReadOnlyList<TileId> Order { get; } = Order.ToArray();
+
+    internal override void MarkClosed()
+    {
+    }
+}

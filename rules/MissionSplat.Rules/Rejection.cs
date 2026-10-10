@@ -14,6 +14,9 @@ public enum RejectionReason
     NoTileToRotate,
     TileSurrounded,
     NoTileToBounce,
+    AwaitingReshuffle,
+    NotAwaitingReshuffle,
+    InvalidReshuffleOrder,
 }
 
 public sealed record Rejection(RejectionReason Reason, string Message);
