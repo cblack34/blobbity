@@ -26,6 +26,14 @@ public sealed class DistinctAssignmentTests
     }
 
     [Test]
+    public void Choose_SkipsAContendedMiddleEntry_AndStillKeepsALaterOne()
+    {
+        var chosen = DistinctAssignment.Choose([[A], [A], [B]]);
+
+        Assert.That(chosen, Is.EqualTo(new[] { 0, 2 }));
+    }
+
+    [Test]
     public void Choose_WhenOnlyThreeSetsExist_KeepsTheEarliestThreeOfFour()
     {
         var chosen = DistinctAssignment.Choose([[A, B, C], [A], [B], [C]]);
