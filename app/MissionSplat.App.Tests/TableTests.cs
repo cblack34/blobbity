@@ -255,24 +255,50 @@ public class TableTests
     }
 
     [Test]
-    public void AHumanTurnWithTheMatchDeckExhausted_StopsTheTable_WithTheRulesMessage()
-    {
-        var table = new Table(new LocalSession(), Humans(2), Setup(2, Cards.BlankTile("start")));
-        table.Start();
-        table.Confirm();
-
-        var status = table.Snapshot.Status;
-        Assert.That(status.Kind, Is.EqualTo(TableStatusKind.Stopped));
-        Assert.That(status.Message, Does.StartWith("The match deck has no tile to place."));
-        Assert.That(table.Snapshot.LegalPlacements, Is.Empty);
-        Assert.That(table.Snapshot.ConcealVisible, Is.False);
-    }
-
-    [Test]
-    public void AnAutomatedSeatWithTheMatchDeckExhausted_StopsTheTable_WithTheRulesMessage()
+    public void AHumanPlacementThatEmptiesTheDrawDeck_ReshufflesTheBoardAndPlayContinues()
     {
         var table = new Table(
             new LocalSession(),
+            Humans(2),
+            Setup(2, Cards.BlankTile("start"), Cards.Solid("red", Cards.Red), Cards.Solid("blue", Cards.Blue)));
+        table.Start();
+        var handBefore = HandOf(table.Snapshot.View);
+        table.Confirm();
+        Assert.That(table.Submit(new Place(1, 0, 0)).IsAccepted, Is.True);
+        table.Confirm();
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.None));
+        Assert.That(table.Snapshot.View.CurrentSeat, Is.EqualTo(Second));
+
+        var placed = table.Submit(new Place(-1, 0, 0));
+
+        Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
+        var view = table.Snapshot.View;
+        Assert.That(view.Board.Tiles, Has.Count.EqualTo(1), "the whole board became the new draw deck");
+        Assert.That(view.Board.Tiles[0].TileX, Is.EqualTo(0));
+        Assert.That(view.Board.Tiles[0].TileY, Is.EqualTo(0));
+        Assert.That(view.PendingMatchTile, Is.Not.Null);
+        Assert.That(view.AwaitsReshuffle, Is.False);
+        Assert.That(view.CurrentSeat, Is.EqualTo(First), "the reshuffle does not move the turn");
+        Assert.That(view.Claims.SelectMany(row => row.Missions), Is.Empty);
+        Assert.That(HandOf(view), Is.EqualTo(handBefore), "the reshuffle leaves hands alone");
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.DeckReshuffled));
+        Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.ToConfirm), "the hand-over still hides the hand");
+        Assert.That(table.Snapshot.Status.Seat, Is.EqualTo(First));
+
+        table.Confirm();
+        var next = table.Submit(new Place(1, 0, 0));
+
+        Assert.That(next.IsAccepted, Is.True, next.Rejection?.Message);
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.None), "the next accepted action clears the notice");
+        Assert.That(table.Snapshot.View.Board.Tiles, Has.Count.EqualTo(2));
+    }
+
+    [Test]
+    public void AnAutomatedSeatAfterAReshuffle_PlaysOnWithoutAHumanTap()
+    {
+        var recording = new RecordingSession(new LocalSession());
+        var table = new Table(
+            recording,
             TableStart.HumanThenAi(),
             Setup(2, Cards.BlankTile("start"), Cards.Solid("red", Cards.Red)));
         table.Start();
@@ -281,8 +307,62 @@ public class TableTests
         var placed = table.Submit(new Place(1, 0, 0));
 
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
-        Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.Stopped));
-        Assert.That(table.Snapshot.Status.Message, Does.StartWith("The match deck has no tile to place."));
+        Assert.That(recording.Reshuffles, Has.Count.EqualTo(2), "the placement and the AI's own placement each emptied the deck");
+        Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.ToAct));
+        Assert.That(table.Snapshot.View.CurrentSeat, Is.EqualTo(First));
+        Assert.That(table.Snapshot.View.Board.Tiles, Has.Count.EqualTo(1));
+        Assert.That(table.Snapshot.View.PendingMatchTile, Is.Not.Null);
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.DeckReshuffled));
+    }
+
+    [Test]
+    public void AnUnseededTable_ReshufflesInTheOrderTheMatchOffers()
+    {
+        var recording = new RecordingSession(new LocalSession());
+        var table = new Table(
+            recording,
+            Humans(2),
+            Setup(2, Cards.BlankTile("start"), Cards.Solid("red", Cards.Red)));
+        table.Start();
+        table.Confirm();
+
+        table.Submit(new Place(1, 0, 0));
+
+        var order = recording.Reshuffles.Single().Order;
+        Assert.That(order, Is.EqualTo(recording.LastOffer));
+        var view = table.Snapshot.View;
+        Assert.That(view.Board.Tiles.Single().Id, Is.EqualTo(order[0]));
+        Assert.That(view.PendingMatchTile?.Id, Is.EqualTo(order[1]));
+    }
+
+    [Test]
+    public void ASeededTable_ReshufflesIntoTheSameOrderFromTheSameSeed()
+    {
+        var first = PlayTheOrdinaryDeckOut(7);
+        var again = PlayTheOrdinaryDeckOut(7);
+        var other = PlayTheOrdinaryDeckOut(8);
+
+        Assert.That(first.Order, Is.EquivalentTo(first.Offer));
+        Assert.That(first.Order, Is.Not.EqualTo(first.Offer), "the order is shuffled, not as offered");
+        Assert.That(again.Order, Is.EqualTo(first.Order));
+        Assert.That(again.BoardAfter, Is.EqualTo(first.BoardAfter));
+        Assert.That(again.PendingAfter, Is.EqualTo(first.PendingAfter));
+        Assert.That(other.Order, Is.Not.EqualTo(first.Order));
+    }
+
+    [Test]
+    public void ADeckAndBoardHoldingOneTileBetweenThem_StopTheTable_InsteadOfReshufflingForever()
+    {
+        var table = new Table(new LocalSession(), Humans(2), Setup(2, Cards.BlankTile("start")));
+
+        table.Start();
+
+        var status = table.Snapshot.Status;
+        Assert.That(status.Kind, Is.EqualTo(TableStatusKind.Stopped));
+        Assert.That(status.Message, Does.StartWith("The draw deck and the board hold one tile between them"));
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.None));
+        Assert.That(table.Snapshot.CanAct, Is.False);
+        Assert.That(table.Snapshot.LegalPlacements, Is.Empty);
     }
 
     [Test]
@@ -293,7 +373,7 @@ public class TableTests
         var view = session.View(First);
         var targets = new List<BoardPosition> { new(0, 0) };
         var powers = new List<PowerTargets> { new(OrdinaryCatalog.Bounce, targets) };
-        var snapshot = new TableSnapshot(view, false, false, false, [], powers, 0, TableStatus.ToAct(First), null);
+        var snapshot = new TableSnapshot(view, false, false, false, [], powers, 0, TableStatus.ToAct(First), null, TableNotice.None);
 
         targets.Add(new BoardPosition(5, 5));
         powers.Add(new PowerTargets(OrdinaryCatalog.Rotate, []));
@@ -643,6 +723,32 @@ public class TableTests
         Assert.That(after.LegalPlacements, Is.Not.Empty);
     }
 
+    private static string[] HandOf(SeatView view) => view.UnclaimedMissions.Select(mission => mission.Id.Value).ToArray();
+
+    // Two humans take the first legal placement until the ordinary deck runs out and the table reshuffles.
+    private static Reshuffled PlayTheOrdinaryDeckOut(int seed)
+    {
+        var recording = new RecordingSession(new LocalSession());
+        var table = new Table(recording, TableStart.PassAndPlayDraft(), seed);
+        table.Start();
+        while (recording.Reshuffles.Count == 0)
+        {
+            Assert.That(table.Snapshot.Status.Kind, Is.AnyOf(TableStatusKind.ToConfirm, TableStatusKind.ToAct), "the seed won before the deck ran out");
+            table.Confirm();
+            var slot = table.Snapshot.LegalPlacements[0];
+            table.Place(slot.TileX, slot.TileY);
+        }
+
+        var order = recording.Reshuffles[0].Order.ToArray();
+        return new Reshuffled(
+            recording.LastOffer.ToArray(),
+            order,
+            table.Snapshot.View.Board.Tiles.Select(tile => tile.Id).ToArray(),
+            table.Snapshot.View.PendingMatchTile?.Id);
+    }
+
+    private sealed record Reshuffled(TileId[] Offer, TileId[] Order, TileId[] BoardAfter, TileId? PendingAfter);
+
     private static Tile StartTile() => Cards.Tile("start", Cards.Red, Cards.Blue, Cards.Green, Cards.Purple);
 
     private static Tile Spinner(string id) =>
@@ -702,6 +808,49 @@ public class TableTests
         var missions = seats.SelectMany(seat => new[] { Cards.Row(seat + "-a"), Cards.Row(seat + "-b"), Cards.Row(seat + "-replacement") }).ToList();
         missions.Add(Cards.Row("spare"));
         return RepresentativeDeck.Setup(seats, "1", missions.ToArray(), tiles);
+    }
+
+    // The session as LocalSession answers it, remembering the reshuffles it accepted and the order the match last offered.
+    private sealed class RecordingSession(ISession inner) : ISession
+    {
+        public List<ReshuffleBoard> Reshuffles { get; } = [];
+
+        public IReadOnlyList<TileId> LastOffer { get; private set; } = [];
+
+        public SeatId CurrentSeat => inner.CurrentSeat;
+
+        public IReadOnlyList<SymbolId> PowersInPlay => inner.PowersInPlay;
+
+        public SessionResult Start(GameSetup setup) => inner.Start(setup);
+
+        public SeatView View(SeatId seat)
+        {
+            var view = inner.View(seat);
+            if (view.AwaitsReshuffle)
+            {
+                LastOffer = view.TilesToReshuffle;
+            }
+
+            return view;
+        }
+
+        public SessionResult Submit(SeatId seat, GameAction action)
+        {
+            var result = inner.Submit(seat, action);
+            if (result.IsAccepted && action is ReshuffleBoard reshuffle)
+            {
+                Reshuffles.Add(reshuffle);
+            }
+
+            return result;
+        }
+
+        public IReadOnlyList<LegalPlacement> LegalPlacements(SeatId seat, int quarterTurnsClockwise) =>
+            inner.LegalPlacements(seat, quarterTurnsClockwise);
+
+        public IReadOnlyList<BoardPosition> LegalTargets(SeatId seat, SymbolId power) => inner.LegalTargets(seat, power);
+
+        public ActionPreview Preview(SeatId seat, GameAction action) => inner.Preview(seat, action);
     }
 
     // The session as LocalSession answers it, except that a command reaches an open ruling.

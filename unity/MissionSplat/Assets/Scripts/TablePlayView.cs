@@ -10,6 +10,7 @@ using UnityEngine.UI;
 internal sealed class TablePlayView
 {
     private readonly Text _status;
+    private readonly Text _notice;
     private readonly RectTransform _pending;
     private readonly RectTransform _secrets;
     private readonly RectTransform _board;
@@ -30,7 +31,11 @@ internal sealed class TablePlayView
         _status = Ui.Label("Status", play, 28, SplatPalette.Ink, TextAnchor.MiddleLeft);
         // Stop rulings are long sentences. Only this label wraps; captions and buttons stay on one line.
         _status.horizontalOverflow = HorizontalWrapMode.Wrap;
-        Ui.Anchored(_status.rectTransform, new Vector2(0.02f, 0.92f), new Vector2(0.98f, 0.99f), Vector2.zero, Vector2.zero);
+        Ui.Anchored(_status.rectTransform, new Vector2(0.02f, 0.935f), new Vector2(0.98f, 0.99f), Vector2.zero, Vector2.zero);
+        // A one-line fact under the status, in the strip above the top band; hidden while there is nothing to say.
+        _notice = Ui.Label("Notice", play, 16, SplatPalette.Muted, TextAnchor.MiddleLeft);
+        Ui.Anchored(_notice.rectTransform, new Vector2(0.02f, 0.912f), new Vector2(0.98f, 0.935f), Vector2.zero, Vector2.zero);
+        _notice.gameObject.SetActive(false);
 
         _pending = Ui.Rect("Pending", play);
         Ui.Anchored(_pending, new Vector2(0.02f, 0.72f), new Vector2(0.18f, 0.91f), Vector2.zero, Vector2.zero);
@@ -66,6 +71,8 @@ internal sealed class TablePlayView
     {
         Canvas.ForceUpdateCanvases();
         _status.text = StatusText(snapshot);
+        _notice.text = NoticeText(snapshot.Notice);
+        _notice.gameObject.SetActive(snapshot.Notice != TableNotice.None);
         // Only rotate repurposes the quarter-turn row as its amount, so only then does the pending tile not preview it.
         PaintPending(snapshot.View.PendingMatchTile, snapshot.SelectedPower is { } power && power.Equals(OrdinaryCatalog.Rotate) ? 0 : snapshot.QuarterTurns);
         PaintSecrets(snapshot);
@@ -94,6 +101,9 @@ internal sealed class TablePlayView
             _ => status.Message,
         };
     }
+
+    private static string NoticeText(TableNotice notice) =>
+        notice == TableNotice.DeckReshuffled ? "The draw deck ran out; the board was reshuffled." : string.Empty;
 
     private void PaintPending(Tile pending, int quarterTurns)
     {
