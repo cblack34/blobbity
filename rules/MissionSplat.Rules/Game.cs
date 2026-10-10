@@ -47,9 +47,10 @@ public sealed class Game
 
     // The drawn tile: the one Apply spends powers from and the next Place consumes. Null when the game has
     // ended or the match awaits a reshuffle.
-    public Tile? PendingMatchTile => _hasEnded || _matchDeck.Length == 0 ? null : _matchDeck[0];
+    public Tile? PendingMatchTile => _hasEnded || AwaitsReshuffle ? null : _matchDeck[0];
 
-    // True once a placement empties the draw deck without winning: only ReshuffleBoard is accepted until it is played.
+    // True once a placement empties the draw deck without winning, or a setup supplies no tile beyond the start tile:
+    // only ReshuffleBoard is accepted until it is played.
     public bool AwaitsReshuffle => !_hasEnded && _matchDeck.Length == 0;
 
     // Every board tile, visible and buried, that a ReshuffleBoard order must contain exactly once.
@@ -332,9 +333,7 @@ public sealed class Game
 
     // Apply routes an empty deck to the reshuffle, so every action that reaches a tile finds one.
     private Tile DrawnTile() =>
-        _matchDeck.Length > 0
-            ? _matchDeck[0]
-            : throw new InvalidOperationException("No tile is drawn while the match awaits a reshuffle.");
+        PendingMatchTile ?? throw new InvalidOperationException("No tile is drawn while the match awaits a reshuffle.");
 
     // The order must be exactly the board's tiles; the first restarts the board at the origin, the rest become the deck.
     private CommandResult ApplyReshuffle(ReshuffleBoard reshuffle)
