@@ -51,6 +51,27 @@ internal sealed class Grid
         return ids;
     }
 
+    // Every tile on the board, visible and buried, by X then Y; each position lists its top tile, then its buried layers in
+    // the order CoveredTileIds reports them.
+    public IReadOnlyList<Tile> AllTiles()
+    {
+        var all = new List<Tile>();
+        foreach (var position in BoardOrder.SortedPositions(_tiles.Keys))
+        {
+            var coord = new TileCoord(position.TileX, position.TileY);
+            all.Add(_tiles[coord]);
+            if (_covered.TryGetValue(coord, out var layers))
+            {
+                foreach (var layer in layers)
+                {
+                    all.Add(layer.Tile);
+                }
+            }
+        }
+
+        return all;
+    }
+
     public Cell? At(int cellX, int cellY) =>
         _cells.TryGetValue(new CellCoord(cellX, cellY), out var cell) ? cell : null;
 

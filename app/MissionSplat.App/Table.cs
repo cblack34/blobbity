@@ -8,6 +8,9 @@ public sealed class Table
 {
     private const int AutomatedMoveLimit = 64;
 
+    // Keeps the reshuffle's random stream apart from the one TableDeck dealt the same seed with.
+    private const int ReshuffleSeedSalt = 0x5EED;
+
     private readonly ISession _session;
     private readonly TableStart _start;
     private readonly GameSetup _setup;
@@ -19,19 +22,23 @@ public sealed class Table
     private SeatId? _holder;
     private SeatId? _winner;
     private string? _stop;
+    private readonly int? _reshuffleSeed;
+    private Random? _reshuffleRandom;
+    private TableNotice _notice;
 
     public Table(ISession session, TableStart start, int? shuffleSeed = null)
-        : this(session, start, OrdinarySetup(start, shuffleSeed))
+        : this(session, start, OrdinarySetup(start, shuffleSeed), start.Shuffle ? shuffleSeed : null)
     {
     }
 
-    public Table(ISession session, TableStart start, GameSetup setup)
+    public Table(ISession session, TableStart start, GameSetup setup, int? reshuffleSeed = null)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _start = start ?? throw new ArgumentNullException(nameof(start));
         _setup = setup ?? throw new ArgumentNullException(nameof(setup));
         RequireSameSeats(start, setup);
         _players = BindPlayers(session, start);
+        _reshuffleSeed = reshuffleSeed;
     }
 
     public bool IsStarted => _snapshot is not null;
@@ -52,7 +59,11 @@ public sealed class Table
         _winner = null;
         _stop = null;
         _holder = null;
+        _notice = TableNotice.None;
+        _reshuffleRandom = _reshuffleSeed is int seed ? new Random(seed ^ ReshuffleSeedSalt) : null;
         _conceal = IsHuman(_session.CurrentSeat);
+        // The match can only await a reshuffle here with one tile, which that method stops on, so nothing is announced.
+        ReshuffleWhenTheDeckIsEmpty();
         RunAutomatedSeats();
         Refresh();
     }
@@ -229,9 +240,11 @@ public sealed class Table
             _winner = won.Seat;
         }
 
+        // A human action is the one thing that retires the notice; an automated seat may move before the human sees it.
         if (IsHuman(seat))
         {
             _holder = seat;
+            _notice = TableNotice.None;
         }
 
         // Only a hand-over to a human other than the last one holding the device hides a hand; AI turns and power uses do not.
@@ -241,7 +254,55 @@ public sealed class Table
             _conceal = true;
         }
 
+        if (ReshuffleWhenTheDeckIsEmpty())
+        {
+            _notice = TableNotice.DeckReshuffled;
+        }
+
         return result;
+    }
+
+    // The match asks for the new draw order from outside; the table supplies it so no seat has to tap for it.
+    private bool ReshuffleWhenTheDeckIsEmpty()
+    {
+        var seat = _session.CurrentSeat;
+        var view = _session.View(seat);
+        if (!view.AwaitsReshuffle)
+        {
+            return false;
+        }
+
+        // One tile on the board leaves nothing to draw after a reshuffle, so reshuffling would only repeat.
+        if (view.TilesToReshuffle.Count < 2)
+        {
+            Stop("The draw deck and the board hold one tile between them, so play cannot continue.");
+            return false;
+        }
+
+        var result = _session.Submit(seat, new ReshuffleBoard(ReshuffleOrder(view.TilesToReshuffle)));
+        if (!result.IsAccepted)
+        {
+            Stop(result.Rejection?.Message ?? string.Empty);
+            return false;
+        }
+
+        return true;
+    }
+
+    private TileId[] ReshuffleOrder(IReadOnlyList<TileId> tiles)
+    {
+        var order = new TileId[tiles.Count];
+        for (var i = 0; i < order.Length; i++)
+        {
+            order[i] = tiles[i];
+        }
+
+        if (_reshuffleRandom is not null)
+        {
+            Shuffle.InPlace(order, _reshuffleRandom);
+        }
+
+        return order;
     }
 
     private void Stop(string message)
@@ -277,13 +338,14 @@ public sealed class Table
             canAct ? TargetsFor(seat, view) : [],
             _quarterTurns,
             StatusFor(seat, view),
-            _selectedPower);
+            _selectedPower,
+            _notice);
     }
 
-    // A drawn tile with no placement and no power target (two different powers, or no tile left) is an open ruling; a GUI could never reach Submit to surface it.
+    // A drawn tile with no placement and no power target (two different powers) is an open ruling; a GUI could never reach Submit to surface it.
     private bool StopWhenNoActionIsPossible(SeatId seat, SeatView view)
     {
-        if (view.HasEnded || HasAnyAction(seat, view))
+        if (view.HasEnded || view.AwaitsReshuffle || HasAnyAction(seat, view))
         {
             return false;
         }

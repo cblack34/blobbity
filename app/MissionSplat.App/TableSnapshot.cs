@@ -14,7 +14,8 @@ public sealed class TableSnapshot
         IReadOnlyList<PowerTargets> legalTargets,
         int quarterTurns,
         TableStatus status,
-        SymbolId? selectedPower)
+        SymbolId? selectedPower,
+        TableNotice notice)
     {
         View = view ?? throw new ArgumentNullException(nameof(view));
         SecretsVisible = secretsVisible;
@@ -25,6 +26,7 @@ public sealed class TableSnapshot
         QuarterTurns = quarterTurns;
         Status = status ?? throw new ArgumentNullException(nameof(status));
         SelectedPower = selectedPower;
+        Notice = notice;
         SelectedTargets = TargetsOf(LegalTargets, selectedPower);
     }
 
@@ -49,6 +51,9 @@ public sealed class TableSnapshot
 
     // The power whose targets to highlight instead of placements; null while the seat is placing.
     public SymbolId? SelectedPower { get; }
+
+    // What happened since the last accepted action that the seat could not have seen; None once a human seat's next action is accepted.
+    public TableNotice Notice { get; }
 
     // The positions to highlight for SelectedPower; empty while the seat is placing.
     public IReadOnlyList<BoardPosition> SelectedTargets { get; }

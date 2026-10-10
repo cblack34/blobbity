@@ -12,7 +12,9 @@ public sealed class SeatView
         SeatId currentSeat,
         bool hasEnded,
         Tile? pendingMatchTile,
-        IReadOnlyList<PowerCharge> remainingUses)
+        IReadOnlyList<PowerCharge> remainingUses,
+        bool awaitsReshuffle,
+        IReadOnlyList<TileId> tilesToReshuffle)
     {
         Seat = seat;
         UnclaimedMissions = Copied.Items(unclaimedMissions, nameof(unclaimedMissions));
@@ -22,6 +24,8 @@ public sealed class SeatView
         HasEnded = hasEnded;
         PendingMatchTile = pendingMatchTile;
         RemainingUses = Copied.List(remainingUses, nameof(remainingUses));
+        AwaitsReshuffle = awaitsReshuffle;
+        TilesToReshuffle = Copied.List(tilesToReshuffle, nameof(tilesToReshuffle));
     }
 
     public SeatId Seat { get; }
@@ -40,6 +44,12 @@ public sealed class SeatView
 
     // One entry per use power the setup lists, in setup order; zero once the drawn tile's cells of it are spent.
     public IReadOnlyList<PowerCharge> RemainingUses { get; }
+
+    // True while the draw deck is empty and only a board reshuffle is accepted.
+    public bool AwaitsReshuffle { get; }
+
+    // Every board tile, buried ones included, a reshuffle order must hold once; empty unless awaiting.
+    public IReadOnlyList<TileId> TilesToReshuffle { get; }
 }
 
 public sealed class SeatClaims

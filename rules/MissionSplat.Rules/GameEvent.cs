@@ -17,3 +17,5 @@ public sealed record TilePlaced(
 public sealed record MissionClaimed(SeatId Seat, MissionId Mission) : GameEvent;
 
 public sealed record GameWon(SeatId Seat, int ClaimCount) : GameEvent;
+
+public sealed record BoardReshuffled(SeatId Seat, IReadOnlyList<TileId> Order) : GameEvent;

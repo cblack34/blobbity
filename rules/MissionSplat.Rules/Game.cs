@@ -46,8 +46,15 @@ public sealed class Game
     public int MatchDeckRemaining => _matchDeck.Length;
 
     // The drawn tile: the one Apply spends powers from and the next Place consumes. Null when the game has
-    // ended or none remains; Apply still refuses that empty deck.
-    public Tile? PendingMatchTile => _hasEnded || _matchDeck.Length == 0 ? null : _matchDeck[0];
+    // ended or the match awaits a reshuffle.
+    public Tile? PendingMatchTile => _hasEnded || AwaitsReshuffle ? null : _matchDeck[0];
+
+    // True once a placement empties the draw deck without winning, or a setup supplies no tile beyond the start tile:
+    // only ReshuffleBoard is accepted until it is played.
+    public bool AwaitsReshuffle => !_hasEnded && _matchDeck.Length == 0;
+
+    // Every board tile, visible and buried, that a ReshuffleBoard order must contain exactly once.
+    public IReadOnlyList<TileId> TilesToReshuffle => AwaitsReshuffle ? IdsOf(_grid.AllTiles()) : [];
 
     public IReadOnlyList<SeatId> SeatsInTurnOrder
     {
@@ -99,6 +106,13 @@ public sealed class Game
             return Reject(RejectionReason.NotYourTurn, "It is not that seat's turn.");
         }
 
+        if (AwaitsReshuffle != (action is ReshuffleBoard))
+        {
+            return AwaitsReshuffle
+                ? Reject(RejectionReason.AwaitingReshuffle, "The draw deck is empty; the board must be reshuffled.")
+                : Reject(RejectionReason.NotAwaitingReshuffle, "The board is reshuffled only when the draw deck is empty.");
+        }
+
         if (PendingMatchTile is { } drawn)
         {
             RejectOpenRulings(drawn);
@@ -106,6 +120,7 @@ public sealed class Game
 
         return action switch
         {
+            ReshuffleBoard reshuffle => ApplyReshuffle(reshuffle),
             UseRotate rotate => ApplyRotate(rotate),
             UseBounce bounce => ApplyBounce(bounce),
             Place place => ApplyPlace(place),
@@ -316,16 +331,62 @@ public sealed class Game
         }
     }
 
-    // Every Apply that reaches a tile consumes the front match tile. An empty deck is the same open ruling for each.
-    private Tile DrawnTile()
+    // Apply routes an empty deck to the reshuffle, so every action that reaches a tile finds one.
+    private Tile DrawnTile() =>
+        PendingMatchTile ?? throw new InvalidOperationException("No tile is drawn while the match awaits a reshuffle.");
+
+    // The order must be exactly the board's tiles; the first restarts the board at the origin, the rest become the deck.
+    private CommandResult ApplyReshuffle(ReshuffleBoard reshuffle)
     {
-        if (_matchDeck.Length == 0)
+        if (!TryOrder(reshuffle.Order, out var order))
         {
-            throw new UnresolvedRulingException(
-                "The match deck has no tile to place. Exhausting the match deck is an open ruling, so this command was not applied.");
+            return Reject(
+                RejectionReason.InvalidReshuffleOrder,
+                "The reshuffle order must list every tile on the board, buried ones included, exactly once.");
         }
 
-        return _matchDeck[0];
+        var next = new Game(
+            _seats,
+            _currentIndex,
+            _missionDeck,
+            order[1..],
+            Grid.FromStart(order[0]),
+            _ruleset,
+            ClaimsRequiredToWin,
+            default,
+            hasEnded: false);
+        return CommandResult.Accept(next, [new BoardReshuffled(CurrentSeat, reshuffle.Order)]);
+    }
+
+    private bool TryOrder(IReadOnlyList<TileId> ids, out Tile[] order)
+    {
+        var onBoard = new Dictionary<TileId, Tile>();
+        foreach (var tile in _grid.AllTiles())
+        {
+            onBoard.Add(tile.Id, tile);
+        }
+
+        order = new Tile[ids.Count];
+        for (var i = 0; i < order.Length; i++)
+        {
+            if (!onBoard.Remove(ids[i], out order[i]!))
+            {
+                return false;
+            }
+        }
+
+        return onBoard.Count == 0;
+    }
+
+    private static TileId[] IdsOf(IReadOnlyList<Tile> tiles)
+    {
+        var ids = new TileId[tiles.Count];
+        for (var i = 0; i < ids.Length; i++)
+        {
+            ids[i] = tiles[i].Id;
+        }
+
+        return ids;
     }
 
     // A power use keeps the same seat and the same drawn tile; only the board, the charge, and a bounced tile move.

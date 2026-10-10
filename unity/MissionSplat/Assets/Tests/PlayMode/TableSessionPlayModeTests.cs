@@ -313,6 +313,26 @@ public class TableSessionPlayModeTests
         Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
     }
 
+    [Test]
+    public void ADrawDeckThatRunsOut_ShowsTheReshuffleNotice_AndOffersAPlacementOnTheNewBoard()
+    {
+        var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two")));
+        Assert.That(FindText("Notice").gameObject.activeInHierarchy, Is.False);
+        LiveButtons("Highlight").First().onClick.Invoke();
+        table.ConfirmIncomingSeat();
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.None));
+
+        LiveButtons("Highlight").First().onClick.Invoke();
+
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.DeckReshuffled));
+        Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
+        var notice = FindText("Notice");
+        Assert.That(notice.gameObject.activeInHierarchy, Is.True);
+        Assert.That(notice.text, Is.EqualTo("The draw deck ran out; the board was reshuffled."));
+        table.ConfirmIncomingSeat();
+        Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
+    }
+
     private TableSession BeginHumanTable(GameSetup setup)
     {
         _root = new GameObject("Table");

@@ -388,17 +388,14 @@ public class RotateTests
     }
 
     [Test]
-    public void EmptyMatchDeck_ThrowsUnresolvedRuling_AndLeavesTheGame()
+    public void EmptyMatchDeck_RejectsAsAwaitingReshuffle_AndLeavesTheGame()
     {
         var game = RepresentativeDeck.TwoSeats(Cards.BlankTile("start"));
         var handA = See.Ids(game.Hand(Cards.Seat("a")));
         var handB = See.Ids(game.Hand(Cards.Seat("b")));
 
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(0));
-        Assert.That(
-            () => { RepresentativeDeck.Try(game, new UseRotate(0, 0, 1)); },
-            Throws.TypeOf<UnresolvedRulingException>().With.Message.EqualTo(
-                "The match deck has no tile to place. Exhausting the match deck is an open ruling, so this command was not applied."));
+        Expect.Rejected(game, RepresentativeDeck.Try(game, new UseRotate(0, 0, 1)), RejectionReason.AwaitingReshuffle);
 
         Assert.That(game.TileCount, Is.EqualTo(1));
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(0));

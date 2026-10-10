@@ -42,7 +42,9 @@ public sealed class LocalSession : ISession
             game.CurrentSeat,
             game.HasEnded,
             game.PendingMatchTile,
-            RemainingUses(game));
+            RemainingUses(game),
+            game.AwaitsReshuffle,
+            game.TilesToReshuffle);
     }
 
     public SessionResult Submit(SeatId seat, GameAction action)

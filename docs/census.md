@@ -4,7 +4,7 @@ The physical base set, counted from the maintainer's photos on 2026-10-04, with 
 
 This is data, not a rule. A game is built from a deck definition: a multiset of mission cards and a multiset of match tiles. The matcher does not know this list. The base definition is the one below. A later rule set, or extra tiles, is another definition. Adding tiles must not require a change to placement, matching, or claim.
 
-The physical match deck ran out in play. What a draw does when that deck is empty is still an open rule in `rules.md`. A larger deck is a new definition, not a ruling on that edge.
+The physical match deck ran out in play. The maintainer has ruled on that edge: the board is reshuffled into a new draw deck, as `rules.md` records. A larger deck is a new definition, not a ruling on that edge.
 
 ## Mission cards
 
