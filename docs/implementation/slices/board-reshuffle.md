@@ -4,7 +4,7 @@
 
 - **Active build pack:** [`docs/build-brief.md`](../../build-brief.md), [`docs/rules.md`](../../rules.md), [`docs/architecture.md`](../../architecture.md), [`docs/acceptance.md`](../../acceptance.md), [`docs/engineering/workflow.md`](../../engineering/workflow.md), [`docs/engineering/code-quality.md`](../../engineering/code-quality.md)
 - **Human approval:** Approved in session on 2026-10-10. The maintainer ruled, from the physical game, that when the draw deck runs out every tile on the board — buried ones included — is gathered and shuffled into a new draw deck, the top tile is placed at the origin as a new start tile, and play continues with claims, hands, and turn order unchanged. The maintainer asked for this as its own PR, separate from the census deck and the distinct-cells claim rule that follow.
-- **Final acceptance advanced:** Closes the "match-tile deck exhausted on a draw" item in [`docs/rules.md`](../../rules.md)'s open list; adds a Rules check and a Session check to [`docs/acceptance.md`](../../acceptance.md). The device games can now run to a win on any deck size instead of stopping at an open ruling.
+- **Final acceptance advanced:** Closes the "match-tile deck exhausted on a draw" item in [`docs/rules.md`](../../rules.md)'s open list; adds a Rules check and a Session check to [`docs/acceptance.md`](../../acceptance.md). The device games can now run to a win on any deck of at least two tiles instead of stopping at an open ruling.
 
 ## Outcome
 

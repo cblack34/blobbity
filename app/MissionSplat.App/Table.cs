@@ -342,7 +342,7 @@ public sealed class Table
             _notice);
     }
 
-    // A drawn tile with no placement and no power target (two different powers, or no tile left) is an open ruling; a GUI could never reach Submit to surface it.
+    // A drawn tile with no placement and no power target (two different powers) is an open ruling; a GUI could never reach Submit to surface it.
     private bool StopWhenNoActionIsPossible(SeatId seat, SeatView view)
     {
         if (view.HasEnded || view.AwaitsReshuffle || HasAnyAction(seat, view))
