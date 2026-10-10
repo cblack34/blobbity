@@ -87,3 +87,10 @@ None.
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** One placement still claims several missions, but each claimed mission now needs its own four cells. Overlapping sets are fine; identical sets, compared by cells rather than colour, give one claim. `PatternSearch.CompletingSets` lists every completing set that touches the placed cells. `DistinctAssignment.Choose` takes missions in hand order and keeps each one only if every kept mission can still get a different set. The completing sets form a transversal matroid, so this greedy pass claims the most missions possible and prefers earlier cards. Nothing else in resolution changed, and no public API moved.
+- **Verification:** On `f6950ab`, `dotnet test rules/MissionSplat.Rules.sln --configuration Release` passed 225 (214 plus 6 claim cases and 5 assignment cases), and `dotnet test app/MissionSplat.App.sln --configuration Release` passed 60. No existing test changed. A fresh-context design review of the three production files found no blocking issue. Four of its suggestions were applied: the extracted assignment helper with its own tests, a non-mutating `CellSet.Of`, naming the matroid, and no tentative add-then-remove.
+- **Deviations:** None from the approved plan. The assignment search lives in its own internal type rather than inside `Ruleset`, so it can be tested on its own.
+- **Unresolved gates or risks:** The census deck with 24 missions is next; identical cards in one hand are what this rule protects. GUI redesign deferred.
+- **Refactor and handoff receipt:** In the PR body and on issue #37.
+- **Final PR:** see the PR linked from issue #37.
