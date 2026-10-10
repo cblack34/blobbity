@@ -58,7 +58,7 @@ Only a pattern in the set passed at setup can be claimed. A seat claims a patter
 
 A seat claims a mission only by placing the match tile that completes that mission's pattern, on that seat's turn. If another seat's placement completes your pattern, you do not claim it, including when you later place a tile that adds no cell to that pattern.
 
-One placement claims every secret mission the acting seat currently holds whose pattern that placement completed. Other seats do not claim from that placement.
+One placement claims every secret mission the acting seat currently holds whose pattern that placement completed, but each claimed mission must be completed by its own four cells. Cells may be shared between claims, but two claims never use the identical four cells. The comparison is by cells, not colour: four wildcards in a row complete a red line and a blue line on the same four cells, so they claim only one of them. When missions compete for the same cells, the placement claims as many as it can, and earlier cards in the hand win ties. A mission left unclaimed stays in hand. Other seats do not claim from that placement.
 
 Only the four cells the placed tile wrote can complete a mission on that turn. A rotate or bounce reshapes the board before the placement; a pattern it forms or exposes is claimed only if the placed tile's cells complete it. Stack writes the drawn tile's cells on top of the covered position, so a pattern through those cells claims normally.
 

@@ -29,27 +29,29 @@ internal static class PatternSearch
         [(0, 1), (1, 1), (2, 0), (2, 1)],
     ];
 
-    public static bool WasCompletedBy(
+    // Every distinct four-cell set that makes the pattern in the color and holds a written cell.
+    public static IReadOnlyCollection<CellSet> CompletingSets(
         MissionPattern pattern,
         ColorId color,
         IReadOnlyDictionary<CellCoord, Cell> cells,
         HashSet<CellCoord> written)
     {
+        var found = new HashSet<CellSet>();
         foreach (var shape in Shapes(pattern))
         {
             foreach (var origin in cells.Keys)
             {
                 foreach (var pin in shape)
                 {
-                    if (Matches(origin.X - pin.X, origin.Y - pin.Y, shape, color, cells, written))
+                    if (TryMatch(origin.X - pin.X, origin.Y - pin.Y, shape, color, cells, written, out var set))
                     {
-                        return true;
+                        found.Add(set);
                     }
                 }
             }
         }
 
-        return false;
+        return found;
     }
 
     private static (int X, int Y)[][] Shapes(MissionPattern pattern) => pattern switch
@@ -60,29 +62,30 @@ internal static class PatternSearch
         _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "That pattern has no matcher."),
     };
 
-    private static bool Matches(
+    private static bool TryMatch(
         int originX,
         int originY,
         (int X, int Y)[] shape,
         ColorId color,
         IReadOnlyDictionary<CellCoord, Cell> cells,
-        HashSet<CellCoord> written)
+        HashSet<CellCoord> written,
+        out CellSet set)
     {
+        var coords = new CellCoord[shape.Length];
         var touchesPlacement = false;
-        foreach (var (x, y) in shape)
+        for (var i = 0; i < shape.Length; i++)
         {
-            var coord = new CellCoord(originX + x, originY + y);
-            if (!cells.TryGetValue(coord, out var cell) || !cell.CountsAs(color))
+            coords[i] = new CellCoord(originX + shape[i].X, originY + shape[i].Y);
+            if (!cells.TryGetValue(coords[i], out var cell) || !cell.CountsAs(color))
             {
+                set = default;
                 return false;
             }
 
-            if (written.Contains(coord))
-            {
-                touchesPlacement = true;
-            }
+            touchesPlacement |= written.Contains(coords[i]);
         }
 
+        set = CellSet.Of(coords[0], coords[1], coords[2], coords[3]);
         return touchesPlacement;
     }
 }

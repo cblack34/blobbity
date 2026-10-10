@@ -56,6 +56,7 @@ Adopted from the design session, not from a second implementation:
 - Web is out. Desktop is another player build.
 - A wildcard stays wild. Each mission check counts it as that mission's color. Nothing stores a chosen color.
 - One placement claims every secret mission the acting seat holds that the placement completed. The turn then passes once.
+- Each mission claimed by one placement is completed by its own four cells: cells may overlap between claims, identical sets may not, and colour does not tell two sets apart. The placement claims as many as it can; earlier hand cards win ties. Decided 2026-10-10 by the maintainer.
 - The ordinary win count is 4. Setup can require another positive count.
 - Colors, non-scoring symbols, the patterns in play, and the win count are setup data. The ordinary catalog is red, blue, green, purple, blank, rotate, stack, bounce, a wildcard cell, and the row, square, and L. Of the non-scoring symbols setup lists, those that are rotate, stack, or bounce are the powers in play; any other listed symbol is non-scoring with no power, and a power symbol setup does not list is a blank.
 - Rotate and bounce are used before the drawn tile is placed, one use per cell, one at a time, each on a tile already on the board. The drawn tile is never a target. A bounce may empty the board; an empty board accepts the drawn tile only at the origin. Stack is the placement itself, on an occupied position. Decided 2026-10-09 from the physical game, replacing an earlier after-placement reading.
