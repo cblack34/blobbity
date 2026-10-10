@@ -85,7 +85,7 @@ internal static class PatternSearch
             touchesPlacement |= written.Contains(coords[i]);
         }
 
-        set = CellSet.Of(coords);
+        set = CellSet.Of(coords[0], coords[1], coords[2], coords[3]);
         return touchesPlacement;
     }
 }
