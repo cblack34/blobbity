@@ -177,6 +177,26 @@ public class ReshuffleTests
     }
 
     [Test]
+    public void AfterTheReshuffle_ThePowerUsesAreFullyAvailableOnTheNewPendingTile()
+    {
+        var rotate = Cell.Symbol(OrdinaryCatalog.Rotate);
+        var game = RepresentativeDeck.TwoSeats(
+            Cards.Tile("start", rotate, rotate, Cards.Blank, Cards.Blank),
+            Cards.Tile("drawn", rotate, Cards.Blank, Cards.Blank, Cards.Blank));
+        var rotated = See.Game(RepresentativeDeck.Rotate(game, 0, 0));
+        Assert.That(rotated.RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(0));
+        var exhausted = See.Game(RepresentativeDeck.Play(rotated, 1, 0));
+        Assert.That(exhausted.AwaitsReshuffle, Is.True);
+
+        var next = See.Game(RepresentativeDeck.Try(exhausted, new ReshuffleBoard(Order("drawn", "start"))));
+
+        Assert.That(next.PendingMatchTile!.Id.Value, Is.EqualTo("start"));
+        Assert.That(next.RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(2));
+        Assert.That(next.LegalTargets(OrdinaryCatalog.Rotate), Is.Not.Empty);
+        Assert.That(See.Game(RepresentativeDeck.Rotate(next, 0, 0)).RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(1));
+    }
+
+    [Test]
     public void AGameWonOnTheLastTile_DoesNotAwaitAReshuffle()
     {
         var game = RepresentativeDeck.Start(

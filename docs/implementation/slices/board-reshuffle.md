@@ -8,7 +8,7 @@
 
 ## Outcome
 
-A placement that empties the draw deck leaves the match awaiting a reshuffle: no tile is pending and no move is legal. The match accepts one new action, `ReshuffleBoard(order)`, only in that state and only for an exact permutation of the board's tiles; it rebuilds the board from the first tile at the origin, makes the rest the draw deck, and emits an event, with seats, hands, claims, and the current seat untouched. Rules never shuffles — the App table supplies the order, from its start seed when the table was shuffled and in board order otherwise, and submits the action itself with no human tap. The GUI shows a notice until the next action. The pack records the rule.
+A placement that empties the draw deck leaves the match awaiting a reshuffle: no tile is pending and no move is legal. The match accepts one new action, `ReshuffleBoard(order)`, only in that state and only for an exact permutation of the board's tiles; it rebuilds the board from the first tile at the origin, makes the rest the draw deck, and emits an event, with seats, hands, claims, and the current seat untouched. Rules never shuffles — the App table supplies the order, from its start seed when the table was shuffled and in board order otherwise, and submits the action itself with no human tap. The GUI shows a notice until the next human action. The pack records the rule.
 
 ## Why this slice is next
 
