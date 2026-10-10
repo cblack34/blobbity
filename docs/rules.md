@@ -31,6 +31,8 @@ A game has two, three, or four seats. Who is first: the physical rule is the you
 3. The seat places the drawn tile, choosing a quarter-turn orientation as it is set down. Quarter-turns are clockwise. That choice is part of placement, not the rotate power. Ordinary placement must share at least one full side with a tile already on the board. Corner-only contact is illegal. See [`diagrams/placement.svg`](diagrams/placement.svg). If the drawn tile shows stack, the seat may instead place it on top of a tile already on the board. Stack is this placement, not a separate step. If the board is empty, the drawn tile is placed at the origin.
 4. Resolve claims. Then the next seat plays.
 
+When a placement leaves the draw deck empty and the game is not won, the board is reshuffled before the next seat draws. Every tile on the board, buried ones included, is gathered and shuffled into a new draw deck. The top tile is placed at the origin as a new start tile: that is not a placement, and it claims nothing. Claims, hands, the mission deck, and turn order are unchanged, and the next seat draws as usual. Until the reshuffle is played the match accepts nothing else. The library does not shuffle: it takes the new order from outside, as it takes the decks at setup.
+
 A rejected use or placement does not change the board, the decks, or whose turn it is. A use that was accepted stays applied even if a later use or the placement is rejected; the seat chooses again. A tile that cannot be placed legally does not get discarded by a rule the photographs state. That case is an open edge: stop and return it to the user rather than inventing a discard rule.
 
 ## Placement
@@ -90,4 +92,4 @@ These are open. Do not invent a ruling in code without returning to the user.
 - The base deck is [`census.md`](census.md): four colors, one line, one L, and one square each, and 30 match tiles. Uncorrected rows in that table still need the maintainer's pass before encoding.
 - A drawn tile that has no legal orthogonal neighbor and no stack power, on a board that is not empty.
 - A drawn tile that shows two different powers: whether one may be used and the other passed. The turn and power rules above cover a tile whose power cells are all one power.
-- Mission deck exhausted when a replacement is due, and match-tile deck exhausted on a draw: not printed. Return to the user.
+- Mission deck exhausted when a replacement is due: not printed. Return to the user.
