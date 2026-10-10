@@ -35,7 +35,9 @@ internal sealed class Ruleset
     public int Remaining(Tile drawn, SymbolId power, SpentUses spent) =>
         IsInPlay(power) ? CountSymbol(drawn, power) - spent.Of(power) : 0;
 
-    // A mission completes only when a cell this placement wrote is part of its pattern.
+    // A mission completes only when a cell this placement wrote is part of its pattern, and each claim needs its own
+    // four cells. Missions that can take distinct sets form a matroid, so taking each mission in hand order when it
+    // still fits claims the most and prefers earlier cards.
     public List<Mission> CompletedMissions(
         Grid grid,
         IReadOnlyList<(int X, int Y, Cell Value)> located,
@@ -47,7 +49,8 @@ internal sealed class Ruleset
             written.Add(new CellCoord(x, y));
         }
 
-        var completed = new List<Mission>();
+        var claimed = new List<Mission>();
+        var claimedSets = new List<IReadOnlyCollection<CellSet>>();
         foreach (var mission in hand)
         {
             if (!PatternIsActive(mission.Pattern))
@@ -55,13 +58,51 @@ internal sealed class Ruleset
                 continue;
             }
 
-            if (PatternSearch.WasCompletedBy(mission.Pattern, mission.Color, grid.Cells, written))
+            var sets = PatternSearch.CompletingSets(mission.Pattern, mission.Color, grid.Cells, written);
+            if (sets.Count == 0)
             {
-                completed.Add(mission);
+                continue;
+            }
+
+            claimedSets.Add(sets);
+            if (HaveDistinctSets(claimedSets, 0, []))
+            {
+                claimed.Add(mission);
+            }
+            else
+            {
+                claimedSets.RemoveAt(claimedSets.Count - 1);
             }
         }
 
-        return completed;
+        return claimed;
+    }
+
+    // Backtracks over each mission's candidate sets for one choice with no set used twice.
+    private static bool HaveDistinctSets(
+        IReadOnlyList<IReadOnlyCollection<CellSet>> missions,
+        int next,
+        HashSet<CellSet> used)
+    {
+        if (next == missions.Count)
+        {
+            return true;
+        }
+
+        foreach (var set in missions[next])
+        {
+            if (used.Add(set))
+            {
+                var fits = HaveDistinctSets(missions, next + 1, used);
+                used.Remove(set);
+                if (fits)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     // Placement and stack. The single placement decision, shared by Apply and LegalPlacements so they cannot
