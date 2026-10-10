@@ -31,12 +31,7 @@ public sealed class Table
     {
     }
 
-    public Table(ISession session, TableStart start, GameSetup setup)
-        : this(session, start, setup, null)
-    {
-    }
-
-    private Table(ISession session, TableStart start, GameSetup setup, int? reshuffleSeed)
+    public Table(ISession session, TableStart start, GameSetup setup, int? reshuffleSeed = null)
     {
         _session = session ?? throw new ArgumentNullException(nameof(session));
         _start = start ?? throw new ArgumentNullException(nameof(start));
@@ -67,6 +62,7 @@ public sealed class Table
         _notice = TableNotice.None;
         _reshuffleRandom = _reshuffleSeed is int seed ? new Random(seed ^ ReshuffleSeedSalt) : null;
         _conceal = IsHuman(_session.CurrentSeat);
+        // The match can only await a reshuffle here with one tile, which that method stops on, so nothing is announced.
         ReshuffleWhenTheDeckIsEmpty();
         RunAutomatedSeats();
         Refresh();
@@ -239,16 +235,16 @@ public sealed class Table
             _selectedPower = null;
         }
 
-        _notice = TableNotice.None;
-
         foreach (var won in result.Events.OfType<GameWon>())
         {
             _winner = won.Seat;
         }
 
+        // A human action is the one thing that retires the notice; an automated seat may move before the human sees it.
         if (IsHuman(seat))
         {
             _holder = seat;
+            _notice = TableNotice.None;
         }
 
         // Only a hand-over to a human other than the last one holding the device hides a hand; AI turns and power uses do not.
@@ -258,35 +254,39 @@ public sealed class Table
             _conceal = true;
         }
 
-        ReshuffleWhenTheDeckIsEmpty();
+        if (ReshuffleWhenTheDeckIsEmpty())
+        {
+            _notice = TableNotice.DeckReshuffled;
+        }
+
         return result;
     }
 
     // The match asks for the new draw order from outside; the table supplies it so no seat has to tap for it.
-    private void ReshuffleWhenTheDeckIsEmpty()
+    private bool ReshuffleWhenTheDeckIsEmpty()
     {
         var seat = _session.CurrentSeat;
         var view = _session.View(seat);
         if (!view.AwaitsReshuffle)
         {
-            return;
+            return false;
+        }
+
+        // One tile on the board leaves nothing to draw after a reshuffle, so reshuffling would only repeat.
+        if (view.TilesToReshuffle.Count < 2)
+        {
+            Stop("The draw deck and the board hold one tile between them, so play cannot continue.");
+            return false;
         }
 
         var result = _session.Submit(seat, new ReshuffleBoard(ReshuffleOrder(view.TilesToReshuffle)));
         if (!result.IsAccepted)
         {
             Stop(result.Rejection?.Message ?? string.Empty);
-            return;
+            return false;
         }
 
-        // Only a one-tile game can still be empty: the board then holds the single tile the deck would need.
-        if (_session.View(seat).AwaitsReshuffle)
-        {
-            Stop("The draw deck and the board hold one tile between them, so play cannot continue.");
-            return;
-        }
-
-        _notice = TableNotice.DeckReshuffled;
+        return true;
     }
 
     private TileId[] ReshuffleOrder(IReadOnlyList<TileId> tiles)
@@ -297,15 +297,9 @@ public sealed class Table
             order[i] = tiles[i];
         }
 
-        if (_reshuffleRandom is null)
+        if (_reshuffleRandom is not null)
         {
-            return order;
-        }
-
-        for (var i = order.Length - 1; i > 0; i--)
-        {
-            var j = _reshuffleRandom.Next(i + 1);
-            (order[i], order[j]) = (order[j], order[i]);
+            Shuffle.InPlace(order, _reshuffleRandom);
         }
 
         return order;

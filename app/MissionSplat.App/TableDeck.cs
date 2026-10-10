@@ -18,8 +18,8 @@ public static class TableDeck
         if (shuffleSeed is int seed)
         {
             var rng = new Random(seed);
-            Shuffle(missions, rng);
-            Shuffle(tiles, rng);
+            Shuffle.InPlace(missions, rng);
+            Shuffle.InPlace(tiles, rng);
         }
 
         return new GameSetup(
@@ -103,14 +103,5 @@ public static class TableDeck
         tiles.Add(new Tile(new TileId("spare-b"), purple, red, green, blue));
         tiles.Add(new Tile(new TileId("spare-c"), blue, purple, red, green));
         return tiles.ToArray();
-    }
-
-    private static void Shuffle<T>(IList<T> items, Random rng)
-    {
-        for (var i = items.Count - 1; i > 0; i--)
-        {
-            var j = rng.Next(i + 1);
-            (items[i], items[j]) = (items[j], items[i]);
-        }
     }
 }

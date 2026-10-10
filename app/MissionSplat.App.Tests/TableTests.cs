@@ -338,9 +338,9 @@ public class TableTests
     [Test]
     public void ASeededTable_ReshufflesIntoTheSameOrderFromTheSameSeed()
     {
-        var first = PlayTheOrdinaryDeckOut(7);
-        var again = PlayTheOrdinaryDeckOut(7);
-        var other = PlayTheOrdinaryDeckOut(8);
+        var first = PlayTheSmallDeckOut(7);
+        var again = PlayTheSmallDeckOut(7);
+        var other = PlayTheSmallDeckOut(8);
 
         Assert.That(first.Order, Is.EquivalentTo(first.Offer));
         Assert.That(first.Order, Is.Not.EqualTo(first.Offer), "the order is shuffled, not as offered");
@@ -351,12 +351,41 @@ public class TableTests
     }
 
     [Test]
+    public void TheNotice_SurvivesAnAutomatedSeatsTurn_AndIsClearedByTheNextHumanAction()
+    {
+        var table = new Table(
+            new LocalSession(),
+            new TableStart(3, [true, false, false], 0, false),
+            Setup(3, Cards.BlankTile("start"), Cards.Solid("red", Cards.Red), Cards.Solid("blue", Cards.Blue), Cards.Solid("green", Cards.Green)));
+        table.Start();
+        table.Confirm();
+        PlaceFirstLegal(table);
+        table.Confirm();
+
+        PlaceFirstLegal(table);
+
+        var seen = table.Snapshot;
+        Assert.That(seen.View.CurrentSeat, Is.EqualTo(Second), "the automated seat played after the human emptied the deck");
+        Assert.That(seen.View.Board.Tiles, Has.Count.EqualTo(2));
+        Assert.That(seen.Notice, Is.EqualTo(TableNotice.DeckReshuffled), "the automated seat's action did not clear it");
+        Assert.That(seen.Status.Kind, Is.EqualTo(TableStatusKind.ToConfirm));
+
+        table.Confirm();
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.DeckReshuffled), "holding the device does not clear it");
+        PlaceFirstLegal(table);
+
+        Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.None));
+    }
+
+    [Test]
     public void ADeckAndBoardHoldingOneTileBetweenThem_StopTheTable_InsteadOfReshufflingForever()
     {
-        var table = new Table(new LocalSession(), Humans(2), Setup(2, Cards.BlankTile("start")));
+        var recording = new RecordingSession(new LocalSession());
+        var table = new Table(recording, Humans(2), Setup(2, Cards.BlankTile("start")));
 
         table.Start();
 
+        Assert.That(recording.Reshuffles, Is.Empty, "a one-tile reshuffle is never submitted");
         var status = table.Snapshot.Status;
         Assert.That(status.Kind, Is.EqualTo(TableStatusKind.Stopped));
         Assert.That(status.Message, Does.StartWith("The draw deck and the board hold one tile between them"));
@@ -725,18 +754,31 @@ public class TableTests
 
     private static string[] HandOf(SeatView view) => view.UnclaimedMissions.Select(mission => mission.Id.Value).ToArray();
 
-    // Two humans take the first legal placement until the ordinary deck runs out and the table reshuffles.
-    private static Reshuffled PlayTheOrdinaryDeckOut(int seed)
+    private static void PlaceFirstLegal(Table table)
+    {
+        var slot = table.Snapshot.LegalPlacements[0];
+        Assert.That(table.Place(slot.TileX, slot.TileY).IsAccepted, Is.True);
+    }
+
+    // Two humans take the first legal placement until the six-tile deck runs out and the table reshuffles.
+    private static Reshuffled PlayTheSmallDeckOut(int reshuffleSeed)
     {
         var recording = new RecordingSession(new LocalSession());
-        var table = new Table(recording, TableStart.PassAndPlayDraft(), seed);
+        var setup = Setup(
+            2,
+            Cards.BlankTile("start"),
+            Cards.Solid("red", Cards.Red),
+            Cards.Solid("blue", Cards.Blue),
+            Cards.Solid("green", Cards.Green),
+            Cards.Solid("purple", Cards.Purple),
+            Cards.Solid("red-2", Cards.Red));
+        var table = new Table(recording, Humans(2), setup, reshuffleSeed);
         table.Start();
         while (recording.Reshuffles.Count == 0)
         {
-            Assert.That(table.Snapshot.Status.Kind, Is.AnyOf(TableStatusKind.ToConfirm, TableStatusKind.ToAct), "the seed won before the deck ran out");
+            Assert.That(table.Snapshot.Status.Kind, Is.AnyOf(TableStatusKind.ToConfirm, TableStatusKind.ToAct), "the game was won before the deck ran out");
             table.Confirm();
-            var slot = table.Snapshot.LegalPlacements[0];
-            table.Place(slot.TileX, slot.TileY);
+            PlaceFirstLegal(table);
         }
 
         var order = recording.Reshuffles[0].Order.ToArray();
