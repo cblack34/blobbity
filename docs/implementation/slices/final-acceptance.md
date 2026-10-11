@@ -95,3 +95,10 @@ None.
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** Every criterion in [`docs/acceptance.md`](../../acceptance.md) is green by a named test or backed by a committed capture, recorded line by line in the PR body. New fixtures show a blank or a power cell blocking a square and an L. A test double shows the AI seat sees only its own missions and the public board. The captures are retaken on the census deck, including the reshuffle notice. The build brief, architecture, C4 caption, and acceptance run section now match the code. Unity player build output is ignored.
+- **Verification:** On `8aa3baf`, `dotnet test` passed Rules 234 and App 66. `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 on freshly copied Release DLLs, with a clean-import run. The trade-dress review was an agent search of every tracked file and a view of every image; it was clean. The maintainer built the player from this branch, tested it on an iPhone, and accepted it as the device pass.
+- **Deviations:** The plan asked for two named device games: a pass-and-play game with three or more seats, and a game with an AI seat. The maintainer instead gave a general pass on the iPhone. Seat mixes are covered by the App table tests and the Unity play-mode tests. No fresh-context design review ran, because no production code changed.
+- **Unresolved gates or risks:** The maintainer dislikes the current look; the GUI redesign is #44, outside this pack's acceptance. Two rulings remain open in `rules.md`: a drawn tile showing two different powers, and a drawn tile with no legal placement on a non-empty board.
+- **Refactor and handoff receipt:** In the PR body and on issue #41.
+- **Final PR:** see the PR linked from issue #41.
