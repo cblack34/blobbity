@@ -172,5 +172,22 @@ internal static class CellPainter
         Ui.Anchored(image.rectTransform, min + (span * padding), max - (span * padding), Vector2.zero, Vector2.zero);
         image.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angleDegrees);
     }
+
+    // A stable turn for a splat from a key of the caller's choosing: the same key turns the same way on every run
+    // (string.GetHashCode is not stable between runs).
+    internal static float SplatAngle(string key)
+    {
+        unchecked
+        {
+            var hash = 2166136261u;
+            foreach (var c in key)
+            {
+                hash = (hash ^ c) * 16777619u;
+            }
+
+            hash ^= hash >> 15;
+            return hash % 360u;
+        }
+    }
 }
 }
