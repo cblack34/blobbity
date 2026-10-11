@@ -14,7 +14,7 @@ internal static class Ui
 
     public static Sprite Splat { get; } = LoadSprite("Splat");
 
-    // 128 px with a 32 px 9-slice border (see its import settings).
+    // A white 128 px rounded square, tinted by the caller.
     public static Sprite Card { get; } = LoadSprite("TileCard");
 
     public static RectTransform Rect(string name, Transform parent)
@@ -78,6 +78,25 @@ internal static class Ui
         rect.anchorMax = max;
         rect.offsetMin = offsetMin;
         rect.offsetMax = offsetMax;
+    }
+
+    public static void PlaceCell(
+        RectTransform rect,
+        int cellX,
+        int cellY,
+        int cellsWide,
+        int cellsHigh,
+        int minX,
+        int minY,
+        float cell,
+        float originX,
+        float originY)
+    {
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.zero;
+        rect.pivot = Vector2.zero;
+        rect.sizeDelta = new Vector2(cellsWide * cell, cellsHigh * cell);
+        rect.anchoredPosition = new Vector2(originX + ((cellX - minX) * cell), originY + ((cellY - minY) * cell));
     }
 
     public static void Clear(Transform parent, int keepLeading = 0)

@@ -198,8 +198,8 @@ internal sealed class TablePlayView
         foreach (var tile in view.Board.Tiles)
         {
             var block = Ui.Rect("Tile" + tile.Id.Value, lattice);
-            PlaceCell(block, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
-            PaintCard(block, tile.Id.Value, (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)], 0);
+            Ui.PlaceCell(block, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
+            TilePainter.Paint(block, tile.Id.Value, (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)], 0);
         }
 
         if (snapshot.ConcealVisible)
@@ -226,7 +226,7 @@ internal sealed class TablePlayView
     private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, Color tint, int minX, int minY, float cellSize, Action onTap)
     {
         var button = Ui.Button(name, lattice, string.Empty, tint);
-        PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
+        Ui.PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
         button.onClick.AddListener(() => onTap());
         return button;
     }
@@ -344,83 +344,7 @@ internal sealed class TablePlayView
         block.anchorMax = new Vector2(0.5f, 0.5f);
         block.pivot = new Vector2(0.5f, 0.5f);
         block.sizeDelta = new Vector2(side, side);
-        PaintCard(block, tile.Id.Value, tile.Local, quarterTurns);
-    }
-
-    // The card and its cells, drawn the same way on the board and for the drawn tile. block is the tile's 2×2 cells (sizeDelta is its size),
-    // cellAt gives the cell at local (x, y), and quarterTurns moves each cell clockwise to its slot as Rules.Tile does.
-    // The card is inset so neighbours show a gap; the block itself stays whole so taps in the gap still reach the highlights drawn over it.
-    private static void PaintCard(RectTransform block, string tileId, Func<int, int, Cell> cellAt, int quarterTurns)
-    {
-        const float inset = 0.025f;
-        const float edge = 0.015f;
-        Card(block, "Shadow", SplatPalette.CardShadow, inset, -0.02f);
-        Card(block, "Edge", SplatPalette.TileEdge, inset, 0f);
-        Card(block, "Face", SplatPalette.CardFace, inset + edge, 0f);
-
-        var cell = block.sizeDelta.x / 2f;
-        for (var y = 0; y < 2; y++)
-        {
-            for (var x = 0; x < 2; x++)
-            {
-                var cellRect = Ui.Rect("C" + x + y, block);
-                var (slotX, slotY) = TurnClockwise(x, y, quarterTurns);
-                PlaceCell(cellRect, slotX, slotY, 1, 1, 0, 0, cell, 0f, 0f);
-                CellPainter.Paint(cellRect, cellAt(x, y), SplatAngle(tileId, slotX, slotY));
-            }
-        }
-    }
-
-    // One layer of the card: the block inset by inset on every side (fractions of the block), then moved up by lift.
-    private static void Card(RectTransform block, string name, Color color, float inset, float lift)
-    {
-        var image = Ui.Image(name, block, color, Ui.Card);
-        image.type = Image.Type.Sliced;
-        Ui.Anchored(image.rectTransform, new Vector2(inset, inset + lift), new Vector2(1f - inset, 1f - inset + lift), Vector2.zero, Vector2.zero);
-        // Keep the corner radius in proportion to the card rather than at the sprite's pixel size.
-        image.pixelsPerUnitMultiplier = 128f / Mathf.Max(1f, (1f - (2f * inset)) * block.sizeDelta.x);
-    }
-
-    // A stable per-cell turn: the same cell of the same tile is turned the same way on every run (string.GetHashCode is not stable).
-    private static float SplatAngle(string tileId, int slotX, int slotY)
-    {
-        var hash = 2166136261u;
-        foreach (var c in tileId + ":" + slotX + slotY)
-        {
-            hash = (hash ^ c) * 16777619u;
-        }
-
-        hash ^= hash >> 15;
-        return hash % 360u;
-    }
-
-    private static (int X, int Y) TurnClockwise(int x, int y, int quarterTurns) =>
-        quarterTurns switch
-        {
-            0 => (x, y),
-            1 => (y, 1 - x),
-            2 => (1 - x, 1 - y),
-            3 => (1 - y, x),
-            _ => throw new ArgumentOutOfRangeException(nameof(quarterTurns), quarterTurns, "Quarter-turns are 0, 1, 2, or 3."),
-        };
-
-    private static void PlaceCell(
-        RectTransform rect,
-        int cellX,
-        int cellY,
-        int cellsWide,
-        int cellsHigh,
-        int minX,
-        int minY,
-        float cell,
-        float originX,
-        float originY)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.zero;
-        rect.pivot = Vector2.zero;
-        rect.sizeDelta = new Vector2(cellsWide * cell, cellsHigh * cell);
-        rect.anchoredPosition = new Vector2(originX + ((cellX - minX) * cell), originY + ((cellY - minY) * cell));
+        TilePainter.Paint(block, tile.Id.Value, tile.Local, quarterTurns);
     }
 }
 }

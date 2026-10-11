@@ -192,7 +192,7 @@ internal static class CellPainter
         window.gameObject.AddComponent<RectMask2D>();
         // Anchors are relative to the quarter, which is half the cell, so the cell's extent is -quarter..2-quarter.
         var shift = new Vector2(quarterX, quarterY);
-        Splat(window, color, Vector2.zero - shift, new Vector2(2f, 2f) - shift, angleDegrees);
+        Splat(window, color, -shift, new Vector2(2f, 2f) - shift, angleDegrees);
     }
 
     // Fills most of the area between min and max, which are anchors of the parent.

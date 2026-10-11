@@ -12,7 +12,7 @@ public static class SplatPalette
     public static readonly Color Muted = Hex("4a5b6b");
     public static readonly Color CardFace = Hex("f5ead2");
     public static readonly Color CardShadow = new Color(0f, 0f, 0f, 0.25f);
-    public static readonly Color TileEdge = Hex("8d6e43");
+    public static readonly Color CardEdge = Hex("8d6e43");
     public static readonly Color Red = Hex("e03131");
     public static readonly Color Blue = Hex("1c7ed6");
     public static readonly Color Green = Hex("2f9e44");
