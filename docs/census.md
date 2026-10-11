@@ -22,7 +22,7 @@ Twelve cards. Each color has one of each shape: a line, an L, and a square. The 
 
 Thirty tiles. A cell is a scoring color, a blank, a power, or a wildcard. A gray cell with no symbol is a blank. A gray cell with a symbol is that power: stack, rotate, or bounce. The wildcard is the quartered cell. Cells are named blank or by the power. The printed color of a blank or a power is not part of the name.
 
-Cells are listed top-left, top-right, bottom-left, bottom-right. Rows marked corrected are the maintainer's inline reading and replace the earlier one.
+Cells are listed top row first, read left to right: top-left, top-right, bottom-left, bottom-right. Rows marked corrected are the maintainer's inline reading and replace the earlier one.
 
 | # | Cells | Source |
 |---|---|---|
@@ -56,3 +56,7 @@ Cells are listed top-left, top-right, bottom-left, bottom-right. Rows marked cor
 | 28 | blue, blue, rotate, green | corrected |
 | 29 | purple, blank, rotate, green | corrected |
 | 30 | blue, blank, red, rotate | photo |
+
+## Digital adjustment: doubled missions
+
+The digital deck doubles the twelve mission cards to 24: each color has two lines, two Ls, and two squares. This is a deliberate adjustment, not a reading of the photographs. It makes the mission deck unable to run out. A four-seat game needs at most 13 replacements before someone wins, and 16 cards remain after the deal. One hand can now hold identical cards, which the distinct-cells claim rule in `rules.md` covers. The 30 match tiles are unchanged.

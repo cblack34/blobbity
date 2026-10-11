@@ -89,7 +89,5 @@ The AI seat has its own two secret missions. It does not observe any other seat'
 
 These are open. Do not invent a ruling in code without returning to the user.
 
-- The base deck is [`census.md`](census.md): four colors, one line, one L, and one square each, and 30 match tiles. Uncorrected rows in that table still need the maintainer's pass before encoding.
 - A drawn tile that has no legal orthogonal neighbor and no stack power, on a board that is not empty.
 - A drawn tile that shows two different powers: whether one may be used and the other passed. The turn and power rules above cover a tile whose power cells are all one power.
-- Mission deck exhausted when a replacement is due: not printed. Return to the user.
