@@ -3,7 +3,7 @@
 ## Strategic source
 
 - **Active build pack:** The POC pack passed final acceptance in #43. This slice is GUI redesign work tracked in #44, outside that acceptance; the maintainer chose to redesign slice by slice against #44 and the inspiration mock-ups.
-- **Human approval:** Approved in session on 2026-10-11. The maintainer asked that mission cards have playing-card proportions (5:7, portrait) while tiles stay square, and accepted folding in the wild-cell fix.
+- **Human approval:** Approved in session on 2026-10-11. The maintainer asked that mission cards have playing-card proportions (5:7, portrait) while tiles stay square, and accepted folding in the wild-cell fix. After the phone check, the maintainer removed captions and asked for bigger splats with a diagonal row.
 - **Final acceptance advanced:** None directly. The presentation criteria in [`docs/acceptance.md`](../../acceptance.md) must stay green.
 
 ## Outcome
@@ -89,9 +89,9 @@ None.
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
-- **Outcome:** Secret missions and every claims row draw as portrait 5:7 cards: the shared shadow, edge, and cream face from `CardPainter`, a tinted-splat pattern on a 4×3 lattice in the upper part, and a best-fit caption ("Row", "Square", "L"). `MissionCardPainter` is the one routine; `AspectRatioFitter` keeps the sprite's own ratio in any slot. Wild cells draw their quarters unrotated, so they read as one split splat.
-- **Verification:** On `b531ed9`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 on fresh Release DLLs. The Unity run used a scratch copy of the project, because the maintainer's editor had the project open. Every capture is now rendered in phone portrait at 1179×2556 instead of 1920×1080 landscape. A fresh-context design review raised 2 [Issue] and 7 [Suggestion], with no blockers; both issues and most suggestions are applied (see the receipt).
-- **Deviations:** The maintainer's phone check found the cards wrong in portrait: oversized, uneven captions, and claim cards that looked cut off at the bottom. Captions are now one size on every card (13% of the card height) in their own band, and claim slots sit slightly above the strip's bottom. A portrait render did not reproduce a true clip, so the fix addresses the crowding. Captures moved to portrait, so they match the device.
+- **Outcome:** Secret missions and every claims row draw as portrait 5:7 cards: the shared shadow, edge, and cream face from `CardPainter`, and the pattern in tinted splats filling the face on a 2 × 4 lattice, with no caption. A row is drawn diagonally, as the physical cards show a line; the rules allow any direction. `MissionCardPainter` is the one routine; `AspectRatioFitter` keeps the sprite's own ratio in any slot. Wild cells draw their quarters unrotated, so they read as one split splat.
+- **Verification:** On `0b2d8f5`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 on fresh Release DLLs. The Unity run used a scratch copy of the project, because the maintainer's editor had the project open. Every capture is now rendered in phone portrait at 1179×2556 instead of 1920×1080 landscape. A fresh-context design review raised 2 [Issue] and 7 [Suggestion], with no blockers; both issues and most suggestions are applied (see the receipt).
+- **Deviations:** The maintainer's phone check found the cards wrong in portrait: oversized, uneven captions, and claim cards that looked cut off at the bottom. The maintainer then chose to drop captions entirely and enlarge the splats, with the row drawn diagonally; claim slots returned to the strip's bottom. A portrait render never reproduced a true clip. Captures moved to portrait, so they match the device. The plan's "readable caption" outcome is superseded by this choice.
 - **Unresolved gates or risks:** Portrait layout problems, all for the layout slice:
   - The board is tiny in long games.
   - There are large empty bands.
