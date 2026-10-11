@@ -89,3 +89,10 @@ None.
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** The table ships the census, encoded row by row from `census.md`, and 24 mission cards, two of each colour and shape. There are 30 match tiles, `census-01` to `census-30`. The census lists cells top row first, and a `CensusTile` helper maps that order to the y-up tile constructor. The stand-in deck is gone. `census.md` records the doubled missions as a deliberate digital adjustment: a four-seat game draws at most 14 replacements against 16 remaining, so the mission deck cannot run out. Mission-deck exhaustion and the census leave the open list.
+- **Verification:** On `6ede632`, `dotnet test` passed Rules 226 and App 63, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 after a Release build. A script confirmed that all 30 `CensusTile` rows equal `census.md`. The census test checks every cell against its own literal copy of the rows. A fresh-context design review of `TableDeck.cs` raised one issue: the replacement bound stated as 13 should be 14, because the winning placement can claim two. It also made four suggestions. The issue and three suggestions are fixed (renamed helper, one shape table, `Name` removed) along with a test comment.
+- **Deviations:** `TableDeck.Name` was removed rather than changed to `"census"`, because nothing in production read it. The play-mode first-turn test stays on the shipped deck; the first placement now claims nothing, because census row 1 cannot finish a pattern on turn one.
+- **Unresolved gates or risks:** Captures still show the old deck; final acceptance retakes them on the census.
+- **Refactor and handoff receipt:** In the PR body and on issue #39.
+- **Final PR:** see the PR linked from issue #39.
