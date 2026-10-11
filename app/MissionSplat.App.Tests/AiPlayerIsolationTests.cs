@@ -30,9 +30,11 @@ public class AiPlayerIsolationTests
             Assert.That(recorder.PreviewedBeforeListed, Is.Empty);
             Assert.That(recorder.Previews.Select(preview => preview.Action), Does.Contain(chosen));
 
-            // Everything the AI was handed: its view plus each answer the two queries returned.
+            // Everything the AI was handed: its view, each answer the two queries returned,
+            // and the object behind both query delegates, which holds no session.
             var reachable = MissionIds.In(view);
             reachable.UnionWith(MissionIds.In(recorder.Answers));
+            reachable.UnionWith(MissionIds.In(recorder));
             Assert.That(reachable.Intersect(hidden), Is.Empty);
             Assert.That(reachable, Is.SupersetOf(view.UnclaimedMissions.Select(mission => mission.Id.Value)));
 
@@ -70,17 +72,25 @@ public class AiPlayerIsolationTests
         return hidden;
     }
 
-    // A real session behind the only two doors an AI seat is given, noting every call and answer.
+    // The only two doors an AI seat is given. Every answer is computed from the real session up front,
+    // so the delegates' target keeps no reference to the session or to another seat's hand.
     private sealed class Recorder
     {
-        private readonly LocalSession _session;
-        private readonly SeatId _seat;
-        private readonly HashSet<(int X, int Y, int QuarterTurns)> _listed = [];
+        private readonly IReadOnlyList<LegalPlacement>[] _legal = new IReadOnlyList<LegalPlacement>[4];
+        private readonly Dictionary<GameAction, ActionPreview> _previews = [];
+        private readonly HashSet<GameAction> _listed = [];
 
         public Recorder(LocalSession session, SeatId seat)
         {
-            _session = session;
-            _seat = seat;
+            for (var quarterTurns = 0; quarterTurns < 4; quarterTurns++)
+            {
+                _legal[quarterTurns] = session.LegalPlacements(seat, quarterTurns);
+                foreach (var legal in _legal[quarterTurns])
+                {
+                    var place = new Place(legal.TileX, legal.TileY, quarterTurns);
+                    _previews[place] = session.Preview(seat, place);
+                }
+            }
         }
 
         public List<string> Queries { get; } = [];
@@ -94,11 +104,11 @@ public class AiPlayerIsolationTests
         public IReadOnlyList<LegalPlacement> LegalPlacements(int quarterTurns)
         {
             Queries.Add("legal");
-            var answer = _session.LegalPlacements(_seat, quarterTurns);
+            var answer = _legal[quarterTurns];
             Answers.Add(answer);
             foreach (var legal in answer)
             {
-                _listed.Add((legal.TileX, legal.TileY, quarterTurns));
+                _listed.Add(new Place(legal.TileX, legal.TileY, quarterTurns));
             }
 
             return answer;
@@ -107,12 +117,12 @@ public class AiPlayerIsolationTests
         public ActionPreview Preview(GameAction action)
         {
             Queries.Add("preview");
-            if (action is not Place place || !_listed.Contains((place.TileX, place.TileY, place.QuarterTurnsClockwise)))
+            if (!_listed.Contains(action) || !_previews.TryGetValue(action, out var answer))
             {
                 PreviewedBeforeListed.Add(action);
+                throw new InvalidOperationException("The AI previewed an action before a legal-placement answer listed it.");
             }
 
-            var answer = _session.Preview(_seat, action);
             Previews.Add((action, answer));
             Answers.Add(answer);
             return answer;
