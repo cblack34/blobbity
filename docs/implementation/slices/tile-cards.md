@@ -85,8 +85,15 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 
 ## Amendments
 
-None.
+- **2026-10-11, blank cells:** a blank cell now draws nothing on the card face. The scope above kept today's pale dot, but on the cream card that dot reads as a hole. The implementation lead made this call in the execution brief; it is flagged to the maintainer in the PR.
 
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** Every board tile and the drawn tile are separate cards: shadow, edge, and cream face layers of one rounded-square sprite, inset so neighbours show a gap. Colour cells show the maintainer's splat tinted to their colour at a stable per-slot angle; a wild cell is one splat split into four colours through quarter masks. `TilePainter` is the one routine for the board and the turn panel. Art sources live in `art/`, and `art/export.sh` rasterizes them with `rsvg-convert` into white PNG sprites under `Assets/Art/Resources/`.
+- **Verification:** On `3003622`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 on fresh Release DLLs; the stack play-mode test now asserts a highlight covers its whole tile block. `board`, `highlights`, and `after-bounce` were retaken on `85780ba`. A fresh-context design review found two issues and several suggestions; both issues and most suggestions are applied (see the receipt).
+- **Deviations:** The blank-cell amendment above. The captures come from a new seeded game, because the earlier capture states were not recoverable. They were taken before the review refactor, which switched the card from a 9-sliced to a plain sprite with the same proportions; no look change is expected.
+- **Unresolved gates or risks:** Highlight tints over cards still muddy the colours (#44). Splats are small on the board because the board scales to its cell count. A `SplatAngle` unit test was skipped: the test assembly cannot reach internal Player types.
+- **Refactor and handoff receipt:** In the PR body and on issue #46.
+- **Final PR:** see the PR linked from issue #46.
