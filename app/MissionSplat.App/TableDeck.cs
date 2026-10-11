@@ -1,10 +1,11 @@
 namespace MissionSplat.App;
 
+using System.Globalization;
 using MissionSplat.Rules;
 
 public static class TableDeck
 {
-    public const string Name = "table";
+    public const string Name = "census";
 
     public static GameSetup Ordinary(IReadOnlyList<SeatId> seats, SeatId firstSeat, int? shuffleSeed)
     {
@@ -33,16 +34,18 @@ public static class TableDeck
             tiles);
     }
 
+    // Two of each colour and shape: the digital deck doubles the twelve printed cards so the mission deck cannot run out.
     private static Mission[] Missions()
     {
-        var patterns = new[] { MissionPattern.Square, MissionPattern.Row, MissionPattern.L };
-        var names = new[] { "square", "row", "l" };
+        var patterns = new[] { MissionPattern.Row, MissionPattern.Square, MissionPattern.L };
+        var names = new[] { "line", "square", "l" };
         var colors = OrdinaryCatalog.Colors;
-        var missions = new Mission[patterns.Length * 3 * colors.Count];
+        const int copies = 2;
+        var missions = new Mission[patterns.Length * copies * colors.Count];
         var index = 0;
         for (var pattern = 0; pattern < patterns.Length; pattern++)
         {
-            for (var copy = 1; copy <= 3; copy++)
+            for (var copy = 1; copy <= copies; copy++)
             {
                 for (var color = 0; color < colors.Count; color++)
                 {
@@ -55,53 +58,60 @@ public static class TableDeck
         return missions;
     }
 
-    private static Tile[] Tiles()
-    {
-        var red = Cell.Color(OrdinaryCatalog.Red);
-        var blue = Cell.Color(OrdinaryCatalog.Blue);
-        var green = Cell.Color(OrdinaryCatalog.Green);
-        var purple = Cell.Color(OrdinaryCatalog.Purple);
-        var blank = Cell.Symbol(OrdinaryCatalog.Blank);
-        var wild = Cell.Wild();
-        var rotate = Cell.Symbol(OrdinaryCatalog.Rotate);
-        var stack = Cell.Symbol(OrdinaryCatalog.Stack);
-        var bounce = Cell.Symbol(OrdinaryCatalog.Bounce);
-        var colors = new[] { red, blue, green, purple };
-        var tiles = new List<Tile>
-        {
-            new(new TileId("start"), blank, red, blue, wild),
-            new(new TileId("solid-red"), red, red, red, red),
-            new(new TileId("solid-blue"), blue, blue, blue, blue),
-            new(new TileId("solid-green"), green, green, green, green),
-            new(new TileId("solid-purple"), purple, purple, purple, purple),
-        };
+    // Rows follow docs/census.md: each lists top-left, top-right, bottom-left, bottom-right.
+    private static Tile[] Tiles() =>
+        [
+            Row(1, Blank, Wildcard, Red, Purple),
+            Row(2, Green, Blue, Blue, Green),
+            Row(3, Red, Purple, Red, Bounce),
+            Row(4, Green, Blue, Wildcard, Blank),
+            Row(5, Green, Blank, Blue, Stack),
+            Row(6, Wildcard, Blue, Blank, Purple),
+            Row(7, Green, Blank, Red, Wildcard),
+            Row(8, Rotate, Red, Blue, Blank),
+            Row(9, Purple, Red, Purple, Red),
+            Row(10, Green, Blue, Green, Stack),
+            Row(11, Purple, Stack, Blank, Purple),
+            Row(12, Stack, Blue, Green, Purple),
+            Row(13, Red, Green, Green, Red),
+            Row(14, Blank, Red, Red, Rotate),
+            Row(15, Bounce, Green, Green, Blank),
+            Row(16, Rotate, Wildcard, Blank, Blank),
+            Row(17, Purple, Blue, Green, Red),
+            Row(18, Blank, Wildcard, Rotate, Wildcard),
+            Row(19, Purple, Blue, Green, Red),
+            Row(20, Blank, Rotate, Purple, Green),
+            Row(21, Red, Blue, Green, Rotate),
+            Row(22, Blue, Purple, Blue, Purple),
+            Row(23, Purple, Blue, Stack, Red),
+            Row(24, Green, Purple, Red, Rotate),
+            Row(25, Purple, Blank, Red, Stack),
+            Row(26, Rotate, Purple, Red, Purple),
+            Row(27, Blue, Blank, Stack, Blue),
+            Row(28, Blue, Blue, Rotate, Green),
+            Row(29, Purple, Blank, Rotate, Green),
+            Row(30, Blue, Blank, Red, Rotate),
+        ];
 
-        var pair = 0;
-        for (var a = 0; a < colors.Length; a++)
-        {
-            for (var b = 0; b < colors.Length; b++)
-            {
-                tiles.Add(new Tile(new TileId("pair-" + pair), colors[a], colors[b], colors[a], colors[b]));
-                pair++;
-            }
-        }
+    // The constructor's y runs upward, so the census's top row becomes the high y.
+    private static Tile Row(int number, Cell topLeft, Cell topRight, Cell bottomLeft, Cell bottomRight) =>
+        new(new TileId("census-" + number.ToString("00", CultureInfo.InvariantCulture)), bottomLeft, bottomRight, topLeft, topRight);
 
-        for (var i = 0; i < colors.Length; i++)
-        {
-            var next = colors[(i + 1) % colors.Length];
-            var skip = colors[(i + 2) % colors.Length];
-            var prev = colors[(i + 3) % colors.Length];
-            tiles.Add(new Tile(new TileId("wild-" + i), colors[i], wild, next, blank));
-            tiles.Add(new Tile(new TileId("blank-" + i), colors[i], blank, blank, skip));
-            tiles.Add(new Tile(new TileId("rotate-" + i), colors[i], rotate, next, blank));
-            tiles.Add(new Tile(new TileId("stack-" + i), colors[i], stack, blank, prev));
-            tiles.Add(new Tile(new TileId("bounce-" + i), bounce, colors[i], skip, blank));
-            tiles.Add(new Tile(new TileId("mix-" + i), colors[i], next, skip, prev));
-        }
+    private static Cell Red { get; } = Cell.Color(OrdinaryCatalog.Red);
 
-        tiles.Add(new Tile(new TileId("spare-a"), red, green, blue, purple));
-        tiles.Add(new Tile(new TileId("spare-b"), purple, red, green, blue));
-        tiles.Add(new Tile(new TileId("spare-c"), blue, purple, red, green));
-        return tiles.ToArray();
-    }
+    private static Cell Blue { get; } = Cell.Color(OrdinaryCatalog.Blue);
+
+    private static Cell Green { get; } = Cell.Color(OrdinaryCatalog.Green);
+
+    private static Cell Purple { get; } = Cell.Color(OrdinaryCatalog.Purple);
+
+    private static Cell Blank { get; } = Cell.Symbol(OrdinaryCatalog.Blank);
+
+    private static Cell Wildcard { get; } = Cell.Wild();
+
+    private static Cell Rotate { get; } = Cell.Symbol(OrdinaryCatalog.Rotate);
+
+    private static Cell Stack { get; } = Cell.Symbol(OrdinaryCatalog.Stack);
+
+    private static Cell Bounce { get; } = Cell.Symbol(OrdinaryCatalog.Bounce);
 }

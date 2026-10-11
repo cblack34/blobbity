@@ -35,6 +35,7 @@ public class TableSessionPlayModeTests
         Assert.That(table.IsStarted, Is.True);
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
+        Assert.That(table.Snapshot.View.Board.Tiles[0].Id.Value, Is.EqualTo("census-01"));
         Assert.That(table.Snapshot.ConcealVisible, Is.True);
         Assert.That(table.Snapshot.SecretsVisible, Is.False);
         Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.ToConfirm));
@@ -47,6 +48,7 @@ public class TableSessionPlayModeTests
         Assert.That(table.Snapshot.SecretsVisible, Is.True);
         Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.ToAct));
         Assert.That(table.Snapshot.View.UnclaimedMissions.Count, Is.EqualTo(2));
+        Assert.That(table.Snapshot.View.PendingMatchTile?.Id.Value, Is.EqualTo("census-02"));
         Assert.That(placements, Is.Not.Empty);
         Assert.That(placements.Any(slot => slot.TileX == 1 && slot.TileY == 1), Is.False);
         Assert.That(placements.Any(slot => slot.TileX == 1 && slot.TileY == 0), Is.True);
@@ -57,7 +59,8 @@ public class TableSessionPlayModeTests
         Assert.That(view.Board.Tiles.Count, Is.EqualTo(3));
         Assert.That(view.CurrentSeat.Value, Is.EqualTo("1"));
         Assert.That(view.HasEnded, Is.False);
-        Assert.That(view.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(1));
+        // No line of four can finish beside census row 1: its top row starts with a blank and its bottom row mixes two colours.
+        Assert.That(view.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(0));
         Assert.That(view.UnclaimedMissions.Count, Is.EqualTo(2));
         // The same human holds the device after an AI turn, so the hand stays visible.
         Assert.That(table.Snapshot.ConcealVisible, Is.False);
