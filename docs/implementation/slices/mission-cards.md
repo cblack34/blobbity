@@ -90,8 +90,15 @@ None.
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
 - **Outcome:** Secret missions and every claims row draw as portrait 5:7 cards: the shared shadow, edge, and cream face from `CardPainter`, a tinted-splat pattern on a 4×3 lattice in the upper part, and a best-fit caption ("Row", "Square", "L"). `MissionCardPainter` is the one routine; `AspectRatioFitter` keeps the sprite's own ratio in any slot. Wild cells draw their quarters unrotated, so they read as one split splat.
-- **Verification:** On `ea206de`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 on fresh Release DLLs. The `secrets` and `claim-row` captures were retaken after the review refactor; `board` was retaken earlier in the slice for the wild-cell fix. A fresh-context design review raised 2 [Issue] and 7 [Suggestion], with no blockers; both issues and most suggestions are applied (see the receipt).
-- **Deviations:** None from the plan.
-- **Unresolved gates or risks:** Cards are small in their current slots: secrets are height-limited with wide gaps, and claims cards are tiny on a phone. The turn panel and layout slice resizes the rows. Highlight tints still muddy the board (#44).
+- **Verification:** On `b531ed9`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 on fresh Release DLLs. The Unity run used a scratch copy of the project, because the maintainer's editor had the project open. Every capture is now rendered in phone portrait at 1179×2556 instead of 1920×1080 landscape. A fresh-context design review raised 2 [Issue] and 7 [Suggestion], with no blockers; both issues and most suggestions are applied (see the receipt).
+- **Deviations:** The maintainer's phone check found the cards wrong in portrait: oversized, uneven captions, and claim cards that looked cut off at the bottom. Captions are now one size on every card (13% of the card height) in their own band, and claim slots sit slightly above the strip's bottom. A portrait render did not reproduce a true clip, so the fix addresses the crowding. Captures moved to portrait, so they match the device.
+- **Unresolved gates or risks:** Portrait layout problems, all for the layout slice:
+  - The board is tiny in long games.
+  - There are large empty bands.
+  - The pending tile is tiny next to the secret cards.
+  - The quarter-turn and power buttons are badly proportioned.
+  - The pending and secrets areas are blank at game end.
+  - Claim cards are small.
+  - The conceal overlay is larger than the card area it covers. Highlight tints still muddy the board (#44).
 - **Refactor and handoff receipt:** In the PR body and on issue #48.
 - **Final PR:** see the PR linked from issue #48.
