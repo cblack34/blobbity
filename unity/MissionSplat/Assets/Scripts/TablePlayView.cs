@@ -134,11 +134,11 @@ internal sealed class TablePlayView
         var missions = snapshot.View.UnclaimedMissions;
         for (var i = 0; i < missions.Count; i++)
         {
-            var card = Ui.Image("Mission" + i, _secrets, Color.white);
+            var slot = Ui.Rect("Mission" + i, _secrets);
             var min = new Vector2(0.02f + (i * 0.48f), 0.02f);
             var max = new Vector2(0.46f + (i * 0.48f), 0.80f);
-            Ui.Anchored(card.rectTransform, min, max, Vector2.zero, Vector2.zero);
-            CellPainter.PaintMission(card.rectTransform, missions[i]);
+            Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
+            MissionCardPainter.Paint(slot, missions[i]);
         }
     }
 
@@ -250,10 +250,10 @@ internal sealed class TablePlayView
             label.text = SeatLabel(row.Seat);
             for (var m = 0; m < row.Missions.Count; m++)
             {
-                var card = Ui.Image("Claim" + m, group, Color.white);
+                var slot = Ui.Rect("Claim" + m, group);
                 var (cardMin, cardMax) = ClaimCardAnchors(m, row.Missions.Count);
-                Ui.Anchored(card.rectTransform, cardMin, cardMax, Vector2.zero, Vector2.zero);
-                CellPainter.PaintMission(card.rectTransform, row.Missions[m]);
+                Ui.Anchored(slot, cardMin, cardMax, Vector2.zero, Vector2.zero);
+                MissionCardPainter.Paint(slot, row.Missions[m]);
             }
         }
     }

@@ -17,6 +17,9 @@ internal static class Ui
     // A white 128 px rounded square, tinted by the caller.
     public static Sprite Card { get; } = LoadSprite("TileCard");
 
+    // A white 200 x 280 px rounded rectangle, 5:7 like a playing card.
+    public static Sprite MissionCard { get; } = LoadSprite("MissionCard");
+
     public static RectTransform Rect(string name, Transform parent)
     {
         var go = new GameObject(name, typeof(RectTransform));
