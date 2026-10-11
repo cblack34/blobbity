@@ -96,7 +96,7 @@ _This is strategic guidance, not a required sequence. The implementation agent s
 3. Unity composition and table view, bound to `LocalSession`.
 4. Desktop player build only if a laptop demo is requested.
 
-After the 2026-10-09 correction, with 1–3 shipped against the earlier reading: the corrected turn actions in Rules; the match/rules-engine split; the session, turn driver, and deck content in `App`; the power UI; then the completing device evidence.
+After the 2026-10-09 correction, with 1–3 shipped against the earlier reading: the corrected turn actions in Rules; the match/rules-engine split; the session, turn driver, and deck content in `App`; the power UI; then the completing device evidence. That order was delivered, and every slice is recorded under [`implementation/slices/`](implementation/slices/).
 
 ## Unity tooling
 

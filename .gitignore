@@ -582,6 +582,9 @@ ExportedObj/
 sysinfo.txt
 
 # Builds
+# Unity player output: the default iOS Build Profile folder and the recommended Builds/ folder.
+unity/MissionSplat/Build Profiles/*/Build/
+unity/MissionSplat/Builds/
 *.apk
 *.aab
 *.unitypackage

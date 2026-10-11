@@ -16,6 +16,34 @@ public class ScoringCellTests
         Assert.That(blocked.TileCount, Is.EqualTo(2));
     }
 
+    [TestCase("blank")]
+    [TestCase("rotate")]
+    [TestCase("stack")]
+    [TestCase("bounce")]
+    public void NonScoringSymbol_BlocksAnOtherwiseCompleteSquare(string symbol)
+    {
+        var start = Cards.BlankTile("start");
+        var control = PlaceFinish(MissionPattern.Square, start, SquareFinish(Cards.Red));
+        var blocked = PlaceFinish(MissionPattern.Square, start, SquareFinish(Cards.Symbol(symbol)));
+
+        Assert.That(See.Ids(control.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-pattern" }));
+        AssertNothingClaimed(blocked);
+    }
+
+    [TestCase("blank")]
+    [TestCase("rotate")]
+    [TestCase("stack")]
+    [TestCase("bounce")]
+    public void NonScoringSymbol_BlocksAnOtherwiseCompleteL(string symbol)
+    {
+        var start = Cards.Tile("start", Cards.Blank, Cards.Red, Cards.Blank, Cards.Blank);
+        var control = PlaceFinish(MissionPattern.L, start, LFinish(Cards.Red));
+        var blocked = PlaceFinish(MissionPattern.L, start, LFinish(Cards.Symbol(symbol)));
+
+        Assert.That(See.Ids(control.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-pattern" }));
+        AssertNothingClaimed(blocked);
+    }
+
     [Test]
     public void CallerSuppliedSymbol_DoesNotCompleteAPattern()
     {
@@ -126,6 +154,35 @@ public class ScoringCellTests
         Assert.That(wild?.TryGetColor(out _), Is.False);
         Assert.That(wild?.CountsAs(OrdinaryCatalog.Red), Is.True);
         Assert.That(wild?.CountsAs(OrdinaryCatalog.Blue), Is.True);
+    }
+
+    // Three red cells plus the given fourth: red completes the square, red completes the L, anything else leaves it one short.
+    private static Tile SquareFinish(Cell fourth) => Cards.Tile("finish", Cards.Red, Cards.Red, Cards.Red, fourth);
+
+    private static Tile LFinish(Cell fourth) => Cards.Tile("finish", Cards.Red, Cards.Red, Cards.Blank, fourth);
+
+    private static void AssertNothingClaimed(Game blocked)
+    {
+        Assert.That(blocked.Claims(Cards.Seat("a")), Is.Empty);
+        Assert.That(See.Ids(blocked.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-pattern", "a2" }));
+        Assert.That(blocked.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
+        Assert.That(blocked.TileCount, Is.EqualTo(2));
+    }
+
+    private static Game PlaceFinish(MissionPattern pattern, Tile start, Tile finish)
+    {
+        var game = RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            [
+                Cards.Mission("red-pattern", pattern, OrdinaryCatalog.Red),
+                Cards.Purple("a2"),
+                Cards.Purple("b1"),
+                Cards.Purple("b2"),
+                Cards.Purple("spare"),
+            ],
+            [start, finish]);
+        return See.Game(RepresentativeDeck.Play(game, 1, 0));
     }
 
     private static Game PlaceBlocker(

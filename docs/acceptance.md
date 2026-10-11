@@ -9,7 +9,7 @@ dotnet test rules/MissionSplat.Rules.sln --configuration Release
 dotnet test app/MissionSplat.App.sln --configuration Release
 ```
 
-Agent-run Unity CLI evidence (`unity test` results and play-mode captures that show the game advancing) is recorded in the completing PR. Device evidence stays human observation, also recorded in the PR: one pass-and-play game and one human-versus-AI game, each played to a win or to an agreed stop on a rules question returned to the user.
+Agent-run Unity CLI evidence is recorded in the completing PR: `unity test unity/MissionSplat --mode PlayMode`, run after the Release build above has copied the DLLs into the local package, and the play-mode captures in `unity/MissionSplat/Assets/Captures/` that show the game advancing. Device evidence stays human observation, also recorded in the PR: one pass-and-play game and one human-versus-AI game, each played to a win or to an agreed stop on a rules question returned to the user.
 
 ## Rules
 
