@@ -16,7 +16,7 @@ internal static class TilePainter
     // The card is inset so neighbours show a gap; the block itself stays whole so taps in the gap still reach the highlights drawn over it.
     public static void Paint(RectTransform block, string tileId, Func<int, int, Cell> cellAt, int quarterTurns)
     {
-        CardPainter.Paint(block, Ui.Card, CardInset, CardEdge);
+        CardPainter.Paint(block, Ui.Card, CardInset, CardEdge, block.sizeDelta.x);
 
         var cell = block.sizeDelta.x / 2f;
         for (var y = 0; y < 2; y++)

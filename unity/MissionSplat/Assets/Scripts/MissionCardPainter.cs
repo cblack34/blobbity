@@ -38,8 +38,16 @@ internal static class MissionCardPainter
         var fit = card.gameObject.AddComponent<AspectRatioFitter>();
         fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         fit.aspectRatio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
-        CardPainter.Paint(card, Ui.MissionCard, CardInset, CardEdge);
+        CardPainter.Paint(card, Ui.MissionCard, CardInset, CardEdge, FittedWidth(slot));
         PaintPattern(card, mission);
+    }
+
+    // The width the fitter will give the card inside slot, which sets how thick its edge line must be to stay visible.
+    private static float FittedWidth(RectTransform slot)
+    {
+        var ratio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
+        var width = Mathf.Min(slot.rect.width, slot.rect.height * ratio);
+        return width > 1f ? width : 100f;
     }
 
     private static void PaintPattern(RectTransform card, Mission mission)
