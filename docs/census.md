@@ -59,4 +59,4 @@ Cells are listed top row first, read left to right: top-left, top-right, bottom-
 
 ## Digital adjustment: doubled missions
 
-The digital deck doubles the twelve mission cards to 24: each color has two lines, two Ls, and two squares. This is a deliberate adjustment, not a reading of the photographs. It makes the mission deck unable to run out. A four-seat game needs at most 13 replacements before someone wins, and 16 cards remain after the deal. One hand can now hold identical cards, which the distinct-cells claim rule in `rules.md` covers. The 30 match tiles are unchanged.
+The digital deck doubles the twelve mission cards to 24: each color has two lines, two Ls, and two squares. This is a deliberate adjustment, not a reading of the photographs. It makes the mission deck unable to run out. A four-seat game deals 8 and leaves 16. Before anyone wins, three seats hold at most 3 claims each; the winning placement can claim both of the fourth seat's missions from 3, so a game draws at most 9 + 5 = 14 replacements. One hand can now hold identical cards, which the distinct-cells claim rule in `rules.md` covers. The 30 match tiles are unchanged.

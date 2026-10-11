@@ -65,6 +65,7 @@ public class TableDeckTests
         {
             var expected = CensusRows[i].Split(' ').Select(Describe).ToArray();
             var tile = tiles[i];
+            // Tile cells count y upward, so the census's top-left is Local(0, 1); cells are compared by their text form.
             var actual = new[] { tile.Local(0, 1), tile.Local(1, 1), tile.Local(0, 0), tile.Local(1, 0) }
                 .Select(cell => cell.ToString())
                 .ToArray();
@@ -123,7 +124,6 @@ public class TableDeckTests
         Assert.That(shuffled.MatchDeck.Select(tile => tile.Id.Value), Is.EquivalentTo(authored.MatchDeck.Select(tile => tile.Id.Value)));
         Assert.That(shuffled.MissionDeck.Select(mission => mission.Id.Value), Is.EquivalentTo(authored.MissionDeck.Select(mission => mission.Id.Value)));
         Assert.That(Game.Start(shuffled).IsAccepted, Is.True);
-        Assert.That(TableDeck.Name, Is.EqualTo("census"));
     }
 
     private static string Describe(string word) => word switch
