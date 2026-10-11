@@ -5,6 +5,8 @@ using MissionSplat.Rules;
 
 public static class TableDeck
 {
+    public const string Name = "census";
+
     public static GameSetup Ordinary(IReadOnlyList<SeatId> seats, SeatId firstSeat, int? shuffleSeed)
     {
         if (seats is null)

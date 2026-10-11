@@ -76,6 +76,12 @@ public class TableDeckTests
     }
 
     [Test]
+    public void TheShippedDeck_IsNamedCensus()
+    {
+        Assert.That(TableDeck.Name, Is.EqualTo("census"));
+    }
+
+    [Test]
     public void TheMissionDeck_HoldsTwoOfEveryColorAndShape()
     {
         var missions = TableDeck.Ordinary(Seats, Seats[0], null).MissionDeck;
