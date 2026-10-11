@@ -12,10 +12,11 @@ internal static class CellPainter
     {
         if (cell.IsWild)
         {
-            Quarter(parent, SplatPalette.Red, 0, 1, angleDegrees);
-            Quarter(parent, SplatPalette.Blue, 1, 1, angleDegrees);
-            Quarter(parent, SplatPalette.Green, 0, 0, angleDegrees);
-            Quarter(parent, SplatPalette.Purple, 1, 0, angleDegrees);
+            // Unturned: the four quarters are one splat, and turning each about its own centre would make a pinwheel.
+            Quarter(parent, SplatPalette.Red, 0, 1);
+            Quarter(parent, SplatPalette.Blue, 1, 1);
+            Quarter(parent, SplatPalette.Green, 0, 0);
+            Quarter(parent, SplatPalette.Purple, 1, 0);
             return;
         }
 
@@ -29,40 +30,6 @@ internal static class CellPainter
         {
             PaintSymbol(parent, symbol);
         }
-    }
-
-    public static void PaintMission(RectTransform parent, Mission mission)
-    {
-        var fill = Ui.Image("Fill", parent, Color.white);
-        Ui.Stretch(fill.rectTransform);
-        var color = SplatPalette.Of(mission.Color);
-        var lattice = Ui.Rect("Lattice", parent);
-        lattice.anchorMin = new Vector2(0.5f, 0.58f);
-        lattice.anchorMax = new Vector2(0.5f, 0.58f);
-        lattice.pivot = new Vector2(0.5f, 0.5f);
-        var side = Mathf.Min(parent.rect.width, parent.rect.height * 0.72f);
-        if (side <= 1f)
-        {
-            side = 88f;
-        }
-
-        lattice.sizeDelta = new Vector2(side, side);
-        switch (mission.Pattern)
-        {
-            case MissionPattern.Row:
-                SquareDots(lattice, color, new[] { (0, 1), (1, 1), (2, 1), (3, 1) }, 4, 3);
-                break;
-            case MissionPattern.Square:
-                SquareDots(lattice, color, new[] { (0, 1), (1, 1), (0, 0), (1, 0) }, 2, 2);
-                break;
-            default:
-                SquareDots(lattice, color, new[] { (0, 2), (0, 1), (0, 0), (1, 0) }, 2, 3);
-                break;
-        }
-
-        var caption = Ui.Label("Caption", parent, 16, SplatPalette.Ink, TextAnchor.LowerCenter);
-        Ui.Anchored(caption.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0.22f), Vector2.zero, Vector2.zero);
-        caption.text = PatternName(mission.Pattern);
     }
 
     private static void PaintSymbol(RectTransform parent, SymbolId symbol)
@@ -185,54 +152,42 @@ internal static class CellPainter
     }
 
     // One splat shown through a mask over a quarter of the cell. Every quarter holds the same full-cell splat, so the four line up into one.
-    private static void Quarter(RectTransform parent, Color color, int quarterX, int quarterY, float angleDegrees)
+    private static void Quarter(RectTransform parent, Color color, int quarterX, int quarterY)
     {
         var window = Ui.Rect("Quarter", parent);
         Ui.Anchored(window, new Vector2(quarterX * 0.5f, quarterY * 0.5f), new Vector2((quarterX + 1) * 0.5f, (quarterY + 1) * 0.5f), Vector2.zero, Vector2.zero);
         window.gameObject.AddComponent<RectMask2D>();
         // Anchors are relative to the quarter, which is half the cell, so the cell's extent is -quarter..2-quarter.
         var shift = new Vector2(quarterX, quarterY);
-        Splat(window, color, -shift, new Vector2(2f, 2f) - shift, angleDegrees);
+        Splat(window, color, -shift, new Vector2(2f, 2f) - shift, 0f);
     }
 
-    // Fills most of the area between min and max, which are anchors of the parent.
-    private static void Splat(RectTransform parent, Color color, Vector2 min, Vector2 max, float angleDegrees)
+    // Fills the area between min and max (anchors of the parent), less padding on each side as a fraction of it.
+    // A negative padding overfills, for small splats whose transparent spikes would otherwise look tiny.
+    internal static void Splat(RectTransform parent, Color color, Vector2 min, Vector2 max, float angleDegrees, float padding = 0.1f)
     {
         var image = Ui.Image("Splat", parent, color, Ui.Splat);
         image.preserveAspect = true;
         var span = max - min;
-        Ui.Anchored(image.rectTransform, min + (span * 0.1f), max - (span * 0.1f), Vector2.zero, Vector2.zero);
+        Ui.Anchored(image.rectTransform, min + (span * padding), max - (span * padding), Vector2.zero, Vector2.zero);
         image.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angleDegrees);
     }
 
-    private static void SquareDots(RectTransform lattice, Color color, (int x, int y)[] cells, int gridW, int gridH)
+    // A stable turn for a splat from a key of the caller's choosing: the same key turns the same way on every run
+    // (string.GetHashCode is not stable between runs).
+    internal static float SplatAngle(string key)
     {
-        var span = Mathf.Max(gridW, gridH);
-        var cell = lattice.sizeDelta.x / span;
-        var originX = (lattice.sizeDelta.x - (gridW * cell)) * 0.5f;
-        var originY = (lattice.sizeDelta.y - (gridH * cell)) * 0.5f;
-        var pad = cell * 0.12f;
-        for (var i = 0; i < cells.Length; i++)
+        unchecked
         {
-            var image = Ui.Image("Dot" + i, lattice, color, Ui.Circle);
-            image.preserveAspect = true;
-            var rect = image.rectTransform;
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.zero;
-            rect.pivot = Vector2.zero;
-            rect.sizeDelta = new Vector2(cell - pad, cell - pad);
-            rect.anchoredPosition = new Vector2(
-                originX + (cells[i].x * cell) + (pad * 0.5f),
-                originY + (cells[i].y * cell) + (pad * 0.5f));
+            var hash = 2166136261u;
+            foreach (var c in key)
+            {
+                hash = (hash ^ c) * 16777619u;
+            }
+
+            hash ^= hash >> 15;
+            return hash % 360u;
         }
     }
-
-    private static string PatternName(MissionPattern pattern) =>
-        pattern switch
-        {
-            MissionPattern.Row => "row",
-            MissionPattern.Square => "square",
-            _ => "L",
-        };
 }
 }
