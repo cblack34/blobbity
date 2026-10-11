@@ -36,6 +36,7 @@ Agent-run Unity CLI evidence (`unity test` results and play-mode captures that s
 
 ## Session
 
+- The shipped deck matches the census cell by cell: 30 match tiles in census order, and 24 mission cards with two of each color and shape. _Automated check:_ an app test compares every cell of every tile against the census rows written out in the test, and counts the missions by pattern and color.
 - WHEN two to four human seats alternate submitting actions on `LocalSession`, the seat marker changes and each can claim. _Automated check:_ scripted pass-and-play of at least one full round at three seats and at four seats.
 - WHEN a placement empties the draw deck, the table supplies the reshuffle order from its seed (in board order when it has none) and submits it without a human tap, and the snapshot carries a notice until the next human action; an automated seat's action does not clear it. _Automated check:_ a table case with a small named deck: the board holds one tile afterward, the seat, claims, and hands are unchanged, the notice is set, survives an automated seat's turn, and is cleared by the next human action; the same seed reshuffles into the same order; an automated seat plays on after a reshuffle; a deck and board holding one tile between them stop the table with a message.
 - WHEN the AI is asked for an action, the action is a legal placement, and the AI object's inputs do not include the other seats' mission ids. _Automated check:_ test double exposes only the public board and that AI hand.
@@ -56,7 +57,7 @@ Agent-run Unity CLI evidence (`unity test` results and play-mode captures that s
 
 ## Research and decision gates
 
-The base deck is [`census.md`](census.md). A fixture may use a smaller named deck. Uncorrected match-tile rows in that census still need a maintainer pass before they are encoded. Acceptance does not require the room service.
+The base deck is [`census.md`](census.md). A fixture may use a smaller named deck. The shipped deck is the census, with the mission cards doubled to 24 as `census.md` records. Acceptance does not require the room service.
 
 ## Deliberately excluded
 
