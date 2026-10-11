@@ -343,6 +343,48 @@ public class TableSessionPlayModeTests
         Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
     }
 
+    [Test]
+    public void SecretAndClaimedMissions_RenderAsPortraitCardsWithFourSplats()
+    {
+        var purple = Cell.Color(OrdinaryCatalog.Purple);
+        var table = BeginHumanTable(SetupFrom(
+            new[] { "a1", "a2", "b1", "b2", "r1", "r2", "r3", "r4" },
+            new Tile(new TileId("start"), purple, purple, purple, purple),
+            new Tile(new TileId("next"), purple, purple, purple, purple),
+            BlankTile("pad")));
+
+        // Secrets: the seat's two unclaimed missions, drawn in the secrets panel.
+        AssertMissionCards("Mission", 2);
+
+        // Placing the second purple tile beside the first finishes a purple row, so the seat claims both of its purple-row missions.
+        table.Tap(1, 0);
+        Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
+        Assert.That(table.Snapshot.View.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(2));
+
+        // Claims: the claimed missions are drawn in the claims row with the same painter.
+        AssertMissionCards("Claim", 2);
+    }
+
+    // Every live slot named prefix + index holds one 5:7 fit-in-parent Card whose pattern is four splats.
+    private void AssertMissionCards(string prefix, int expected)
+    {
+        var slots = _root.GetComponentsInChildren<RectTransform>(false)
+            .Where(rect => rect.name.StartsWith(prefix) && rect.name.Length > prefix.Length && char.IsDigit(rect.name[prefix.Length]))
+            .ToArray();
+        Assert.That(slots.Length, Is.EqualTo(expected), prefix + " slots");
+        foreach (var slot in slots)
+        {
+            var card = slot.Find("Card");
+            Assert.That(card, Is.Not.Null, slot.name + " has a Card");
+            var fit = card.GetComponent<AspectRatioFitter>();
+            Assert.That(fit, Is.Not.Null, slot.name + " card has a fitter");
+            Assert.That(fit.aspectMode, Is.EqualTo(AspectRatioFitter.AspectMode.FitInParent));
+            Assert.That(fit.aspectRatio, Is.EqualTo(5f / 7f).Within(0.01f));
+            var splats = card.GetComponentsInChildren<Image>(false).Where(image => image.name == "Splat").ToArray();
+            Assert.That(splats.Length, Is.EqualTo(4), slot.name + " splats");
+        }
+    }
+
     private TableSession BeginHumanTable(GameSetup setup)
     {
         _root = new GameObject("Table");
@@ -385,9 +427,13 @@ public class TableSessionPlayModeTests
 
     private static GameSetup SetupWith(Tile drawn) => SetupFrom(BlankTile("start"), drawn, BlankTile("pad"));
 
-    private static GameSetup SetupFrom(params Tile[] tiles)
+    private static GameSetup SetupFrom(params Tile[] tiles) =>
+        SetupFrom(new[] { "a1", "a2", "b1", "b2", "spare" }, tiles);
+
+    // A seat that claims draws a replacement, so a test that claims needs missions beyond the opening hands.
+    private static GameSetup SetupFrom(string[] missionIds, params Tile[] tiles)
     {
-        var missions = new[] { "a1", "a2", "b1", "b2", "spare" }
+        var missions = missionIds
             .Select(id => new Mission(new MissionId(id), MissionPattern.Row, OrdinaryCatalog.Purple))
             .ToArray();
         var seats = TableStart.PassAndPlayDraft().SeatsInTurnOrder();
