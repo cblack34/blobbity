@@ -5,8 +5,9 @@ using UnityEngine;
 
 internal static class CardPainter
 {
-    // The thinnest an edge or shadow offset may be, in canvas units, so small cards keep a visible edge line.
-    private const float MinimumLineUnits = 2.5f;
+    // The thinnest the edge line and the shadow drop may be, in canvas units, so small cards keep them when the window is scaled down.
+    private const float MinimumEdgeUnits = 3f;
+    private const float MinimumShadowUnits = 2f;
 
     // The shadow's drop as a fraction of the card's height.
     private const float ShadowDropFraction = 0.02f;
@@ -17,8 +18,8 @@ internal static class CardPainter
     public static void Paint(RectTransform block, Sprite sprite, float inset, float edge, float blockWidth)
     {
         var widthPerHeight = sprite.rect.width / sprite.rect.height;
-        var edgeUnits = Mathf.Max(edge * blockWidth, MinimumLineUnits);
-        var dropUnits = Mathf.Max(ShadowDropFraction * (blockWidth / widthPerHeight), MinimumLineUnits);
+        var edgeUnits = Mathf.Max(edge * blockWidth, MinimumEdgeUnits);
+        var dropUnits = Mathf.Max(ShadowDropFraction * (blockWidth / widthPerHeight), MinimumShadowUnits);
         PaintLayer(block, "Shadow", SplatPalette.CardShadow, sprite, inset, widthPerHeight, new Vector2(0f, -dropUnits), Vector2.zero);
         PaintLayer(block, "Edge", SplatPalette.CardEdge, sprite, inset, widthPerHeight, Vector2.zero, Vector2.zero);
         PaintLayer(block, "Face", SplatPalette.CardFace, sprite, inset, widthPerHeight, Vector2.zero, new Vector2(edgeUnits, edgeUnits));
