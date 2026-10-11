@@ -2,6 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
+using System.Collections.Generic;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -188,17 +189,17 @@ internal sealed class TablePlayView
         lattice.pivot = new Vector2(0.5f, 0.5f);
         lattice.sizeDelta = new Vector2(width * cellSize, height * cellSize);
 
-        foreach (var tile in view.Board.Tiles)
-        {
-            var back = Ui.Image("Tile" + tile.Id.Value, lattice, SplatPalette.Tile);
-            PlaceCell(back.rectTransform, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
-        }
-
+        var cells = new Dictionary<(int X, int Y), Cell>();
         foreach (var occupied in view.Board.Cells)
         {
-            var cellRect = Ui.Rect("Cell" + occupied.CellX + "_" + occupied.CellY, lattice);
-            PlaceCell(cellRect, occupied.CellX, occupied.CellY, 1, 1, minX, minY, cellSize, 0f, 0f);
-            CellPainter.Paint(cellRect, occupied.Value);
+            cells[(occupied.CellX, occupied.CellY)] = occupied.Value;
+        }
+
+        foreach (var tile in view.Board.Tiles)
+        {
+            var block = Ui.Rect("Tile" + tile.Id.Value, lattice);
+            Ui.PlaceCell(block, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
+            TilePainter.Paint(block, tile.Id.Value, (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)], 0);
         }
 
         if (snapshot.ConcealVisible)
@@ -225,7 +226,7 @@ internal sealed class TablePlayView
     private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, Color tint, int minX, int minY, float cellSize, Action onTap)
     {
         var button = Ui.Button(name, lattice, string.Empty, tint);
-        PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
+        Ui.PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
         button.onClick.AddListener(() => onTap());
         return button;
     }
@@ -329,61 +330,21 @@ internal sealed class TablePlayView
 
     private static void PaintTile(RectTransform parent, Tile tile, Vector2 min, Vector2 max, int quarterTurns)
     {
-        var frame = Ui.Image("Tile", parent, SplatPalette.Tile);
-        Ui.Anchored(frame.rectTransform, min, max, Vector2.zero, Vector2.zero);
+        var slot = Ui.Rect("Slot", parent);
+        Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
         Canvas.ForceUpdateCanvases();
-        var area = frame.rectTransform.rect;
-        var cell = Math.Min(area.width, area.height) * 0.42f;
-        if (cell <= 1f)
+        var side = Math.Min(slot.rect.width, slot.rect.height);
+        if (side <= 1f)
         {
-            cell = 36f;
+            side = 72f;
         }
 
-        var lattice = Ui.Rect("Lattice", frame.transform);
-        lattice.anchorMin = new Vector2(0.5f, 0.5f);
-        lattice.anchorMax = new Vector2(0.5f, 0.5f);
-        lattice.pivot = new Vector2(0.5f, 0.5f);
-        lattice.sizeDelta = new Vector2(cell * 2f, cell * 2f);
-        for (var y = 0; y < 2; y++)
-        {
-            for (var x = 0; x < 2; x++)
-            {
-                var cellRect = Ui.Rect("C" + x + y, lattice);
-                // Same clockwise map as Rules.Tile: (x, y) goes to (y, 1 - x).
-                var (turnedX, turnedY) = TurnClockwise(x, y, quarterTurns);
-                PlaceCell(cellRect, turnedX, turnedY, 1, 1, 0, 0, cell, 0f, 0f);
-                CellPainter.Paint(cellRect, tile.Local(x, y));
-            }
-        }
-    }
-
-    private static (int X, int Y) TurnClockwise(int x, int y, int quarterTurns) =>
-        quarterTurns switch
-        {
-            0 => (x, y),
-            1 => (y, 1 - x),
-            2 => (1 - x, 1 - y),
-            3 => (1 - y, x),
-            _ => throw new ArgumentOutOfRangeException(nameof(quarterTurns), quarterTurns, "Quarter-turns are 0, 1, 2, or 3."),
-        };
-
-    private static void PlaceCell(
-        RectTransform rect,
-        int cellX,
-        int cellY,
-        int cellsWide,
-        int cellsHigh,
-        int minX,
-        int minY,
-        float cell,
-        float originX,
-        float originY)
-    {
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.zero;
-        rect.pivot = Vector2.zero;
-        rect.sizeDelta = new Vector2(cellsWide * cell, cellsHigh * cell);
-        rect.anchoredPosition = new Vector2(originX + ((cellX - minX) * cell), originY + ((cellY - minY) * cell));
+        var block = Ui.Rect("Tile", slot);
+        block.anchorMin = new Vector2(0.5f, 0.5f);
+        block.anchorMax = new Vector2(0.5f, 0.5f);
+        block.pivot = new Vector2(0.5f, 0.5f);
+        block.sizeDelta = new Vector2(side, side);
+        TilePainter.Paint(block, tile.Id.Value, tile.Local, quarterTurns);
     }
 }
 }

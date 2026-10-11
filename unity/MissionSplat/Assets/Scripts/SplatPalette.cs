@@ -10,14 +10,14 @@ public static class SplatPalette
     public static readonly Color Cream = Hex("f7f1e4");
     public static readonly Color Ink = Hex("1c3348");
     public static readonly Color Muted = Hex("4a5b6b");
-    public static readonly Color Tile = Hex("f3d19c");
-    public static readonly Color TileEdge = Hex("8d6e43");
+    public static readonly Color CardFace = Hex("f5ead2");
+    public static readonly Color CardShadow = new Color(0f, 0f, 0f, 0.25f);
+    public static readonly Color CardEdge = Hex("8d6e43");
     public static readonly Color Red = Hex("e03131");
     public static readonly Color Blue = Hex("1c7ed6");
     public static readonly Color Green = Hex("2f9e44");
     public static readonly Color Purple = Hex("9c36b5");
     public static readonly Color Gray = Hex("adb5bd");
-    public static readonly Color BlankFill = Hex("f8f9fa");
     public static readonly Color Highlight = new Color(0.184f, 0.620f, 0.267f, 0.42f);
     public static readonly Color StackHighlight = new Color(0.612f, 0.212f, 0.710f, 0.45f);
     public static readonly Color TargetHighlight = new Color(0.910f, 0.349f, 0.047f, 0.5f);

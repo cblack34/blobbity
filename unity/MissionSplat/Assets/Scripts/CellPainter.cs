@@ -7,20 +7,21 @@ using UnityEngine.UI;
 
 internal static class CellPainter
 {
-    public static void Paint(RectTransform parent, Cell cell)
+    // The splat is drawn turned by angleDegrees, so neighbouring cells do not look stamped.
+    public static void Paint(RectTransform parent, Cell cell, float angleDegrees)
     {
         if (cell.IsWild)
         {
-            Quarter(parent, SplatPalette.Red, new Vector2(0f, 0.5f), new Vector2(0.5f, 1f));
-            Quarter(parent, SplatPalette.Blue, new Vector2(0.5f, 0.5f), new Vector2(1f, 1f));
-            Quarter(parent, SplatPalette.Green, new Vector2(0f, 0f), new Vector2(0.5f, 0.5f));
-            Quarter(parent, SplatPalette.Purple, new Vector2(0.5f, 0f), new Vector2(1f, 0.5f));
+            Quarter(parent, SplatPalette.Red, 0, 1, angleDegrees);
+            Quarter(parent, SplatPalette.Blue, 1, 1, angleDegrees);
+            Quarter(parent, SplatPalette.Green, 0, 0, angleDegrees);
+            Quarter(parent, SplatPalette.Purple, 1, 0, angleDegrees);
             return;
         }
 
         if (cell.TryGetColor(out var color))
         {
-            Dot(parent, SplatPalette.Of(color));
+            Splat(parent, SplatPalette.Of(color), Vector2.zero, Vector2.one, angleDegrees);
             return;
         }
 
@@ -66,12 +67,13 @@ internal static class CellPainter
 
     private static void PaintSymbol(RectTransform parent, SymbolId symbol)
     {
-        var fill = symbol.Value == OrdinaryCatalog.Blank.Value ? SplatPalette.BlankFill : SplatPalette.Gray;
-        Dot(parent, fill);
+        // A blank cell draws nothing: a pale dot reads as a hole on the cream card.
         if (symbol.Value == OrdinaryCatalog.Blank.Value)
         {
             return;
         }
+
+        Dot(parent, SplatPalette.Gray);
 
         if (symbol.Value == OrdinaryCatalog.Rotate.Value)
         {
@@ -182,10 +184,25 @@ internal static class CellPainter
         Ui.Anchored(image.rectTransform, new Vector2(0.12f, 0.12f), new Vector2(0.88f, 0.88f), Vector2.zero, Vector2.zero);
     }
 
-    private static void Quarter(RectTransform parent, Color color, Vector2 min, Vector2 max)
+    // One splat shown through a mask over a quarter of the cell. Every quarter holds the same full-cell splat, so the four line up into one.
+    private static void Quarter(RectTransform parent, Color color, int quarterX, int quarterY, float angleDegrees)
     {
-        var image = Ui.Image("Quarter", parent, color);
-        Ui.Anchored(image.rectTransform, min, max, Vector2.zero, Vector2.zero);
+        var window = Ui.Rect("Quarter", parent);
+        Ui.Anchored(window, new Vector2(quarterX * 0.5f, quarterY * 0.5f), new Vector2((quarterX + 1) * 0.5f, (quarterY + 1) * 0.5f), Vector2.zero, Vector2.zero);
+        window.gameObject.AddComponent<RectMask2D>();
+        // Anchors are relative to the quarter, which is half the cell, so the cell's extent is -quarter..2-quarter.
+        var shift = new Vector2(quarterX, quarterY);
+        Splat(window, color, -shift, new Vector2(2f, 2f) - shift, angleDegrees);
+    }
+
+    // Fills most of the area between min and max, which are anchors of the parent.
+    private static void Splat(RectTransform parent, Color color, Vector2 min, Vector2 max, float angleDegrees)
+    {
+        var image = Ui.Image("Splat", parent, color, Ui.Splat);
+        image.preserveAspect = true;
+        var span = max - min;
+        Ui.Anchored(image.rectTransform, min + (span * 0.1f), max - (span * 0.1f), Vector2.zero, Vector2.zero);
+        image.rectTransform.localRotation = Quaternion.Euler(0f, 0f, angleDegrees);
     }
 
     private static void SquareDots(RectTransform lattice, Color color, (int x, int y)[] cells, int gridW, int gridH)

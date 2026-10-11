@@ -83,6 +83,13 @@ public class TableSessionPlayModeTests
         Assert.That(before.Tiles.Count, Is.EqualTo(1));
         Assert.That(before.Cells.All(cell => cell.Value.Equals(Cell.Symbol(OrdinaryCatalog.Blank))), Is.True);
 
+        // The card is inset, but a tap in the gap between cards must still land, so the highlight covers the tile's whole 2×2 block.
+        var highlight = FindButton("Highlight0_0").GetComponent<RectTransform>();
+        var block = _root.GetComponentsInChildren<RectTransform>(false).First(rect => rect.name == "Tile" + before.Tiles[0].Id.Value);
+        Assert.That(highlight.parent, Is.SameAs(block.parent));
+        Assert.That(highlight.anchoredPosition, Is.EqualTo(block.anchoredPosition));
+        Assert.That(highlight.sizeDelta, Is.EqualTo(block.sizeDelta));
+
         FindButton("Highlight0_0").onClick.Invoke();
 
         var after = table.Snapshot.View.Board;

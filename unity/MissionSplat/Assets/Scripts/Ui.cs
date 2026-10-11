@@ -12,6 +12,11 @@ internal static class Ui
 
     public static Sprite Circle { get; } = CircleSprite(64);
 
+    public static Sprite Splat { get; } = LoadSprite("Splat");
+
+    // A white 128 px rounded square, tinted by the caller.
+    public static Sprite Card { get; } = LoadSprite("TileCard");
+
     public static RectTransform Rect(string name, Transform parent)
     {
         var go = new GameObject(name, typeof(RectTransform));
@@ -75,6 +80,25 @@ internal static class Ui
         rect.offsetMax = offsetMax;
     }
 
+    public static void PlaceCell(
+        RectTransform rect,
+        int cellX,
+        int cellY,
+        int cellsWide,
+        int cellsHigh,
+        int minX,
+        int minY,
+        float cell,
+        float originX,
+        float originY)
+    {
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.zero;
+        rect.pivot = Vector2.zero;
+        rect.sizeDelta = new Vector2(cellsWide * cell, cellsHigh * cell);
+        rect.anchoredPosition = new Vector2(originX + ((cellX - minX) * cell), originY + ((cellY - minY) * cell));
+    }
+
     public static void Clear(Transform parent, int keepLeading = 0)
     {
         for (var i = parent.childCount - 1; i >= keepLeading; i--)
@@ -95,6 +119,17 @@ internal static class Ui
         }
 
         return Font.CreateDynamicFontFromOSFont("Helvetica", 16);
+    }
+
+    private static Sprite LoadSprite(string name)
+    {
+        var sprite = Resources.Load<Sprite>(name);
+        if (sprite == null)
+        {
+            throw new System.InvalidOperationException("Missing sprite Resources/" + name + ". Run art/export.sh and import it as a Sprite.");
+        }
+
+        return sprite;
     }
 
     private static Sprite WhitePixel()
