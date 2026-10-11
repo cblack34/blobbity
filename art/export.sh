@@ -10,3 +10,4 @@ grep -q 'fill="#000"' "$here/splat.svg" || { echo 'art/splat.svg has no fill="#0
 # The splat source is black; export it white so a tint gives the exact colour.
 sed 's/fill="#000"/fill="#fff"/' "$here/splat.svg" | rsvg-convert -w 256 -h 244 -o "$out/Splat.png"
 rsvg-convert -w 128 -h 128 -o "$out/TileCard.png" "$here/tile-card.svg"
+rsvg-convert -w 200 -h 280 -o "$out/MissionCard.png" "$here/mission-card.svg"
