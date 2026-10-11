@@ -16,8 +16,11 @@ internal static class MissionCardPainter
     private const int LatticeWidth = 4;
     private const int LatticeHeight = 3;
 
-    // Splats overfill their cell by a tenth on each side, because their transparent spikes make them look small otherwise.
-    private const float SplatOverfill = -0.1f;
+    // The caption's font size as a fraction of the card's height, so every card reads at the same relative size.
+    private const float CaptionHeightFraction = 0.13f;
+
+    // Splats overfill their cell by a twentieth on each side, because their transparent spikes make them look small otherwise.
+    private const float SplatOverfill = -0.05f;
 
     // Each pattern's caption and its lattice cells (x right, y up), centred on the 4 x 3 lattice.
     private static (string Caption, (float X, float Y)[] Cells) Pattern(MissionPattern pattern) =>
@@ -40,14 +43,22 @@ internal static class MissionCardPainter
         fit.aspectRatio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
         CardPainter.Paint(card, Ui.MissionCard, CardInset, CardEdge);
         PaintPattern(card, mission);
-        PaintCaption(card, mission);
+        PaintCaption(card, mission, FittedHeight(slot));
+    }
+
+    // The height the fitter will give the card inside slot: the slot's own, or less when the slot is too wide for 5:7.
+    private static float FittedHeight(RectTransform slot)
+    {
+        var ratio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
+        var height = Mathf.Min(slot.rect.height, slot.rect.width / ratio);
+        return height > 1f ? height : 100f;
     }
 
     private static void PaintPattern(RectTransform card, Mission mission)
     {
         // The lattice fits its own ratio inside the upper part of the face, so the splats stay round at any card size.
         var area = Ui.Rect("Pattern", card);
-        Ui.Anchored(area, new Vector2(0.06f, 0.33f), new Vector2(0.94f, 0.93f), Vector2.zero, Vector2.zero);
+        Ui.Anchored(area, new Vector2(0.10f, 0.22f), new Vector2(0.90f, 0.96f), Vector2.zero, Vector2.zero);
         var lattice = Ui.Rect("Lattice", area);
         Ui.Stretch(lattice);
         var latticeFit = lattice.gameObject.AddComponent<AspectRatioFitter>();
@@ -65,16 +76,11 @@ internal static class MissionCardPainter
         }
     }
 
-    private static void PaintCaption(RectTransform card, Mission mission)
+    private static void PaintCaption(RectTransform card, Mission mission, float cardHeight)
     {
-        var caption = Ui.Label("Caption", card, 16, SplatPalette.Ink, TextAnchor.MiddleCenter);
-        Ui.Anchored(caption.rectTransform, new Vector2(0.12f, 0.05f), new Vector2(0.88f, 0.29f), Vector2.zero, Vector2.zero);
-        // Best fit needs the text to wrap and truncate, so it scales to the card instead of overflowing it.
-        caption.horizontalOverflow = HorizontalWrapMode.Wrap;
-        caption.verticalOverflow = VerticalWrapMode.Truncate;
-        caption.resizeTextForBestFit = true;
-        caption.resizeTextMinSize = 6;
-        caption.resizeTextMaxSize = 60;
+        var caption = Ui.Label("Caption", card, Mathf.RoundToInt(cardHeight * CaptionHeightFraction), SplatPalette.Ink, TextAnchor.MiddleCenter);
+        // The band is taller than the text so the caption sits clear of the card's bottom edge.
+        Ui.Anchored(caption.rectTransform, new Vector2(0.04f, 0.06f), new Vector2(0.96f, 0.22f), Vector2.zero, Vector2.zero);
         caption.text = Pattern(mission.Pattern).Caption;
     }
 }

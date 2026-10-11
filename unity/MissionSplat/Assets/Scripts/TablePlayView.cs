@@ -325,7 +325,7 @@ internal sealed class TablePlayView
         const float gap = 0.02f;
         var width = (1f - (2f * margin) - ((slots - 1) * gap)) / slots;
         var left = margin + (index * (width + gap));
-        return (new Vector2(left, 0.02f), new Vector2(left + width, 0.70f));
+        return (new Vector2(left, 0.06f), new Vector2(left + width, 0.74f));
     }
 
     private static void PaintTile(RectTransform parent, Tile tile, Vector2 min, Vector2 max, int quarterTurns)
