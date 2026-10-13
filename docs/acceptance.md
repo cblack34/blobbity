@@ -45,7 +45,7 @@ Agent-run Unity CLI evidence is recorded in the completing PR: `unity test unity
 
 ## Presentation
 
-- The table shows the board, the current seat's secret missions, and every seat's claim row. _Human evidence:_ screenshot or play-mode capture in the completing PR.
+- The table shows the board, the current seat's secret missions, and every seat's score (claims toward the win). Any seat's claimed missions can be opened from its score. _Human evidence:_ screenshot or play-mode capture in the completing PR.
 - WHEN the turn passes between human seats on one device, the secret missions are hidden until the incoming seat confirms. _Human evidence:_ observed in the 3-seat pass-and-play game.
 - Legal orthogonal neighbors highlight before a placement. Corner-only slots do not. _Human evidence:_ the same play-mode capture.
 - Claimed missions render in a row that is not part of the board lattice. _Human evidence:_ the same play-mode capture.

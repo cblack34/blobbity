@@ -91,7 +91,7 @@ TURN DRIVER  (lives in App; identical for any GUI)
                      render(model(session.view(seat))); wait for GUI submit(seat, action)
 
 GUI  (Unity today, anything tomorrow)
-  on render model: draw board, hand, claim rows, drawn tile; highlight legalPlacements(chosen turns) and legalTargets
+  on render model: draw board, hand, each seat's score, drawn tile; show a seat's claims when its score is tapped; highlight legalPlacements(chosen turns) and legalTargets
   on tap:          build the action, submit it — never compute legality
 
 ONLINE LATER
