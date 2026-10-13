@@ -36,8 +36,8 @@ internal sealed class BoardPanel
         _viewport = viewport;
         // The viewport clips what scrolls out of it.
         viewport.gameObject.AddComponent<RectMask2D>();
-        // The fill takes raycasts so a drag that starts on empty board scrolls it.
-        var fill = Ui.Image("BoardFill", viewport, new Color(1f, 1f, 1f, 0.35f), Ui.Rounded);
+        // The fill is clear, so the background shows through, but it takes raycasts so a drag that starts on empty board scrolls it.
+        var fill = Ui.Image("BoardFill", viewport, Color.clear, Ui.Rounded);
         Ui.Stretch(fill.rectTransform);
         fill.raycastTarget = true;
         _scroll = viewport.gameObject.AddComponent<ScrollRect>();
@@ -143,14 +143,15 @@ internal sealed class BoardPanel
         var targetsLive = !RotateAmount.IsPending(snapshot);
         foreach (var target in snapshot.SelectedTargets)
         {
-            var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, SplatPalette.TargetHighlight, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
+            var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, Ui.TileRing, SplatPalette.TargetRing, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
             button.interactable = targetsLive;
         }
 
         foreach (var highlight in snapshot.LegalPlacements)
         {
-            var tint = highlight.Kind == PlacementKind.OnTop ? SplatPalette.StackHighlight : SplatPalette.Highlight;
-            AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, tint, minX, minY, cellSize, () => PlacementTapped?.Invoke(highlight.TileX, highlight.TileY));
+            // A stack target is a tile to cover, so it gets a ring around the tile; any other placement is an empty spot to fill.
+            var onTop = highlight.Kind == PlacementKind.OnTop;
+            AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, onTop ? Ui.TileRing : Ui.LegalSpot, onTop ? SplatPalette.StackRing : Color.white, minX, minY, cellSize, () => PlacementTapped?.Invoke(highlight.TileX, highlight.TileY));
         }
     }
 
@@ -178,9 +179,9 @@ internal sealed class BoardPanel
         return new Vector2(Mathf.Clamp(wanted.x, -slack.x, slack.x), Mathf.Clamp(wanted.y, -slack.y, slack.y));
     }
 
-    private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, Color tint, int minX, int minY, float cellSize, Action onTap)
+    private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, Sprite sprite, Color tint, int minX, int minY, float cellSize, Action onTap)
     {
-        var button = Ui.Button(name, lattice, string.Empty, tint);
+        var button = Ui.Tappable(Ui.Image(name, lattice, tint, sprite));
         Ui.PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
         button.onClick.AddListener(() => onTap());
         return button;

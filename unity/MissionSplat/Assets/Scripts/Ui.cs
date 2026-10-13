@@ -4,27 +4,50 @@ namespace MissionSplat.Player
 using UnityEngine;
 using UnityEngine.UI;
 
+// Baloo 2 in the three weights the player uses: body text Regular, names SemiBold, headings and buttons ExtraBold.
+internal enum FontWeight
+{
+    Regular,
+    SemiBold,
+    ExtraBold,
+}
+
 internal static class Ui
 {
     // The canvas is laid out this many units wide on any screen (it matches width), so sizes in units are the same on every phone.
     public const float ReferenceWidthUnits = 1080f;
 
-    public static Font Font { get; } = LoadFont();
+    // A button's rim thickness and how far its hard shadow reaches down and right, in canvas units.
+    private const float ButtonOutlineUnits = 5f;
+    private const float ButtonDropUnits = 8f;
+
+    private static readonly Font[] Fonts = { LoadFont("Baloo2-Regular"), LoadFont("Baloo2-SemiBold"), LoadFont("Baloo2-ExtraBold") };
 
     public static Sprite Pixel { get; } = WhitePixel();
 
     public static Sprite Circle { get; } = CircleSprite(256);
 
-    // A white rounded rectangle that keeps its corner radius at any size (nine-sliced), for chips, boxes and panels.
-    public static Sprite Rounded { get; } = RoundedSprite(128, 40);
+    // A white rounded rectangle that keeps its corner radius at any size (nine-sliced), for buttons, boxes and panels.
+    public static Sprite Rounded { get; } = RoundedSprite(128, 52);
 
     public static Sprite Splat { get; } = LoadSprite("Splat");
 
-    // A white 128 px rounded square, tinted by the caller.
+    // A white rounded square, tinted by the caller.
     public static Sprite Card { get; } = LoadSprite("TileCard");
 
-    // A white 200 x 280 px rounded rectangle, 5:7 like a playing card.
+    // A white rounded rectangle, 5:7 like a playing card.
     public static Sprite MissionCard { get; } = LoadSprite("MissionCard");
+
+    // A dashed rounded square with a faint plus, its colours baked in: a place the drawn tile may go.
+    public static Sprite LegalSpot { get; } = LoadSprite("LegalSpot");
+
+    // A white rounded-square ring that hugs a tile card from outside, tinted by the caller.
+    public static Sprite TileRing { get; } = LoadSprite("TileRing");
+
+    // The tray's wavy top edge, white below an ink line, to stretch across the screen.
+    public static Sprite TrayWave { get; } = LoadSprite("TrayWave");
+
+    public static Font FontOf(FontWeight weight) => Fonts[(int)weight];
 
     public static RectTransform Rect(string name, Transform parent)
     {
@@ -45,11 +68,11 @@ internal static class Ui
         return image;
     }
 
-    public static Text Label(string name, Transform parent, int size, Color color, TextAnchor align)
+    public static Text Label(string name, Transform parent, int size, Color color, TextAnchor align, FontWeight weight = FontWeight.Regular)
     {
         var rect = Rect(name, parent);
         var text = rect.gameObject.AddComponent<Text>();
-        text.font = Font;
+        text.font = FontOf(weight);
         text.fontSize = size;
         text.color = color;
         text.alignment = align;
@@ -59,11 +82,18 @@ internal static class Ui
         return text;
     }
 
-    public static Button Button(string name, Transform parent, string caption, Color fill, Sprite sprite = null, int fontSize = 32)
+    // A chunky button: a hard ink shadow, an ink rim, a face in fill, and the caption in ink. Placing the returned button's
+    // RectTransform places all of it, shadow included, and the whole rect takes the tap. sprite shapes it (rounded by default).
+    public static Button Button(string name, Transform parent, string caption, Color fill, Sprite sprite = null, int fontSize = 36)
     {
-        var image = Image(name, parent, fill, sprite);
-        var button = Tappable(image);
-        var label = Label("Label", image.transform, fontSize, Color.white, TextAnchor.MiddleCenter);
+        var shape = sprite != null ? sprite : Rounded;
+        var hit = Image(name, parent, Color.clear);
+        var button = Tappable(hit);
+        var shadow = Image("Shadow", hit.transform, SplatPalette.Ink, shape);
+        Stretch(shadow.rectTransform);
+        var body = Outlined("Body", hit.transform, SplatPalette.Ink, fill, ButtonOutlineUnits, shape);
+        Anchored(body.rectTransform, Vector2.zero, Vector2.one, new Vector2(0f, ButtonDropUnits), new Vector2(-ButtonDropUnits, 0f));
+        var label = Label("Label", body.transform.Find("Face"), fontSize, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
         Stretch(label.rectTransform);
         label.text = caption;
         return button;
@@ -81,11 +111,12 @@ internal static class Ui
         return button;
     }
 
-    // A rounded box in the edge colour with a rounded face inset by outlineUnits; returns the edge, the face is its child "Face".
-    public static Image Outlined(string name, Transform parent, Color edge, Color face, float outlineUnits)
+    // A box in the edge colour with a face inset by outlineUnits, both in sprite (rounded by default); returns the edge, the face is its child "Face".
+    public static Image Outlined(string name, Transform parent, Color edge, Color face, float outlineUnits, Sprite sprite = null)
     {
-        var edgeImage = Image(name, parent, edge, Rounded);
-        var faceImage = Image("Face", edgeImage.transform, face, Rounded);
+        var shape = sprite != null ? sprite : Rounded;
+        var edgeImage = Image(name, parent, edge, shape);
+        var faceImage = Image("Face", edgeImage.transform, face, shape);
         Anchored(faceImage.rectTransform, Vector2.zero, Vector2.one, new Vector2(outlineUnits, outlineUnits), new Vector2(-outlineUnits, -outlineUnits));
         return edgeImage;
     }
@@ -136,15 +167,15 @@ internal static class Ui
         }
     }
 
-    private static Font LoadFont()
+    private static Font LoadFont(string name)
     {
-        var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (font != null)
+        var font = Resources.Load<Font>("Fonts/" + name);
+        if (font == null)
         {
-            return font;
+            throw new System.InvalidOperationException("Missing font Resources/Fonts/" + name + ". Run art/fonts/instance.py and import the files.");
         }
 
-        return Font.CreateDynamicFontFromOSFont("Helvetica", 16);
+        return font;
     }
 
     private static Sprite LoadSprite(string name)

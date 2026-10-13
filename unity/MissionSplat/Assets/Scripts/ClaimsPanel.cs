@@ -25,7 +25,7 @@ internal sealed class ClaimsPanel
     public void Show(int seatIndex, SeatClaims claims)
     {
         Ui.Clear(_root);
-        var dim = Ui.Button("Dim", _root, string.Empty, SplatPalette.Overlay);
+        var dim = Ui.Tappable(Ui.Image("Dim", _root, SplatPalette.Overlay));
         Ui.Stretch(dim.GetComponent<RectTransform>());
         dim.onClick.AddListener(Hide);
 
@@ -35,8 +35,7 @@ internal sealed class ClaimsPanel
         var critterSlot = Ui.Rect("CritterSlot", edge.transform);
         Ui.Anchored(critterSlot, new Vector2(0.04f, 0.74f), new Vector2(0.16f, 0.97f), Vector2.zero, Vector2.zero);
         CritterPainter.PaintFitted(critterSlot, seatIndex);
-        var title = Ui.Label("Title", edge.transform, 52, SplatPalette.Ink, TextAnchor.MiddleLeft);
-        title.fontStyle = FontStyle.Bold;
+        var title = Ui.Label("Title", edge.transform, 52, SplatPalette.Ink, TextAnchor.MiddleLeft, FontWeight.ExtraBold);
         Ui.Anchored(title.rectTransform, new Vector2(0.18f, 0.76f), new Vector2(0.95f, 0.96f), Vector2.zero, Vector2.zero);
         title.text = Seats.NameOf(claims.Seat) + "\u2019s claims";
 

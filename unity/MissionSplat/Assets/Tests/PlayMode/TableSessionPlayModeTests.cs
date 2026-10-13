@@ -172,6 +172,47 @@ public class TableSessionPlayModeTests
     }
 
     [Test]
+    public void TheBackgroundArtIsDecorationOnly_NothingInItTakesATap()
+    {
+        _root = new GameObject("Table");
+        _root.AddComponent<TableSession>();
+
+        var art = FindRect("Background").GetComponentsInChildren<Image>(true);
+        Assert.That(art.Length, Is.GreaterThan(5), "the background paints splats and drips");
+        Assert.That(art.Any(image => image.raycastTarget), Is.False);
+    }
+
+    [Test]
+    public void StackAndTargetOutlines_AndLegalSpots_StillTakeTheTap()
+    {
+        var table = BeginHumanTable(RotateSetup());
+        Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
+        Assert.That(LiveButtons("Highlight").All(button => button.GetComponent<Image>().raycastTarget), Is.True, "a legal spot takes taps over its whole block");
+
+        LiveButton("PowerRotate").onClick.Invoke();
+        LiveButton("Spin").onClick.Invoke();
+
+        var target = LiveButton("Target0_0");
+        Assert.That(target.GetComponent<Image>().raycastTarget, Is.True, "a ring takes taps inside it too");
+        Assert.That(target.GetComponent<Image>().color, Is.EqualTo(SplatPalette.TargetRing));
+        Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
+    }
+
+    [Test]
+    public void SeatEntriesAreSizedToContentAndSpacedEvenly_ForTwoAndThreeSeats()
+    {
+        _root = new GameObject("Table");
+        var table = _root.AddComponent<TableSession>();
+        table.Begin(new TableStart(3, new[] { false, false, false }, 0, false));
+
+        var entries = new[] { "Seat1", "Seat2", "Seat3" }.Select(name => FindRect(name)).ToArray();
+        var centres = entries.Select(entry => entry.anchorMin.x).ToArray();
+        Assert.That(entries.All(entry => entry.anchorMin.x == entry.anchorMax.x), "an entry hugs its share's middle, not the share's width");
+        Assert.That(centres[1] - centres[0], Is.EqualTo(centres[2] - centres[1]).Within(0.0001f));
+        Assert.That(entries.Select(entry => entry.sizeDelta.x).Distinct().Count(), Is.EqualTo(1));
+    }
+
+    [Test]
     public void StatusStopTextWrapsInsideItsRect()
     {
         _root = new GameObject("Table");
@@ -590,7 +631,7 @@ public class TableSessionPlayModeTests
         var blank = Cell.Symbol(OrdinaryCatalog.Blank);
         var table = BeginHumanTable(SetupWith(new Tile(new TileId("twice"), bounce, bounce, blank, blank)));
         Assert.That(LiveButton("PowerBounce").interactable, Is.True);
-        Assert.That(LiveButton("PowerBounce").GetComponent<Image>().color, Is.EqualTo(SplatPalette.Muted));
+        Assert.That(ChipFace("PowerBounce"), Is.EqualTo(SplatPalette.BounceBadge));
 
         // Bouncing the only tile empties the board; the second bounce cell then has no tile to act on.
         table.SelectPower(OrdinaryCatalog.Bounce);
@@ -602,8 +643,11 @@ public class TableSessionPlayModeTests
         Assert.That(table.Snapshot.SelectedPower, Is.Null);
         Assert.That(LiveButton("PowerBounce"), Is.Not.Null, "one use is still left");
         Assert.That(LiveButton("PowerBounce").interactable, Is.False);
-        Assert.That(LiveButton("PowerBounce").GetComponent<Image>().color, Is.EqualTo(SplatPalette.Gray));
+        Assert.That(ChipFace("PowerBounce"), Is.EqualTo(SplatPalette.Gray));
     }
+
+    // The colour of a chip's face: its power's badge colour while it can be used, gray when it cannot.
+    private Color ChipFace(string chip) => LiveButton(chip).transform.Find("Body/Face").GetComponent<Image>().color;
 
     private TableSession BeginLongRowTable()
     {

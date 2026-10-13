@@ -14,12 +14,21 @@ internal sealed class TurnTray
 {
     public const float HeightUnits = 560f;
 
-    private const float EdgeUnits = 6f;
+    // The wavy top edge rises above the tray's white body, so the board stops this far above the tray to keep clear of it.
+    public const float WaveUnits = 56f;
+    // The wave sinks into the tray's body by this much, so no seam shows between them.
+    private const float WaveOverlapUnits = 2f;
+
+    public const float ReachUnits = HeightUnits + WaveUnits;
+
+    // The secret missions lie a little askew, one each way, like cards dealt on a table.
+    private const float MissionTiltDegrees = 4f;
 
     // The drawn tile's side before the first layout has given its slot a size.
     private const float FallbackTileUnits = 72f;
     private const float ChipUnits = 100f;
-    private const float ChipGapUnits = 20f;
+    private const float ChipGapUnits = 28f;
+    private const float SelectedRingUnits = 9f;
     private const float PlaceInsteadUnits = 300f;
     private const float TurnArrowUnits = 70f;
 
@@ -36,8 +45,9 @@ internal sealed class TurnTray
     {
         var tray = Ui.Image("Tray", play, Color.white);
         Ui.Anchored(tray.rectTransform, Vector2.zero, new Vector2(1f, 0f), Vector2.zero, new Vector2(0f, HeightUnits));
-        var edge = Ui.Image("Edge", tray.transform, SplatPalette.Ink);
-        Ui.Anchored(edge.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, -EdgeUnits), Vector2.zero);
+        var wave = Ui.Image("Wave", tray.transform, Color.white, Ui.TrayWave);
+        // Sits on the tray's top edge, reaching up from it.
+        Ui.Anchored(wave.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, -WaveOverlapUnits), new Vector2(0f, WaveUnits));
         _turn = Ui.Rect("Turn", tray.transform);
         Ui.Stretch(_turn);
         _powers = Area("Powers", _turn, 0.03f, 0.76f, 0.97f, 0.97f);
@@ -54,7 +64,7 @@ internal sealed class TurnTray
         _concealLabel = Ui.Label("Message", _conceal, 30, Color.white, TextAnchor.MiddleCenter);
         _concealLabel.horizontalOverflow = HorizontalWrapMode.Wrap;
         Ui.Anchored(_concealLabel.rectTransform, new Vector2(0.06f, 0.42f), new Vector2(0.94f, 0.96f), Vector2.zero, Vector2.zero);
-        var confirm = Ui.Button("Confirm", _conceal, "Confirm", SplatPalette.Green, Ui.Rounded);
+        var confirm = Ui.Button("Confirm", _conceal, "Confirm", SplatPalette.Sunny, Ui.Rounded);
         Ui.Anchored(confirm.GetComponent<RectTransform>(), new Vector2(0.12f, 0.06f), new Vector2(0.88f, 0.36f), Vector2.zero, Vector2.zero);
         confirm.onClick.AddListener(() => Confirmed?.Invoke());
         _conceal.gameObject.SetActive(false);
@@ -104,7 +114,7 @@ internal sealed class TurnTray
         var seat = snapshot.Status.Seat;
         if (seat is not { } winner)
         {
-            var over = Ui.Label("Message", _winner, 64, SplatPalette.Ink, TextAnchor.MiddleCenter);
+            var over = Ui.Label("Message", _winner, 64, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
             Ui.Stretch(over.rectTransform);
             over.text = heading;
             return;
@@ -114,8 +124,7 @@ internal sealed class TurnTray
         var critterSlot = Ui.Rect("CritterSlot", _winner);
         Ui.Anchored(critterSlot, new Vector2(0f, 0.05f), new Vector2(0.36f, 0.95f), Vector2.zero, Vector2.zero);
         CritterPainter.PaintFitted(critterSlot, index);
-        var title = Ui.Label("Message", _winner, 72, SplatPalette.Ink, TextAnchor.LowerLeft);
-        title.fontStyle = FontStyle.Bold;
+        var title = Ui.Label("Message", _winner, 72, SplatPalette.Ink, TextAnchor.LowerLeft, FontWeight.ExtraBold);
         Ui.Anchored(title.rectTransform, new Vector2(0.40f, 0.5f), new Vector2(1f, 0.9f), Vector2.zero, Vector2.zero);
         title.text = heading;
         var count = Ui.Label("Claims", _winner, 40, SplatPalette.Muted, TextAnchor.UpperLeft);
@@ -141,8 +150,7 @@ internal sealed class TurnTray
         Ui.Clear(_spin);
         var slot = Ui.Rect("Slot", _spin);
         Ui.Anchored(slot, new Vector2(0f, 0.30f), Vector2.one, Vector2.zero, Vector2.zero);
-        var button = Ui.Button("Spin", slot, "Spin", snapshot.CanAct ? SplatPalette.SpinFill : SplatPalette.Gray, Ui.Circle, 40);
-        button.GetComponentInChildren<Text>().color = SplatPalette.Ink;
+        var button = Ui.Button("Spin", slot, "Spin", snapshot.CanAct ? SplatPalette.Sunny : SplatPalette.Gray, Ui.Circle, 40);
         var rect = button.GetComponent<RectTransform>();
         Ui.Stretch(rect);
         var fit = button.gameObject.AddComponent<AspectRatioFitter>();
@@ -168,7 +176,7 @@ internal sealed class TurnTray
         hint.anchoredPosition = Vector2.zero;
         for (var i = 0; i < quarterTurns; i++)
         {
-            var arrow = Ui.Image("Quarter" + i, hint, SplatPalette.Ink, CellPainter.RotateArrow);
+            var arrow = Ui.Image("Quarter" + i, hint, SplatPalette.Ink, PowerBadge.RotateArrow);
             arrow.preserveAspect = true;
             Ui.Anchored(arrow.rectTransform, new Vector2(i / (float)quarterTurns, 0f), new Vector2((i + 1) / (float)quarterTurns, 1f), Vector2.zero, Vector2.zero);
         }
@@ -198,6 +206,7 @@ internal sealed class TurnTray
             var min = new Vector2(0.01f + (i * 0.5f), 0.14f);
             var max = new Vector2(0.49f + (i * 0.5f), 1f);
             Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
+            slot.localRotation = Quaternion.Euler(0f, 0f, i % 2 == 0 ? MissionTiltDegrees : -MissionTiltDegrees);
             MissionCardPainter.Paint(slot, missions[i]);
         }
     }
@@ -217,10 +226,14 @@ internal sealed class TurnTray
             var selected = snapshot.SelectedPower is { } current && current.Equals(charge.Power);
             // A power with nothing to act on cannot be picked, but a selected one can always be put back.
             var usable = snapshot.CanAct && (selected || HasTargets(snapshot, charge.Power));
-            var fill = selected ? SplatPalette.PowerSelected : usable ? SplatPalette.Muted : SplatPalette.Gray;
-            var chip = Ui.Button("Power" + PowerName(charge.Power), _powers, string.Empty, fill, Ui.Circle);
+            var chip = Ui.Button("Power" + PowerName(charge.Power), _powers, string.Empty, usable ? SplatPalette.BadgeOf(charge.Power) : SplatPalette.Gray, Ui.Circle);
             PlaceFromLeft(chip.GetComponent<RectTransform>(), x, ChipUnits, ChipUnits);
-            CellPainter.PaintMark(chip.GetComponent<RectTransform>(), charge.Power, 64);
+            PowerBadge.PaintMark((RectTransform)chip.transform.Find("Body/Face"), charge.Power);
+            if (selected)
+            {
+                PaintSelectedRing(chip.transform);
+            }
+
             if (charge.Remaining > 1)
             {
                 PaintUseCount(chip.transform, charge.Remaining);
@@ -234,20 +247,28 @@ internal sealed class TurnTray
 
         if (snapshot.SelectedPower is not null)
         {
-            var back = Ui.Button("PlaceInstead", _powers, "Place instead", SplatPalette.Green, Ui.Rounded);
+            var back = Ui.Button("PlaceInstead", _powers, "Place instead", Color.white, Ui.Rounded);
             PlaceFromLeft(back.GetComponent<RectTransform>(), x, PlaceInsteadUnits, ChipUnits - 12f);
             back.onClick.AddListener(() => PowerSelected?.Invoke(null));
         }
     }
 
+    // A thick ring behind the chip marks the power in use; it is the chip's first child, so the chip draws over it.
+    private static void PaintSelectedRing(Transform chip)
+    {
+        var ring = Ui.Image("Selected", chip, SplatPalette.PowerSelected, Ui.Circle);
+        Ui.Anchored(ring.rectTransform, Vector2.zero, Vector2.one, new Vector2(-SelectedRingUnits, -SelectedRingUnits), new Vector2(SelectedRingUnits, SelectedRingUnits));
+        ring.transform.SetAsFirstSibling();
+    }
+
     private static void PaintUseCount(Transform chip, int remaining)
     {
-        var badge = Ui.Image("Count", chip, Color.white, Ui.Rounded);
+        var badge = Ui.Outlined("Count", chip, SplatPalette.Ink, Color.white, 3f);
         badge.rectTransform.anchorMin = Vector2.one;
         badge.rectTransform.anchorMax = Vector2.one;
-        badge.rectTransform.sizeDelta = new Vector2(52f, 38f);
+        badge.rectTransform.sizeDelta = new Vector2(56f, 42f);
         badge.rectTransform.anchoredPosition = new Vector2(-4f, -2f);
-        var label = Ui.Label("Label", badge.transform, 28, SplatPalette.Ink, TextAnchor.MiddleCenter);
+        var label = Ui.Label("Label", badge.transform, 28, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
         Ui.Stretch(label.rectTransform);
         label.text = "\u00d7" + remaining;
     }

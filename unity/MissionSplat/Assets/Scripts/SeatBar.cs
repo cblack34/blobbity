@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // One entry per seat across the top: critter, name, and a score pip per claim needed to win. The current seat sits in a highlighted box.
+// Each entry is only as wide as its content and sits at the middle of an equal share of the bar, so two and three seats are spaced out evenly.
 internal sealed class SeatBar
 {
     private const float CritterUnits = 108f;
@@ -14,7 +15,10 @@ internal sealed class SeatBar
     private const float PipUnits = 25f;
     private const float PipStepUnits = 30f;
     private const float EntryInsetUnits = 8f;
-    private const float OutlineUnits = 6f;
+    private const float OutlineUnits = 7f;
+
+    // The widest an entry gets: a critter, a name, and a row of four pips. More seats share the bar, so their entries are narrower.
+    private const float MaxEntryUnits = 280f;
 
     // Where the name and pips start: past the critter and a gap.
     private const float TextLeftUnits = CritterMarginUnits + CritterUnits + 8f;
@@ -34,10 +38,11 @@ internal sealed class SeatBar
         Ui.Clear(_bar);
         var seats = view.Claims.Count;
         // Before the first layout the bar has no width; the reference width stands in.
-        var entryWidth = (_bar.rect.width > 1f ? _bar.rect.width : Ui.ReferenceWidthUnits) / seats;
+        var share = (_bar.rect.width > 1f ? _bar.rect.width : Ui.ReferenceWidthUnits) / seats;
+        var entryWidth = Math.Min(MaxEntryUnits, share - (2f * EntryInsetUnits));
         for (var i = 0; i < seats; i++)
         {
-            PaintEntry(i, seats, entryWidth - (2f * EntryInsetUnits), view.Claims[i], view.Claims[i].Seat.Equals(view.CurrentSeat));
+            PaintEntry(i, seats, entryWidth, view.Claims[i], view.Claims[i].Seat.Equals(view.CurrentSeat));
         }
     }
 
@@ -45,7 +50,8 @@ internal sealed class SeatBar
     {
         var box = Ui.Outlined("Seat" + claims.Seat.Value, _bar, isCurrent ? SplatPalette.Ink : Color.clear, isCurrent ? Color.white : Color.clear, OutlineUnits);
         var button = Ui.Tappable(box);
-        Ui.Anchored(box.rectTransform, new Vector2(index / (float)seats, 0f), new Vector2((index + 1) / (float)seats, 1f), new Vector2(EntryInsetUnits, EntryInsetUnits), new Vector2(-EntryInsetUnits, -EntryInsetUnits));
+        var centre = (index + 0.5f) / seats;
+        Ui.Anchored(box.rectTransform, new Vector2(centre, 0f), new Vector2(centre, 1f), new Vector2(-entryWidth / 2f, EntryInsetUnits), new Vector2(entryWidth / 2f, -EntryInsetUnits));
         button.onClick.AddListener(() => SeatTapped?.Invoke(index, claims));
 
         var critter = Ui.Rect("Critter", box.transform);
@@ -55,8 +61,7 @@ internal sealed class SeatBar
         critter.anchoredPosition = new Vector2(CritterMarginUnits + (CritterUnits / 2f), 0f);
         CritterPainter.Paint(critter, index);
 
-        var name = Ui.Label("Name", box.transform, 38, SplatPalette.Ink, TextAnchor.MiddleLeft);
-        name.fontStyle = FontStyle.Bold;
+        var name = Ui.Label("Name", box.transform, 38, SplatPalette.Ink, TextAnchor.MiddleLeft, FontWeight.SemiBold);
         Ui.Anchored(name.rectTransform, new Vector2(0f, 0.45f), new Vector2(1f, 1f), new Vector2(TextLeftUnits, 0f), Vector2.zero);
         name.text = Seats.NameOf(claims.Seat);
 

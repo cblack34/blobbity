@@ -57,7 +57,7 @@ public sealed class TableView : MonoBehaviour
         }
 
         camera.clearFlags = CameraClearFlags.SolidColor;
-        camera.backgroundColor = SplatPalette.Cream;
+        camera.backgroundColor = SplatPalette.Background;
     }
 
     public void ShowSetup(TableStart draft)
@@ -91,8 +91,9 @@ public sealed class TableView : MonoBehaviour
         scaler.referenceResolution = new Vector2(Ui.ReferenceWidthUnits, 2340);
         scaler.matchWidthOrHeight = 0f;
         _root = canvasGo.GetComponent<RectTransform>();
-        var background = Ui.Image("Background", _root, SplatPalette.Cream);
+        var background = Ui.Image("Background", _root, SplatPalette.Background);
         Ui.Stretch(background.rectTransform);
+        BackgroundPainter.Paint(background.rectTransform);
 
         _safe = Ui.Rect("SafeArea", _root);
         ApplySafeArea();

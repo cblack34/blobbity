@@ -9,8 +9,8 @@ using UnityEngine.UI;
 internal static class MissionCardPainter
 {
     // Fractions of the card's width: the border around the face, and the edge line.
-    private const float CardInset = 0.03f;
-    private const float CardEdge = 0.015f;
+    private const float CardInset = 0.04f;
+    private const float CardEdge = 0.03f;
 
     // The splats sit on a 2 x 4 portrait lattice, so every pattern uses the same splat size.
     private const int LatticeWidth = 2;
