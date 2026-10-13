@@ -16,7 +16,7 @@ internal sealed class BoardPanel
     // on the canvas's 1080-unit reference width is about 44 pt on a phone.
     private const float MinimumTileUnits = 120f;
 
-    // The previewed tile is drawn this much bigger and this many cells higher than the spot it is tried at.
+    // The previewed tile is drawn 1.1 times as big as the spot it is tried at, and raised 0.18 of a cell.
     private const float PreviewScale = 1.1f;
     private const float PreviewLift = 0.18f;
 
@@ -68,7 +68,9 @@ internal sealed class BoardPanel
 
     // The caller runs Canvas.ForceUpdateCanvases() first: the viewport's size is read here.
     // preview is the tile spot the drawn tile is being tried at, if any; it is drawn there, lifted, instead of that spot's tap target.
-    public void Paint(TableSnapshot snapshot, (int TileX, int TileY)? preview = null)
+    // bottomInset is the height of what covers the board's bottom edge: the content gets that much slack below (and above, to stay centred),
+    // so the player can scroll the bottom row clear of it.
+    public void Paint(TableSnapshot snapshot, (int TileX, int TileY)? preview = null, float bottomInset = 0f)
     {
         if (_content != null && _content.anchoredPosition != _placedAt)
         {
@@ -132,7 +134,7 @@ internal sealed class BoardPanel
 
         // The content is the lattice plus half a cell all round, and never smaller than the view, so a board that fits sits in the middle.
         var content = Ui.Rect("Content", _viewport);
-        content.sizeDelta = new Vector2(Math.Max(latticeSize.x + cellSize, area.width), Math.Max(latticeSize.y + cellSize, area.height));
+        content.sizeDelta = new Vector2(Math.Max(latticeSize.x + cellSize, area.width), Math.Max(latticeSize.y + cellSize, area.height) + (2f * bottomInset));
         var lattice = Ui.Rect("Lattice", content);
         lattice.sizeDelta = latticeSize;
 
@@ -147,11 +149,6 @@ internal sealed class BoardPanel
             var block = Ui.Rect("Tile" + tile.Id.Value, lattice);
             Ui.PlaceCell(block, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
             TilePainter.Paint(block, tile.Id.Value, (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)], 0);
-        }
-
-        if (preview is { } tried && view.PendingMatchTile is { } drawn)
-        {
-            PaintPreview(lattice, drawn, snapshot.QuarterTurns, tried, minX, minY, cellSize);
         }
 
         _content = content;
@@ -199,6 +196,12 @@ internal sealed class BoardPanel
                 Ui.Stretch(spot.rectTransform);
             }
         }
+
+        // Last, so no neighbour's tap target or spot draws over the lifted tile.
+        if (preview is { } tried && view.PendingMatchTile is { } drawn)
+        {
+            PaintPreview(lattice, drawn, snapshot.QuarterTurns, tried, minX, minY, cellSize);
+        }
     }
 
     // Where the board last drew the tile at (tileX, tileY): its centre in world space and its side in canvas units. The position need not hold a tile,
@@ -215,8 +218,9 @@ internal sealed class BoardPanel
     }
 
     // Scrolls the board so the tile at (tileX, tileY) is wholly in view, if it is not. The scroll stays where it ends: the next render keeps
-    // whatever is then at the middle of the view, as for any scroll by the player.
-    public void RevealTile(int tileX, int tileY)
+    // whatever is then at the middle of the view, as for any scroll by the player. bottomInset is the height of what covers the view's bottom
+    // edge: the tile must clear it too, and is centred in the view above it.
+    public void RevealTile(int tileX, int tileY, float bottomInset = 0f)
     {
         if (TileSlot(tileX, tileY) is not { } slot)
         {
@@ -225,12 +229,12 @@ internal sealed class BoardPanel
 
         var local = (Vector2)_viewport.InverseTransformPoint(slot.Centre);
         var reach = (_viewport.rect.size / 2f) - new Vector2(slot.Side / 2f, slot.Side / 2f);
-        if (Mathf.Abs(local.x) <= reach.x && Mathf.Abs(local.y) <= reach.y)
+        if (Mathf.Abs(local.x) <= reach.x && local.y <= reach.y && local.y >= -reach.y + bottomInset)
         {
             return;
         }
 
-        _content.anchoredPosition = ScrolledTo(new Vector2((tileX * 2) + 1, (tileY * 2) + 1), _content.sizeDelta, _viewport.rect.size);
+        _content.anchoredPosition = ScrolledTo(new Vector2((tileX * 2) + 1, (tileY * 2) + 1), _content.sizeDelta, _viewport.rect.size, bottomInset / 2f);
         _scroll.velocity = Vector2.zero;
     }
 
@@ -243,8 +247,8 @@ internal sealed class BoardPanel
             _origin.y + ((-offset.y + (_latticeSize.y / 2f)) / _cellSize));
     }
 
-    // The content position that puts the focus cell at the middle of the view, kept inside the content; centred with no focus.
-    private Vector2 ScrolledTo(Vector2? focus, Vector2 contentSize, Vector2 viewSize)
+    // The content position that puts the focus cell at the middle of the view (lift above it), kept inside the content; centred with no focus.
+    private Vector2 ScrolledTo(Vector2? focus, Vector2 contentSize, Vector2 viewSize, float lift = 0f)
     {
         if (focus is not { } cell)
         {
@@ -253,7 +257,7 @@ internal sealed class BoardPanel
 
         var wanted = new Vector2(
             (_latticeSize.x / 2f) - ((cell.x - _origin.x) * _cellSize),
-            (_latticeSize.y / 2f) - ((cell.y - _origin.y) * _cellSize));
+            (_latticeSize.y / 2f) - ((cell.y - _origin.y) * _cellSize) + lift);
         var slack = (contentSize - viewSize) / 2f;
         return new Vector2(Mathf.Clamp(wanted.x, -slack.x, slack.x), Mathf.Clamp(wanted.y, -slack.y, slack.y));
     }
@@ -267,8 +271,9 @@ internal sealed class BoardPanel
         block.pivot = new Vector2(0.5f, 0.5f);
         block.anchoredPosition += new Vector2(cellSize, cellSize + (PreviewLift * cellSize));
         block.localScale = new Vector3(PreviewScale, PreviewScale, 1f);
-        PaintRing(block, SplatPalette.Go, cellSize);
         TilePainter.Paint(block, drawn.Id.Value, drawn.Local, quarterTurns);
+        // After the tile, so its hard shadow does not hide the ring's lower and right sides.
+        PaintRing(block, SplatPalette.Go, cellSize);
     }
 
     // A tap target over a whole tile's 2 x 2 block, which is where the card's gap lets a tap through too; the caller draws into it.

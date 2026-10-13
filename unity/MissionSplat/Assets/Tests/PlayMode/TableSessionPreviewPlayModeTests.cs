@@ -5,7 +5,10 @@ using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using NUnit.Framework;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.TestTools;
+using UnityEngine.UI;
 
 // A tap on a legal spot previews the drawn tile there; only Place submits it.
 public class TableSessionPreviewPlayModeTests : TableSessionFixture
@@ -74,7 +77,7 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
     {
         var table = BeginHumanTable(RotateSetup());
         var spots = table.Snapshot.LegalPlacements;
-        Assume.That(spots.Count, Is.GreaterThan(1));
+        Assert.That(spots.Count, Is.GreaterThan(1));
 
         LiveButton("Highlight" + spots[0].TileX + "_" + spots[0].TileY).onClick.Invoke();
         var first = LiveRect("Preview").anchoredPosition;
@@ -163,6 +166,122 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
 
         Assert.That(table.Snapshot.View.Board.Tiles.Single().Id.Value, Is.EqualTo("lid"));
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
+    }
+
+    // The editor's game view may be too short for the table, so the canvas gets a camera and a phone-sized screen, as in the drag test.
+    [UnityTest]
+    public IEnumerator APreviewInTheBottomRow_ScrollsClearOfTheStrip()
+    {
+        // A column down from the start tile that fits the view exactly, so the next tile down sits in the board's bottom row with no slack below.
+        var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();
+        var table = BeginHumanTable(SetupFrom(tiles));
+        for (var i = 0; i < 6; i++)
+        {
+            PlaceLowest(table);
+        }
+
+        var target = new RenderTexture(1080, 2340, 24);
+        var camera = new GameObject("Camera").AddComponent<Camera>();
+        try
+        {
+            camera.targetTexture = target;
+            camera.orthographic = true;
+            var canvas = _root.GetComponentInChildren<Canvas>(true);
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = camera;
+            canvas.planeDistance = 1f;
+            canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            canvas.GetComponent<CanvasScaler>().scaleFactor = 1f;
+            table.SelectPower(null);
+            yield return null;
+            table.SelectPower(null);
+            yield return null;
+
+            LiveButton("Highlight0_-7").onClick.Invoke();
+
+            var corners = new Vector3[4];
+            LiveRect("Preview").GetWorldCorners(corners);
+            var previewBottom = corners[0].y;
+            LiveRect("PlacementStrip").GetWorldCorners(corners);
+            var stripTop = corners[1].y;
+            Assert.That(previewBottom, Is.GreaterThanOrEqualTo(stripTop), "the lifted tile ends above the strip");
+        }
+        finally
+        {
+            Object.DestroyImmediate(camera.gameObject);
+            Object.DestroyImmediate(target);
+        }
+    }
+
+    [Test]
+    public void ASafeAreaRender_KeepsAValidPreview()
+    {
+        BeginHumanTable(RotateSetup());
+        LiveButtons("Highlight").First().onClick.Invoke();
+
+        _root.GetComponent<TableView>().RenderCurrentSnapshot();
+
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+        Assert.That(LiveButton("Place"), Is.Not.Null);
+    }
+
+    // The next three change the game under a live preview, by rendering another table's snapshot into the view, so each render differs
+    // from the previewed one in just one way and only one reason to drop the preview applies.
+    [Test]
+    public void ADifferentDrawnTile_DropsThePreview_EvenAtTheSameLegalSpot()
+    {
+        var view = NewViewOnly();
+        var other = StartedTable(SetupFrom(BlankTile("start"), BlankTile("other"), BlankTile("pad")));
+        view.RenderNewGame(StartedTable(RotateSetup()).Snapshot);
+        LiveButton("Highlight1_0").onClick.Invoke();
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+        Assert.That(other.Snapshot.LegalPlacements.Any(spot => spot.TileX == 1 && spot.TileY == 0), Is.True);
+        Assert.That(other.Snapshot.Recap, Is.Empty);
+
+        view.Render(other.Snapshot);
+
+        Assert.That(LiveRect("Preview"), Is.Null);
+        Assert.That(LiveButton("Place"), Is.Null);
+    }
+
+    [Test]
+    public void APendingRecap_DropsThePreview_EvenForTheSameTileAndSpot()
+    {
+        var view = NewViewOnly();
+        var rotated = StartedTable(RotateSetup());
+        rotated.SelectPower(OrdinaryCatalog.Rotate);
+        rotated.SetQuarterTurns(2);
+        rotated.UseAt(0, 0);
+        view.RenderNewGame(StartedTable(RotateSetup()).Snapshot);
+        LiveButton("Highlight1_0").onClick.Invoke();
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+        Assert.That(rotated.Snapshot.Recap, Is.Not.Empty);
+        Assert.That(rotated.Snapshot.View.PendingMatchTile.Id.Value, Is.EqualTo("spinner"));
+        Assert.That(rotated.Snapshot.LegalPlacements.Any(spot => spot.TileX == 1 && spot.TileY == 0), Is.True);
+
+        view.Render(rotated.Snapshot);
+
+        Assert.That(LiveRect("Preview"), Is.Null);
+        Assert.That(LiveButton("Place"), Is.Null);
+    }
+
+    [Test]
+    public void TheHandOffCover_DropsThePreview()
+    {
+        var view = NewViewOnly();
+        var table = StartedTable(RotateSetup());
+        view.RenderNewGame(table.Snapshot);
+        LiveButton("Highlight1_0").onClick.Invoke();
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+        table.Place(1, 0);
+        table.AcknowledgeRecap();
+        Assert.That(table.Snapshot.ConcealVisible, Is.True);
+        Assert.That(table.Snapshot.Recap, Is.Empty);
+
+        view.Render(table.Snapshot);
+
+        Assert.That(LiveRect("Preview"), Is.Null);
+        Assert.That(LiveButton("Place"), Is.Null);
     }
 
     private Vector2 PreviewCellPosition(string cell) =>

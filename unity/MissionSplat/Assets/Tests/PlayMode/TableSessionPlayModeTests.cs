@@ -47,7 +47,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(placements.Any(slot => slot.TileX == 1 && slot.TileY == 1), Is.False);
         Assert.That(placements.Any(slot => slot.TileX == 1 && slot.TileY == 0), Is.True);
 
-        table.Tap(1, 0);
+        table.Place(1, 0);
 
         var view = table.Snapshot.View;
         Assert.That(view.Board.Tiles.Count, Is.EqualTo(3));
@@ -399,7 +399,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         AssertPips("Seat1", filled: 0, empty: 4);
 
         // Placing the second purple tile beside the first finishes a purple row, so the seat claims both of its purple-row missions.
-        table.Tap(1, 0);
+        table.Place(1, 0);
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(2));
 
@@ -439,7 +439,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
             new Tile(new TileId("start"), purple, purple, purple, purple),
             new Tile(new TileId("next"), purple, purple, purple, purple),
             BlankTile("pad")));
-        table.Tap(1, 0);
+        table.Place(1, 0);
         Assert.That(table.Snapshot.ConcealVisible, Is.True);
         var panel = FindRect("ClaimsPanel");
         Assert.That(panel.gameObject.activeSelf, Is.False);
@@ -648,7 +648,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         }
 
         var left = table.Snapshot.LegalPlacements.OrderBy(slot => slot.TileX).First();
-        table.Tap(left.TileX, left.TileY);
+        table.Place(left.TileX, left.TileY);
         Assert.That(table.Snapshot.ConcealVisible, Is.True);
         Canvas.ForceUpdateCanvases();
         table.ConfirmIncomingSeat();

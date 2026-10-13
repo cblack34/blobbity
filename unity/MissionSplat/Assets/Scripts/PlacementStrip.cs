@@ -8,7 +8,7 @@ using UnityEngine;
 internal sealed class PlacementStrip
 {
     // Each button is at least the 120-unit tap size (see BoardPanel); the strip leaves a little air round them.
-    private const float HeightUnits = 150f;
+    public const float HeightUnits = 150f;
     private const float EdgeUnits = 24f;
     private const float AirUnits = 10f;
 

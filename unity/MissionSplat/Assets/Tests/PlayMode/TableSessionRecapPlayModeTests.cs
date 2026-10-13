@@ -29,7 +29,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Assert.That(recap.IsPlaying, Is.False, "nothing has happened yet");
         Assert.That(TheSkipLayerCoversAndTakesEveryTap(), Is.False);
 
-        table.Tap(1, 0);
+        table.Place(1, 0);
 
         var items = table.Snapshot.Recap;
         Assert.That(items.Count, Is.GreaterThanOrEqualTo(2), "the human's placement, then the AI's turn");
@@ -73,7 +73,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         table.Begin(TableStart.HumanThenAi());
         table.ConfirmIncomingSeat();
         var recap = _root.GetComponent<TableView>().Recap;
-        table.Tap(1, 0);
+        table.Place(1, 0);
         Assert.That(recap.IsPlaying, Is.True);
 
         var started = Time.realtimeSinceStartup;
@@ -93,7 +93,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
     {
         var table = BeginHumanTable(PurpleRowSetup());
 
-        table.Tap(1, 0);
+        table.Place(1, 0);
 
         var claims = table.Snapshot.Recap.OfType<RecapClaimed>().ToArray();
         Assert.That(claims.Length, Is.EqualTo(2), "the placement finishes both purple rows");
@@ -145,7 +145,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
         Assert.That(FindText("Notice").gameObject.activeInHierarchy, Is.False);
-        table.Tap(1, 0);
+        table.Place(1, 0);
         LiveButton("RecapSkip").onClick.Invoke();
         Assert.That(FindText("Notice").text, Is.EqualTo("Seat 1 placed a tile."));
         table.ConfirmIncomingSeat();
@@ -221,7 +221,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
     public void EachClaimFliesToItsOwnPipInTheClaimingSeatsEntry()
     {
         var table = BeginHumanTable(PurpleRowSetup());
-        table.Tap(1, 0);
+        table.Place(1, 0);
         var recap = _root.GetComponent<TableView>().Recap;
         var pips = LiveButton("Seat1").GetComponentsInChildren<RectTransform>(false).Where(rect => rect.name == "PipFilled").ToArray();
         Assert.That(pips.Length, Is.EqualTo(2));
@@ -248,7 +248,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         recap.Begin = (_, _) => throw new InvalidOperationException("cannot draw this");
         LogAssert.Expect(LogType.Exception, new Regex("cannot draw this"));
 
-        table.Tap(1, 0);
+        table.Place(1, 0);
 
         Assert.That(recap.IsPlaying, Is.True, "the item is held briefly, unseen");
         Assert.That(LiveRect("RecapPlaced"), Is.Null);
@@ -272,7 +272,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Canvas.ForceUpdateCanvases();
         var spot = table.Snapshot.LegalPlacements.OrderByDescending(slot => slot.TileX).First();
 
-        table.Tap(spot.TileX, spot.TileY);
+        table.Place(spot.TileX, spot.TileY);
 
         var tile = LiveRect("RecapPlaced");
         Assert.That(tile, Is.Not.Null);

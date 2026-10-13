@@ -86,7 +86,7 @@ internal sealed class TablePlayView
 
         _strip = new PlacementStrip(play);
         _strip.Placed += Place;
-        _strip.Cancelled += CancelPreview;
+        _strip.Cancelled += ClearPreview;
 
         // Last, so it draws over everything else.
         _claimsPanel = new ClaimsPanel(play);
@@ -139,17 +139,17 @@ internal sealed class TablePlayView
         PaintBoard();
     }
 
-    // The preview holds only while its spot is still offered for the same drawn tile at the current Spin turn, with no recap or hand-off in the way.
+    // The preview holds only while its spot is still offered for the same drawn tile at the current Spin turn, with no recap in the way.
     private bool StillPreviewable(TableSnapshot snapshot) =>
         _preview is { } preview
         && snapshot.Recap.Count == 0
-        && !snapshot.ConcealVisible
         && snapshot.View.PendingMatchTile?.Id.Value == preview.Tile
         && snapshot.LegalPlacements.Any(spot => spot.TileX == preview.TileX && spot.TileY == preview.TileY);
 
     private void PaintBoard()
     {
-        _board.Paint(_snapshot, _preview is { } preview ? (preview.TileX, preview.TileY) : null);
+        // The strip covers the board's bottom edge while it shows, so the board leaves room to scroll clear of it.
+        _board.Paint(_snapshot, _preview is { } preview ? (preview.TileX, preview.TileY) : null, _preview != null ? PlacementStrip.HeightUnits : 0f);
         _strip.Show(_preview != null);
     }
 
@@ -164,9 +164,11 @@ internal sealed class TablePlayView
         _preview = (tileX, tileY, drawn.Id.Value);
         Canvas.ForceUpdateCanvases();
         PaintBoard();
+        // The new spot may sit behind the strip, or off the view.
+        _board.RevealTile(tileX, tileY, PlacementStrip.HeightUnits);
     }
 
-    private void CancelPreview()
+    private void ClearPreview()
     {
         _preview = null;
         Canvas.ForceUpdateCanvases();
@@ -180,7 +182,8 @@ internal sealed class TablePlayView
             return;
         }
 
-        _preview = null;
+        // Redrawn first, so nothing lingers if the session drops the action; a render that follows draws the new state.
+        ClearPreview();
         PlaceRequested?.Invoke(preview.TileX, preview.TileY);
     }
 
