@@ -90,3 +90,27 @@ None.
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** Tapping a legal spot previews the drawn tile there instead of placing it. The preview is lifted, scaled up slightly and ringed, and sits at the current Spin turn.
+  - A `PlacementStrip` with Place (green) and Cancel (white) shows above the tray only while a preview is up.
+  - Another tap moves the preview, Spin turns it, and Cancel clears it with no game change. Place submits through the existing place path.
+  - Stack previews sit on top of the covered tile.
+  - While the strip shows, the board gains slack and reveals the previewed tile above it.
+  - Preview state lives in `TablePlayView`. It is kept only while no recap is pending, the drawn tile is the same, and the spot is still legal.
+  - Naming follows the change: `TableView.PlaceRequested` and `TableSession.Place`.
+  - No App or Rules change.
+- **Verification:** On `5bf6949`, `dotnet test` passed Rules 234 and App 85, and `unity test unity/MissionSplat --mode PlayMode` passed 56 of 56 (13 preview tests). They check that:
+  - a tap previews without changing the game;
+  - Place commits, Cancel clears, and Spin turns the preview;
+  - a second tap moves the preview;
+  - a stack preview sits on top;
+  - power selection, hand-off, a new game, a different drawn tile and a pending recap each drop the preview, and a safe-area re-render keeps it;
+  - a bottom-row preview ends above the strip.
+
+  `placement-preview.png` was added.
+- **Deviations:**
+  - The hand-off-cover clause was removed from the preview check. While the cover is up, the table already offers no placements and a new tile, so the clause could never decide anything.
+  - The renames above, from review.
+- **Unresolved gates or risks:** #59 widens the preview to powers and will reuse the strip.
+- **Refactor and handoff receipt:** In the PR body and on issue #58.
+- **Final PR:** see the PR linked from issue #58.
