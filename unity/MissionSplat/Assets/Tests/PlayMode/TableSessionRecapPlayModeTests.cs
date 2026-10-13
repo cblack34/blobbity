@@ -283,6 +283,38 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Assert.That(scroll.content.anchoredPosition.x, Is.EqualTo(after.x).Within(1f), "the board stays where the item took it");
     }
 
+    // A bounce or a reshuffle can leave a recap item outside the board as it now is, so the board reaches each pending item's tile.
+    [TestCase(12, 0)]
+    [TestCase(-12, 3)]
+    public void ARecapItemBeyondTheBoardsEdge_IsStillReachedByTheBoard(int tileX, int tileY)
+    {
+        var now = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"))).Snapshot;
+        var seat = now.View.CurrentSeat;
+        var cells = new OccupiedCell[0];
+        var items = new RecapItem[]
+        {
+            new RecapPlaced(seat, new TileId("one"), tileX, tileY, 0, cells, false),
+            new RecapBounced(seat, -tileX, -tileY, cells, cells),
+        };
+        var snapshot = new TableSnapshot(now.View, false, false, true, now.LegalPlacements, now.LegalTargets, 0, now.Status, null, now.Notice, seat, items);
+        var view = Ui.Rect("View", _root.transform);
+        view.anchorMin = view.anchorMax = new Vector2(0.5f, 0.5f);
+        view.sizeDelta = new Vector2(600f, 600f);
+        var board = new BoardPanel(view);
+
+        board.Paint(snapshot);
+
+        foreach (var (x, y) in new[] { (tileX, tileY), (-tileX, -tileY) })
+        {
+            board.RevealTile(x, y);
+            var slot = board.TileSlot(x, y).Value;
+            var local = view.InverseTransformPoint(slot.Centre);
+            var reach = (view.rect.size / 2f) - new Vector2(slot.Side / 2f, slot.Side / 2f);
+            Assert.That(Mathf.Abs(local.x), Is.LessThanOrEqualTo(reach.x + 1f), "tile " + x + "," + y + " is wholly in view horizontally");
+            Assert.That(Mathf.Abs(local.y), Is.LessThanOrEqualTo(reach.y + 1f), "tile " + x + "," + y + " is wholly in view vertically");
+        }
+    }
+
     [Test]
     public void TheRecapSummary_NamesWhatHappenedInPlainWords()
     {

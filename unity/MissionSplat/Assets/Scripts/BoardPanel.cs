@@ -94,12 +94,29 @@ internal sealed class BoardPanel
             maxY = Math.Max(maxY, occupiedCell.CellY);
         }
 
+        void Include(int tileX, int tileY)
+        {
+            minX = Math.Min(minX, tileX * 2);
+            maxX = Math.Max(maxX, (tileX * 2) + 1);
+            minY = Math.Min(minY, tileY * 2);
+            maxY = Math.Max(maxY, (tileY * 2) + 1);
+        }
+
         foreach (var highlight in snapshot.LegalPlacements)
         {
-            minX = Math.Min(minX, highlight.TileX * 2);
-            maxX = Math.Max(maxX, (highlight.TileX * 2) + 1);
-            minY = Math.Min(minY, highlight.TileY * 2);
-            maxY = Math.Max(maxY, (highlight.TileY * 2) + 1);
+            Include(highlight.TileX, highlight.TileY);
+        }
+
+        // A pending recap plays on this board as it now is, but its items sit where the tiles were: a bounce or a reshuffle can leave
+        // one outside what is drawn. The lattice reaches them too, so the board can scroll to each and its animation is seen.
+        foreach (var item in snapshot.Recap)
+        {
+            switch (item)
+            {
+                case RecapPlaced placed: Include(placed.TileX, placed.TileY); break;
+                case RecapRotated rotated: Include(rotated.TileX, rotated.TileY); break;
+                case RecapBounced bounced: Include(bounced.TileX, bounced.TileY); break;
+            }
         }
 
         var width = maxX - minX + 1;
