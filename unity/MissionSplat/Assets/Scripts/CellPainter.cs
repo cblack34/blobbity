@@ -41,7 +41,12 @@ internal static class CellPainter
         }
 
         Dot(parent, SplatPalette.Gray);
+        PaintMark(parent, symbol, 22);
+    }
 
+    // The power's mark on its own, white: the rotate arrow, or a letter-sized sign. A power chip draws it on its own fill.
+    internal static void PaintMark(RectTransform parent, SymbolId symbol, int fontSize)
+    {
         if (symbol.Value == OrdinaryCatalog.Rotate.Value)
         {
             // power-ups.svg draws an open clockwise arrow. The builtin font has no such glyph.
@@ -51,7 +56,7 @@ internal static class CellPainter
             return;
         }
 
-        var mark = Ui.Label("Mark", parent, 22, Color.white, TextAnchor.MiddleCenter);
+        var mark = Ui.Label("Mark", parent, fontSize, Color.white, TextAnchor.MiddleCenter);
         Ui.Stretch(mark.rectTransform);
         if (symbol.Value == OrdinaryCatalog.Stack.Value)
         {
@@ -73,7 +78,7 @@ internal static class CellPainter
 
     private const float RotateSweep = 220f * Mathf.Deg2Rad;
 
-    private static readonly Sprite RotateArrow = BuildRotateArrow();
+    internal static readonly Sprite RotateArrow = BuildRotateArrow();
 
     private static Sprite BuildRotateArrow()
     {

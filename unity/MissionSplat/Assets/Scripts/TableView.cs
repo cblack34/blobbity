@@ -63,6 +63,7 @@ public sealed class TableView : MonoBehaviour
     public void ShowSetup(TableStart draft)
     {
         _rendered = null;
+        _playView.ForgetScroll();
         _play.gameObject.SetActive(false);
         _setup.gameObject.SetActive(true);
         _setupView.Show(draft);
@@ -86,8 +87,9 @@ public sealed class TableView : MonoBehaviour
         var scaler = canvasGo.GetComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.referenceResolution = new Vector2(1920, 1080);
-        scaler.matchWidthOrHeight = 0.5f;
+        // A portrait phone: the layout is drawn 1080 units wide and takes whatever height the screen has.
+        scaler.referenceResolution = new Vector2(Ui.ReferenceWidthUnits, 2340);
+        scaler.matchWidthOrHeight = 0f;
         _root = canvasGo.GetComponent<RectTransform>();
         var background = Ui.Image("Background", _root, SplatPalette.Cream);
         Ui.Stretch(background.rectTransform);

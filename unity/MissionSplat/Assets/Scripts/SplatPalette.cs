@@ -23,6 +23,12 @@ public static class SplatPalette
     public static readonly Color TargetHighlight = new Color(0.910f, 0.349f, 0.047f, 0.5f);
     public static readonly Color PowerSelected = Hex("e8590c");
     public static readonly Color Overlay = new Color(0.11f, 0.20f, 0.28f, 0.82f);
+    public static readonly Color SpinFill = Hex("ffcf5c");
+
+    // Critters are coloured by seat order and never by a game colour, so a seat is not mistaken for a splat colour.
+    private static readonly Color[] Critters = { Hex("ffb703"), Hex("fb8500"), Hex("2ec4b6"), Hex("ff70a6") };
+
+    public static Color CritterOf(int seatIndex) => Critters[seatIndex % Critters.Length];
 
     public static Color Of(ColorId color)
     {

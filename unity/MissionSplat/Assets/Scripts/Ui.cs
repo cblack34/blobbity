@@ -6,11 +6,17 @@ using UnityEngine.UI;
 
 internal static class Ui
 {
+    // The canvas is laid out this many units wide on any screen (it matches width), so sizes in units are the same on every phone.
+    public const float ReferenceWidthUnits = 1080f;
+
     public static Font Font { get; } = LoadFont();
 
     public static Sprite Pixel { get; } = WhitePixel();
 
-    public static Sprite Circle { get; } = CircleSprite(64);
+    public static Sprite Circle { get; } = CircleSprite(256);
+
+    // A white rounded rectangle that keeps its corner radius at any size (nine-sliced), for chips, boxes and panels.
+    public static Sprite Rounded { get; } = RoundedSprite(128, 40);
 
     public static Sprite Splat { get; } = LoadSprite("Splat");
 
@@ -33,6 +39,7 @@ internal static class Ui
         var rect = Rect(name, parent);
         var image = rect.gameObject.AddComponent<Image>();
         image.sprite = sprite != null ? sprite : Pixel;
+        image.type = image.sprite.border == Vector4.zero ? UnityEngine.UI.Image.Type.Simple : UnityEngine.UI.Image.Type.Sliced;
         image.color = color;
         image.raycastTarget = false;
         return image;
@@ -52,19 +59,35 @@ internal static class Ui
         return text;
     }
 
-    public static Button Button(string name, Transform parent, string caption, Color fill)
+    public static Button Button(string name, Transform parent, string caption, Color fill, Sprite sprite = null, int fontSize = 32)
     {
-        var image = Image(name, parent, fill);
+        var image = Image(name, parent, fill, sprite);
+        var button = Tappable(image);
+        var label = Label("Label", image.transform, fontSize, Color.white, TextAnchor.MiddleCenter);
+        Stretch(label.rectTransform);
+        label.text = caption;
+        return button;
+    }
+
+    // Makes an image tappable: it takes raycasts, shows no transition, and is not reachable by keyboard navigation.
+    public static Button Tappable(Image image)
+    {
         image.raycastTarget = true;
         var button = image.gameObject.AddComponent<Button>();
         button.transition = Selectable.Transition.None;
         var nav = Navigation.defaultNavigation;
         nav.mode = Navigation.Mode.None;
         button.navigation = nav;
-        var label = Label("Label", image.transform, 22, Color.white, TextAnchor.MiddleCenter);
-        Stretch(label.rectTransform);
-        label.text = caption;
         return button;
+    }
+
+    // A rounded box in the edge colour with a rounded face inset by outlineUnits; returns the edge, the face is its child "Face".
+    public static Image Outlined(string name, Transform parent, Color edge, Color face, float outlineUnits)
+    {
+        var edgeImage = Image(name, parent, edge, Rounded);
+        var faceImage = Image("Face", edgeImage.transform, face, Rounded);
+        Anchored(faceImage.rectTransform, Vector2.zero, Vector2.one, new Vector2(outlineUnits, outlineUnits), new Vector2(-outlineUnits, -outlineUnits));
+        return edgeImage;
     }
 
     public static void Stretch(RectTransform rect)
@@ -146,24 +169,48 @@ internal static class Ui
 
     private static Sprite CircleSprite(int size)
     {
+        var half = size / 2f;
+        return Bake(size, (x, y) => half - Mathf.Sqrt((((x + 0.5f) - half) * ((x + 0.5f) - half)) + (((y + 0.5f) - half) * ((y + 0.5f) - half))), Vector4.zero);
+    }
+
+    // A rounded square of the given corner radius, with nine-slice borders at the radius.
+    private static Sprite RoundedSprite(int size, int radius)
+    {
+        return Bake(size, (x, y) =>
+        {
+            // Distance inside the shape: measured from the nearest corner centre when in a corner, else from the edge.
+            var px = Mathf.Min(x + 0.5f, size - (x + 0.5f));
+            var py = Mathf.Min(y + 0.5f, size - (y + 0.5f));
+            if (px >= radius || py >= radius)
+            {
+                return Mathf.Min(px, py);
+            }
+
+            var dx = radius - px;
+            var dy = radius - py;
+            return radius - Mathf.Sqrt((dx * dx) + (dy * dy));
+        }, new Vector4(radius, radius, radius, radius));
+    }
+
+    // Paints white where inside (distance from the edge, in pixels) is positive, with a one-pixel soft edge.
+    private static Sprite Bake(int size, System.Func<int, int, float> inside, Vector4 border)
+    {
         var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
-        var center = (size - 1) / 2f;
-        var radius = center;
+        var pixels = new Color32[size * size];
         for (var y = 0; y < size; y++)
         {
             for (var x = 0; x < size; x++)
             {
-                var dx = x - center;
-                var dy = y - center;
-                var inside = (dx * dx) + (dy * dy) <= radius * radius;
-                texture.SetPixel(x, y, inside ? Color.white : Color.clear);
+                var alpha = Mathf.Clamp01(inside(x, y) + 0.5f);
+                pixels[(y * size) + x] = new Color32(255, 255, 255, (byte)Mathf.RoundToInt(alpha * 255f));
             }
         }
 
+        texture.SetPixels32(pixels);
         texture.Apply();
         texture.filterMode = FilterMode.Bilinear;
         texture.hideFlags = HideFlags.HideAndDontSave;
-        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
+        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), border == Vector4.zero ? size : 100f, 0, SpriteMeshType.FullRect, border);
     }
 }
 }
