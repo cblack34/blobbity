@@ -29,8 +29,17 @@ internal sealed class TablePlayView
     private readonly BoardPanel _board;
     private readonly TurnTray _tray;
     private readonly RecapPlayer _recap;
+    private readonly PlacementStrip _strip;
 
-    public event Action<int, int> Tapped;
+    // What was last rendered, to redraw the board when the preview changes without a new snapshot.
+    private TableSnapshot _snapshot;
+
+    // The spot the drawn tile is being tried at, and which tile that is, so a preview never outlives its turn. View state only: the table
+    // learns of a placement when Place is pressed, and says which spots are legal.
+    private (int TileX, int TileY, string Tile)? _preview;
+
+    // The player pressed Place on the previewed spot.
+    public event Action<int, int> PlaceRequested;
     public event Action Confirmed;
     public event Action<int> QuarterTurnsSelected;
     public event Action<SymbolId?> PowerSelected;
@@ -65,7 +74,7 @@ internal sealed class TablePlayView
         var board = Ui.Rect("Board", play);
         Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.ReachUnits), new Vector2(-24f, -BoardTopUnits));
         _board = new BoardPanel(board);
-        _board.PlacementTapped += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
+        _board.PlacementTapped += Preview;
         _board.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);
 
         _tray = new TurnTray(play);
@@ -74,6 +83,10 @@ internal sealed class TablePlayView
         _tray.PowerSelected += power => PowerSelected?.Invoke(power);
         _tray.PlayAgainRequested += () => PlayAgainRequested?.Invoke();
         _tray.NewSetupRequested += () => NewSetupRequested?.Invoke();
+
+        _strip = new PlacementStrip(play);
+        _strip.Placed += Place;
+        _strip.Cancelled += CancelPreview;
 
         // Last, so it draws over everything else.
         _claimsPanel = new ClaimsPanel(play);
@@ -95,13 +108,23 @@ internal sealed class TablePlayView
 
     public void CancelRecap() => _recap.Cancel();
 
-    // A new game starts with its board centred.
-    public void ForgetScroll() => _board.ForgetScroll();
+    // A new game starts with its board centred and nothing previewed.
+    public void NewGame()
+    {
+        _preview = null;
+        _board.ForgetScroll();
+    }
 
     // summary is the line a finished recap left, or null; it takes the notice strip until the next action.
     public void Render(TableSnapshot snapshot, string summary = null)
     {
         Canvas.ForceUpdateCanvases();
+        _snapshot = snapshot;
+        if (!StillPreviewable(snapshot))
+        {
+            _preview = null;
+        }
+
         // What happens next waits for the recap that led to it: the heading names the item playing, and the instruction is blank.
         var recapPending = snapshot.Recap.Count > 0;
         var heading = recapPending ? string.Empty : HeadingText(snapshot);
@@ -113,7 +136,52 @@ internal sealed class TablePlayView
         // What the panel shows may be out of date after any action, so a render closes it.
         _claimsPanel.Hide();
         _tray.Paint(snapshot, heading);
-        _board.Paint(snapshot);
+        PaintBoard();
+    }
+
+    // The preview holds only while its spot is still offered for the same drawn tile at the current Spin turn, with no recap or hand-off in the way.
+    private bool StillPreviewable(TableSnapshot snapshot) =>
+        _preview is { } preview
+        && snapshot.Recap.Count == 0
+        && !snapshot.ConcealVisible
+        && snapshot.View.PendingMatchTile?.Id.Value == preview.Tile
+        && snapshot.LegalPlacements.Any(spot => spot.TileX == preview.TileX && spot.TileY == preview.TileY);
+
+    private void PaintBoard()
+    {
+        _board.Paint(_snapshot, _preview is { } preview ? (preview.TileX, preview.TileY) : null);
+        _strip.Show(_preview != null);
+    }
+
+    // A tap on a legal spot only tries the tile there.
+    private void Preview(int tileX, int tileY)
+    {
+        if (_recap.IsPlaying || _snapshot?.View.PendingMatchTile is not { } drawn)
+        {
+            return;
+        }
+
+        _preview = (tileX, tileY, drawn.Id.Value);
+        Canvas.ForceUpdateCanvases();
+        PaintBoard();
+    }
+
+    private void CancelPreview()
+    {
+        _preview = null;
+        Canvas.ForceUpdateCanvases();
+        PaintBoard();
+    }
+
+    private void Place()
+    {
+        if (_preview is not { } preview)
+        {
+            return;
+        }
+
+        _preview = null;
+        PlaceRequested?.Invoke(preview.TileX, preview.TileY);
     }
 
     // A band across the screen: top units from the top edge, height units tall, inset on both sides.

@@ -26,6 +26,7 @@ public sealed class TableView : MonoBehaviour
     private TableSnapshot _rendered;
     private string _summary;
 
+    // Raised when the player confirms a placement at a tile spot (Place on the preview).
     public event Action<int, int> Tapped;
     public event Action Confirmed;
     public event Action<int> QuarterTurnsSelected;
@@ -84,7 +85,7 @@ public sealed class TableView : MonoBehaviour
     public void RenderNewGame(TableSnapshot snapshot)
     {
         _playView.CancelRecap();
-        _playView.ForgetScroll();
+        _playView.NewGame();
         Render(snapshot);
     }
 
@@ -125,7 +126,7 @@ public sealed class TableView : MonoBehaviour
         Ui.Stretch(_setup);
         _playView = new TablePlayView(_play);
         _setupView = new TableSetupView(_setup);
-        _playView.Tapped += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
+        _playView.PlaceRequested += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
         _playView.Confirmed += () => Confirmed?.Invoke();
         _playView.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
         _playView.PowerSelected += power => PowerSelected?.Invoke(power);

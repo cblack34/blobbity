@@ -277,6 +277,16 @@ public abstract class TableSessionFixture
     protected Button LiveButton(string name) =>
         _root.GetComponentsInChildren<Button>(false).FirstOrDefault(button => button.name == name);
 
+    protected RectTransform LiveRect(string name) =>
+        _root.GetComponentsInChildren<RectTransform>(false).FirstOrDefault(rect => rect.name == name);
+
+    // Taps a legal spot, which previews the drawn tile there, then presses Place.
+    protected void PlaceAt(Button spot)
+    {
+        spot.onClick.Invoke();
+        LiveButton("Place").onClick.Invoke();
+    }
+
     protected Button[] LiveButtons(string prefix) =>
         _root.GetComponentsInChildren<Button>(false).Where(button => button.name.StartsWith(prefix)).ToArray();
 

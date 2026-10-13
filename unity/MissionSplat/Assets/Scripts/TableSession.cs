@@ -77,6 +77,7 @@ public sealed class TableSession : MonoBehaviour
         }
     }
 
+    // Places the drawn tile at the spot, as the Place button does once the player has previewed it.
     public void Tap(int tileX, int tileY) => Commit(() => _table.Place(tileX, tileY));
 
     public void SelectPower(SymbolId? power) => Forward(() => _table.SelectPower(power));

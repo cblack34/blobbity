@@ -16,6 +16,10 @@ internal sealed class BoardPanel
     // on the canvas's 1080-unit reference width is about 44 pt on a phone.
     private const float MinimumTileUnits = 120f;
 
+    // The previewed tile is drawn this much bigger and this many cells higher than the spot it is tried at.
+    private const float PreviewScale = 1.1f;
+    private const float PreviewLift = 0.18f;
+
     private readonly RectTransform _viewport;
     private readonly ScrollRect _scroll;
 
@@ -63,7 +67,8 @@ internal sealed class BoardPanel
     }
 
     // The caller runs Canvas.ForceUpdateCanvases() first: the viewport's size is read here.
-    public void Paint(TableSnapshot snapshot)
+    // preview is the tile spot the drawn tile is being tried at, if any; it is drawn there, lifted, instead of that spot's tap target.
+    public void Paint(TableSnapshot snapshot, (int TileX, int TileY)? preview = null)
     {
         if (_content != null && _content.anchoredPosition != _placedAt)
         {
@@ -144,6 +149,11 @@ internal sealed class BoardPanel
             TilePainter.Paint(block, tile.Id.Value, (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)], 0);
         }
 
+        if (preview is { } tried && view.PendingMatchTile is { } drawn)
+        {
+            PaintPreview(lattice, drawn, snapshot.QuarterTurns, tried, minX, minY, cellSize);
+        }
+
         _content = content;
         _lattice = lattice;
         _origin = new Vector2Int(minX, minY);
@@ -165,17 +175,22 @@ internal sealed class BoardPanel
         foreach (var target in snapshot.SelectedTargets)
         {
             var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
-            PaintRing(button, SplatPalette.TargetRing, cellSize);
+            PaintRing(button.transform, SplatPalette.TargetRing, cellSize);
             Ui.SetEnabled(button, targetsLive);
         }
 
         foreach (var highlight in snapshot.LegalPlacements)
         {
+            if (preview is { } shown && shown.TileX == highlight.TileX && shown.TileY == highlight.TileY)
+            {
+                continue;
+            }
+
             var button = AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, minX, minY, cellSize, () => PlacementTapped?.Invoke(highlight.TileX, highlight.TileY));
             // A stack target is a tile to cover, so it gets a ring around the tile; any other placement is an empty spot to fill.
             if (highlight.Kind == PlacementKind.OnTop)
             {
-                PaintRing(button, SplatPalette.StackRing, cellSize);
+                PaintRing(button.transform, SplatPalette.StackRing, cellSize);
             }
             else
             {
@@ -243,6 +258,19 @@ internal sealed class BoardPanel
         return new Vector2(Mathf.Clamp(wanted.x, -slack.x, slack.x), Mathf.Clamp(wanted.y, -slack.y, slack.y));
     }
 
+    // The drawn tile at the spot it is being tried at, turned as Spin has it: bigger and raised, with a soft ring, and over a tile it would stack on.
+    // It takes no taps; the Place and Cancel strip decides.
+    private static void PaintPreview(RectTransform lattice, Tile drawn, int quarterTurns, (int TileX, int TileY) spot, int minX, int minY, float cellSize)
+    {
+        var block = Ui.Rect("Preview", lattice);
+        Ui.PlaceCell(block, spot.TileX * 2, spot.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
+        block.pivot = new Vector2(0.5f, 0.5f);
+        block.anchoredPosition += new Vector2(cellSize, cellSize + (PreviewLift * cellSize));
+        block.localScale = new Vector3(PreviewScale, PreviewScale, 1f);
+        PaintRing(block, SplatPalette.Go, cellSize);
+        TilePainter.Paint(block, drawn.Id.Value, drawn.Local, quarterTurns);
+    }
+
     // A tap target over a whole tile's 2 x 2 block, which is where the card's gap lets a tap through too; the caller draws into it.
     private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, int minX, int minY, float cellSize, Action onTap)
     {
@@ -253,10 +281,10 @@ internal sealed class BoardPanel
     }
 
     // A ring of fixed thickness just outside the tile's card, inside the block, so rings of neighbouring tiles stay apart.
-    private static void PaintRing(Button tile, Color tint, float cellSize)
+    private static void PaintRing(Transform tile, Color tint, float cellSize)
     {
         var margin = Mathf.Max(0f, CardPainter.InsetUnits(2f * cellSize) - Ui.RingUnits);
-        var ring = Ui.Image("Ring", tile.transform, tint, Ui.TileRing);
+        var ring = Ui.Image("Ring", tile, tint, Ui.TileRing);
         Ui.Anchored(ring.rectTransform, Vector2.zero, Vector2.one, new Vector2(margin, margin), new Vector2(-margin, -margin));
     }
 }

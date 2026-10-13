@@ -156,7 +156,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         table.SelectPower(null);
         Assert.That(FindText("Notice").text, Is.EqualTo("Seat 1 placed a tile."), "picking a power is not the next action");
 
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
         Assert.That(FindText("Notice").gameObject.activeInHierarchy, Is.False, "the action clears it");
         LiveButton("RecapSkip").onClick.Invoke();
         Assert.That(FindText("Notice").text, Is.EqualTo("Seat 2 placed a tile."), "the new action's own recap replaces it");
@@ -183,11 +183,11 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Object.DestroyImmediate(_root);
 
         var reshuffle = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two")));
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
         SkipTheWholeRecap();
         reshuffle.ConfirmIncomingSeat();
         SkipTheWholeRecap();
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
         var reshuffleItems = reshuffle.Snapshot.Recap;
         Assert.That(reshuffleItems.Last(), Is.InstanceOf<RecapReshuffled>());
         var recap = _root.GetComponent<TableView>().Recap;
@@ -372,9 +372,6 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
     }
 
     // Live (active) rects only: a render's replaced objects stay in the tree, inactive, until the frame ends.
-    private RectTransform LiveRect(string name) =>
-        _root.GetComponentsInChildren<RectTransform>(false).FirstOrDefault(rect => rect.name == name);
-
     private Text LiveText(string name) =>
         _root.GetComponentsInChildren<Text>(false).First(text => text.name == name);
 }

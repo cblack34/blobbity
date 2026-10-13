@@ -83,7 +83,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(highlight.anchoredPosition, Is.EqualTo(block.anchoredPosition));
         Assert.That(highlight.sizeDelta, Is.EqualTo(block.sizeDelta));
 
-        FindButton("Highlight0_0").onClick.Invoke();
+        PlaceAt(FindButton("Highlight0_0"));
 
         var after = table.Snapshot.View.Board;
         Assert.That(after.Tiles.Count, Is.EqualTo(1));
@@ -108,7 +108,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(origin, Is.Not.Null);
         Assert.That(origin.transform.parent.name, Is.EqualTo("Lattice"));
 
-        origin.onClick.Invoke();
+        PlaceAt(origin);
 
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
     }
@@ -295,7 +295,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     public void SelectingBounce_RemovesTheTappedTile_ThenAHighlightPlacesTheDrawnTile()
     {
         var table = BeginHumanTable(BounceBoardSetup());
-        LiveButton("Highlight1_0").onClick.Invoke();
+        PlaceAt(LiveButton("Highlight1_0"));
         table.ConfirmIncomingSeat();
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
@@ -327,7 +327,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(snapshot.SelectedPower, Is.Null);
         Assert.That(LiveButton("PowerBounce"), Is.Null);
 
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
 
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
@@ -369,11 +369,11 @@ public class TableSessionPlayModeTests : TableSessionFixture
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two")));
         Assert.That(FindText("Notice").gameObject.activeInHierarchy, Is.False);
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
         table.ConfirmIncomingSeat();
         Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.None));
 
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
 
         Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.DeckReshuffled));
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
@@ -465,7 +465,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     public void TheHandOffCover_SitsOverTheSecretMissionsOnly()
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
         Assert.That(table.Snapshot.ConcealVisible, Is.True);
 
         var conceal = FindRect("Conceal");
@@ -748,7 +748,9 @@ public class TableSessionPlayModeTests : TableSessionFixture
             yield return Hold(mouse, spot);
             yield return Release(mouse, spot);
 
-            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before + 1), "a tap places");
+            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before), "a tap only previews");
+            LiveButton("Place").onClick.Invoke();
+            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before + 1), "Place places");
         }
         finally
         {
