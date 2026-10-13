@@ -412,6 +412,18 @@ public class TableTests
     }
 
     [Test]
+    public void ThePreRecapConstructor_StillBuildsASnapshot_WithNoRecap()
+    {
+        var session = new LocalSession();
+        session.Start(Setup(2, Cards.BlankTile("start"), Cards.BlankTile("drawn")));
+
+        var snapshot = new TableSnapshot(session.View(First), false, false, false, [], [], 0, TableStatus.ToAct(First), null, TableNotice.None);
+
+        Assert.That(snapshot.RecapSeat, Is.Null);
+        Assert.That(snapshot.Recap, Is.Empty);
+    }
+
+    [Test]
     public void AutomatedSeatsThatNeverEndTheGame_StopAtTheGuard()
     {
         var tiles = new List<Tile> { Cards.BlankTile("start") };

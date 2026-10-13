@@ -5,6 +5,22 @@ using MissionSplat.Rules;
 // Everything a GUI draws for the seat holding the device. The lists are empty when nobody may act.
 public sealed class TableSnapshot
 {
+    // The pre-recap signature, kept so existing callers still compile; it carries no recap.
+    public TableSnapshot(
+        SeatView view,
+        bool secretsVisible,
+        bool concealVisible,
+        bool canAct,
+        IReadOnlyList<LegalPlacement> legalPlacements,
+        IReadOnlyList<PowerTargets> legalTargets,
+        int quarterTurns,
+        TableStatus status,
+        SymbolId? selectedPower,
+        TableNotice notice)
+        : this(view, secretsVisible, concealVisible, canAct, legalPlacements, legalTargets, quarterTurns, status, selectedPower, notice, null, [])
+    {
+    }
+
     public TableSnapshot(
         SeatView view,
         bool secretsVisible,
