@@ -151,6 +151,11 @@ internal sealed class TablePlayView
         // The strip covers the board's bottom edge while it shows, so the board leaves room to scroll clear of it.
         _board.Paint(_snapshot, _preview is { } preview ? (preview.TileX, preview.TileY) : null, _preview != null ? PlacementStrip.HeightUnits : 0f);
         _strip.Show(_preview != null);
+        // Every paint can move the spot: a tap, a Spin, or a new viewport size. It may sit behind the strip, or off the view.
+        if (_preview is { } shown)
+        {
+            _board.RevealTile(shown.TileX, shown.TileY, PlacementStrip.HeightUnits);
+        }
     }
 
     // A tap on a legal spot only tries the tile there.
@@ -164,8 +169,6 @@ internal sealed class TablePlayView
         _preview = (tileX, tileY, drawn.Id.Value);
         Canvas.ForceUpdateCanvases();
         PaintBoard();
-        // The new spot may sit behind the strip, or off the view.
-        _board.RevealTile(tileX, tileY, PlacementStrip.HeightUnits);
     }
 
     private void ClearPreview()

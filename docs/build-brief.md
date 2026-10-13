@@ -17,7 +17,7 @@ Intended users are the people at the table, including a child who can follow a s
 - The rules in [`rules.md`](rules.md): setup, orthogonal placement, three mission shapes, claim-on-your-placement, power cells, and a win at the configured claim count, which is four in the ordinary game.
 - A rules library a `dotnet test` run can execute with no Unity editor.
 - An application library with `ISession` and `IPlayer`, a `LocalSession` adapter, an `AiPlayer` adapter that does not see any other seat's secret missions, the turn driver that runs AI seats and hands the device between humans, and the named deck content.
-- A Unity player that collects setup, renders the board, the secret hand, the face-up claim row, and the legal moves the session reports, and submits a tap as an action for 2–4 seats on `LocalSession`. It computes no legality and runs no turn loop.
+- A Unity player that collects setup, renders the board, the secret hand, the face-up claim row, and the legal moves the session reports, and submits a tap as an action for 2–4 seats on `LocalSession`; a tap on a legal spot only previews the drawn tile there, and Place submits the placement. It computes no legality and runs no turn loop.
 - Pass-and-play on one device, and human versus AI on one device.
 - Schematic diagrams in [`diagrams/`](diagrams/) as the visual reference. Source photographs stay out of the repo.
 

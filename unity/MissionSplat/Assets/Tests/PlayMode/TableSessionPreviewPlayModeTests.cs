@@ -172,7 +172,36 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
     [UnityTest]
     public IEnumerator APreviewInTheBottomRow_ScrollsClearOfTheStrip()
     {
-        // A column down from the start tile that fits the view exactly, so the next tile down sits in the board's bottom row with no slack below.
+        var table = BeginBottomRowTable();
+        using var phone = new PhoneScreen(_root);
+        yield return phone.Settle(table);
+
+        LiveButton("Highlight0_-7").onClick.Invoke();
+
+        AssertPreviewClearOfTheStrip();
+    }
+
+    // A render after the viewport changes (a safe-area or orientation change) repaints the board, and the lifted tile must still end above the strip.
+    [UnityTest]
+    public IEnumerator ARenderThatResizesTheViewport_KeepsThePreviewClearOfTheStrip()
+    {
+        var table = BeginBottomRowTable();
+        using var phone = new PhoneScreen(_root);
+        yield return phone.Settle(table);
+        LiveButton("Highlight0_-7").onClick.Invoke();
+
+        // A home-indicator-sized inset at the bottom, as the safe-area handler applies it before it renders again.
+        var safe = _root.GetComponentsInChildren<RectTransform>(true).First(rect => rect.name == "SafeArea");
+        safe.anchorMin = new Vector2(0f, 0.25f);
+        _root.GetComponent<TableView>().RenderCurrentSnapshot();
+
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+        AssertPreviewClearOfTheStrip();
+    }
+
+    // A column down from the start tile that fits the view exactly, so the next tile down sits in the board's bottom row with no slack below.
+    private TableSession BeginBottomRowTable()
+    {
         var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();
         var table = BeginHumanTable(SetupFrom(tiles));
         for (var i = 0; i < 6; i++)
@@ -180,36 +209,51 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
             PlaceLowest(table);
         }
 
-        var target = new RenderTexture(1080, 2340, 24);
-        var camera = new GameObject("Camera").AddComponent<Camera>();
-        try
+        return table;
+    }
+
+    private void AssertPreviewClearOfTheStrip()
+    {
+        var corners = new Vector3[4];
+        LiveRect("Preview").GetWorldCorners(corners);
+        var previewBottom = corners[0].y;
+        LiveRect("PlacementStrip").GetWorldCorners(corners);
+        var stripTop = corners[1].y;
+        Assert.That(previewBottom, Is.GreaterThanOrEqualTo(stripTop), "the lifted tile ends above the strip");
+    }
+
+    // A camera and render texture the size of a phone, so the canvas lays out as on one; undone on dispose.
+    private sealed class PhoneScreen : System.IDisposable
+    {
+        private readonly RenderTexture _target = new(1080, 2340, 24);
+        private readonly GameObject _camera = new("Camera");
+
+        public PhoneScreen(GameObject root)
         {
-            camera.targetTexture = target;
+            var camera = _camera.AddComponent<Camera>();
+            camera.targetTexture = _target;
             camera.orthographic = true;
-            var canvas = _root.GetComponentInChildren<Canvas>(true);
+            var canvas = root.GetComponentInChildren<Canvas>(true);
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.worldCamera = camera;
             canvas.planeDistance = 1f;
             canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
             canvas.GetComponent<CanvasScaler>().scaleFactor = 1f;
-            table.SelectPower(null);
-            yield return null;
-            table.SelectPower(null);
-            yield return null;
-
-            LiveButton("Highlight0_-7").onClick.Invoke();
-
-            var corners = new Vector3[4];
-            LiveRect("Preview").GetWorldCorners(corners);
-            var previewBottom = corners[0].y;
-            LiveRect("PlacementStrip").GetWorldCorners(corners);
-            var stripTop = corners[1].y;
-            Assert.That(previewBottom, Is.GreaterThanOrEqualTo(stripTop), "the lifted tile ends above the strip");
         }
-        finally
+
+        // Renders twice across frames, so the board lays out at the phone's size.
+        public IEnumerator Settle(TableSession table)
         {
-            Object.DestroyImmediate(camera.gameObject);
-            Object.DestroyImmediate(target);
+            table.SelectPower(null);
+            yield return null;
+            table.SelectPower(null);
+            yield return null;
+        }
+
+        public void Dispose()
+        {
+            Object.DestroyImmediate(_camera);
+            Object.DestroyImmediate(_target);
         }
     }
 
