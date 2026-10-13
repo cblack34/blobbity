@@ -99,13 +99,13 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - Preview state lives in `TablePlayView`. It is kept only while no recap is pending, the drawn tile is the same, and the spot is still legal.
   - Naming follows the change: `TableView.PlaceRequested` and `TableSession.Place`.
   - No App or Rules change.
-- **Verification:** On `5bf6949`, `dotnet test` passed Rules 234 and App 85, and `unity test unity/MissionSplat --mode PlayMode` passed 56 of 56 (13 preview tests). They check that:
+- **Verification:** On `8e0df02`, `dotnet test` passed Rules 234 and App 85, and `unity test unity/MissionSplat --mode PlayMode` passed 57 of 57 (14 preview tests). They check that:
   - a tap previews without changing the game;
   - Place commits, Cancel clears, and Spin turns the preview;
   - a second tap moves the preview;
   - a stack preview sits on top;
   - power selection, hand-off, a new game, a different drawn tile and a pending recap each drop the preview, and a safe-area re-render keeps it;
-  - a bottom-row preview ends above the strip.
+  - a bottom-row preview ends above the strip, and still does after a render that resizes the viewport.
 
   `placement-preview.png` was added.
 - **Deviations:**
