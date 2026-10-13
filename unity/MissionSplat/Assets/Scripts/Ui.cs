@@ -59,16 +59,32 @@ internal static class Ui
     public static Button Button(string name, Transform parent, string caption, Color fill, Sprite sprite = null, int fontSize = 32)
     {
         var image = Image(name, parent, fill, sprite);
+        var button = Tappable(image);
+        var label = Label("Label", image.transform, fontSize, Color.white, TextAnchor.MiddleCenter);
+        Stretch(label.rectTransform);
+        label.text = caption;
+        return button;
+    }
+
+    // Makes an image tappable: it takes raycasts, shows no transition, and is not reachable by keyboard navigation.
+    public static Button Tappable(Image image)
+    {
         image.raycastTarget = true;
         var button = image.gameObject.AddComponent<Button>();
         button.transition = Selectable.Transition.None;
         var nav = Navigation.defaultNavigation;
         nav.mode = Navigation.Mode.None;
         button.navigation = nav;
-        var label = Label("Label", image.transform, fontSize, Color.white, TextAnchor.MiddleCenter);
-        Stretch(label.rectTransform);
-        label.text = caption;
         return button;
+    }
+
+    // A rounded box in the edge colour with a rounded face inset by outlineUnits; returns the edge, the face is its child "Face".
+    public static Image Outlined(string name, Transform parent, Color edge, Color face, float outlineUnits)
+    {
+        var edgeImage = Image(name, parent, edge, Rounded);
+        var faceImage = Image("Face", edgeImage.transform, face, Rounded);
+        Anchored(faceImage.rectTransform, Vector2.zero, Vector2.one, new Vector2(outlineUnits, outlineUnits), new Vector2(-outlineUnits, -outlineUnits));
+        return edgeImage;
     }
 
     public static void Stretch(RectTransform rect)

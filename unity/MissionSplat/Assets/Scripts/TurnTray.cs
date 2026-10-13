@@ -2,7 +2,6 @@ namespace MissionSplat.Player
 {
 
 using System;
-using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -15,6 +14,10 @@ internal sealed class TurnTray
     public const float HeightUnits = 560f;
 
     private const float EdgeUnits = 6f;
+    private const float ChipUnits = 100f;
+    private const float ChipGapUnits = 20f;
+    private const float PlaceInsteadUnits = 300f;
+    private const float TurnArrowUnits = 70f;
 
     private readonly RectTransform _turn;
     private readonly RectTransform _powers;
@@ -33,14 +36,14 @@ internal sealed class TurnTray
         Ui.Anchored(edge.rectTransform, new Vector2(0f, 1f), Vector2.one, new Vector2(0f, -EdgeUnits), Vector2.zero);
         _turn = Ui.Rect("Turn", tray.transform);
         Ui.Stretch(_turn);
-        _powers = Area("Powers", _turn, 0.03f, 0.80f, 0.97f, 0.96f);
-        _pending = Area("Pending", _turn, 0.03f, 0.04f, 0.37f, 0.76f);
-        _spin = Area("Spin", _turn, 0.38f, 0.04f, 0.56f, 0.76f);
-        _secrets = Area("Secrets", _turn, 0.58f, 0.04f, 0.97f, 0.76f);
+        _powers = Area("Powers", _turn, 0.03f, 0.76f, 0.97f, 0.97f);
+        _pending = Area("Pending", _turn, 0.03f, 0.03f, 0.37f, 0.74f);
+        _spin = Area("Spin", _turn, 0.38f, 0.03f, 0.56f, 0.74f);
+        _secrets = Area("Secrets", _turn, 0.58f, 0.03f, 0.97f, 0.74f);
         _winner = Area("Winner", tray.transform, 0.03f, 0.04f, 0.97f, 0.96f);
 
         // Over the secret missions only; the tile, Spin, and powers beside it stay in view.
-        _conceal = Area("Conceal", _turn, 0.58f, 0.04f, 0.97f, 0.76f);
+        _conceal = Area("Conceal", _turn, 0.58f, 0.03f, 0.97f, 0.74f);
         var concealFill = Ui.Image("Fill", _conceal, SplatPalette.Overlay, Ui.Rounded);
         Ui.Stretch(concealFill.rectTransform);
         concealFill.raycastTarget = true;
@@ -79,7 +82,7 @@ internal sealed class TurnTray
         _conceal.gameObject.SetActive(snapshot.ConcealVisible);
         if (snapshot.ConcealVisible)
         {
-            _concealLabel.text = SeatBar.NameOf(snapshot.View.CurrentSeat) + ", confirm to see your missions.";
+            _concealLabel.text = Seats.NameOf(snapshot.View.CurrentSeat) + ", confirm to see your missions.";
         }
     }
 
@@ -103,22 +106,17 @@ internal sealed class TurnTray
             return;
         }
 
-        var claims = snapshot.View.Claims.Select((row, index) => (row, index)).First(entry => entry.row.Seat.Equals(winner));
+        var index = Seats.IndexOf(snapshot.View, winner);
         var critterSlot = Ui.Rect("CritterSlot", _winner);
         Ui.Anchored(critterSlot, new Vector2(0f, 0.05f), new Vector2(0.36f, 0.95f), Vector2.zero, Vector2.zero);
-        var critter = Ui.Rect("Critter", critterSlot);
-        Ui.Stretch(critter);
-        var fit = critter.gameObject.AddComponent<AspectRatioFitter>();
-        fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        fit.aspectRatio = 1f;
-        CritterPainter.Paint(critter, claims.index);
+        CritterPainter.PaintFitted(critterSlot, index);
         var title = Ui.Label("Message", _winner, 72, SplatPalette.Ink, TextAnchor.LowerLeft);
         title.fontStyle = FontStyle.Bold;
         Ui.Anchored(title.rectTransform, new Vector2(0.40f, 0.5f), new Vector2(1f, 0.9f), Vector2.zero, Vector2.zero);
         title.text = heading;
         var count = Ui.Label("Claims", _winner, 40, SplatPalette.Muted, TextAnchor.UpperLeft);
         Ui.Anchored(count.rectTransform, new Vector2(0.40f, 0.2f), new Vector2(1f, 0.5f), Vector2.zero, Vector2.zero);
-        var total = claims.row.Missions.Count;
+        var total = snapshot.View.Claims[index].Missions.Count;
         count.text = total + (total == 1 ? " claim" : " claims");
     }
 
@@ -139,7 +137,7 @@ internal sealed class TurnTray
         Ui.Clear(_spin);
         var slot = Ui.Rect("Slot", _spin);
         Ui.Anchored(slot, new Vector2(0f, 0.30f), Vector2.one, Vector2.zero, Vector2.zero);
-        var button = Ui.Button("Spin", slot, "Spin", SplatPalette.SpinFill, Ui.Circle, 40);
+        var button = Ui.Button("Spin", slot, "Spin", snapshot.CanAct ? SplatPalette.SpinFill : SplatPalette.Gray, Ui.Circle, 40);
         button.GetComponentInChildren<Text>().color = SplatPalette.Ink;
         var rect = button.GetComponent<RectTransform>();
         Ui.Stretch(rect);
@@ -150,11 +148,26 @@ internal sealed class TurnTray
         var next = (snapshot.QuarterTurns + 1) % 4;
         button.onClick.AddListener(() => QuarterTurnsSelected?.Invoke(next));
 
-        var chip = Ui.Image("Turns", _spin, SplatPalette.SpinFill, Ui.Rounded);
-        Ui.Anchored(chip.rectTransform, new Vector2(0.1f, 0.04f), new Vector2(0.9f, 0.24f), Vector2.zero, Vector2.zero);
-        var count = Ui.Label("Count", chip.transform, 34, SplatPalette.Ink, TextAnchor.MiddleCenter);
-        Ui.Stretch(count.rectTransform);
-        count.text = "\u00d7" + snapshot.QuarterTurns;
+        // While rotate is selected the drawn tile does not preview the turns, so one arrow per quarter-turn shows the amount.
+        if (snapshot.SelectedPower is { } power && power.Equals(OrdinaryCatalog.Rotate) && snapshot.QuarterTurns > 0)
+        {
+            PaintTurnHint(snapshot.QuarterTurns);
+        }
+    }
+
+    private void PaintTurnHint(int quarterTurns)
+    {
+        var hint = Ui.Rect("TurnHint", _spin);
+        hint.anchorMin = new Vector2(0.5f, 0.04f);
+        hint.anchorMax = new Vector2(0.5f, 0.24f);
+        hint.sizeDelta = new Vector2(quarterTurns * TurnArrowUnits, 0f);
+        hint.anchoredPosition = Vector2.zero;
+        for (var i = 0; i < quarterTurns; i++)
+        {
+            var arrow = Ui.Image("Quarter" + i, hint, SplatPalette.Ink, CellPainter.RotateArrow);
+            arrow.preserveAspect = true;
+            Ui.Anchored(arrow.rectTransform, new Vector2(i / (float)quarterTurns, 0f), new Vector2((i + 1) / (float)quarterTurns, 1f), Vector2.zero, Vector2.zero);
+        }
     }
 
     private void PaintSecrets(TableSnapshot snapshot)
@@ -185,37 +198,61 @@ internal sealed class TurnTray
         }
     }
 
+    // A chip for each power the drawn tile still has a use of, left to right; one used up leaves no chip.
     private void PaintPowers(TableSnapshot snapshot)
     {
         Ui.Clear(_powers);
-        var charges = snapshot.View.RemainingUses;
-        var slots = Math.Max(3, charges.Count + 1);
-        for (var i = 0; i < charges.Count; i++)
+        var x = 0f;
+        foreach (var charge in snapshot.View.RemainingUses)
         {
-            var charge = charges[i];
+            if (charge.Remaining <= 0)
+            {
+                continue;
+            }
+
             var selected = snapshot.SelectedPower is { } current && current.Equals(charge.Power);
-            var usable = snapshot.CanAct && charge.Remaining > 0;
-            var name = PowerName(charge.Power);
-            var fill = selected ? SplatPalette.PowerSelected : usable ? SplatPalette.Muted : SplatPalette.Gray;
-            var button = Ui.Button("Power" + name, _powers, name + " \u00b7 " + charge.Remaining + " left", fill, Ui.Rounded);
-            AnchorSlot(button.GetComponent<RectTransform>(), i, slots);
-            button.interactable = usable;
+            var fill = selected ? SplatPalette.PowerSelected : snapshot.CanAct ? SplatPalette.Muted : SplatPalette.Gray;
+            var chip = Ui.Button("Power" + PowerName(charge.Power), _powers, string.Empty, fill, Ui.Circle);
+            PlaceFromLeft(chip.GetComponent<RectTransform>(), x, ChipUnits, ChipUnits);
+            CellPainter.PaintMark(chip.GetComponent<RectTransform>(), charge.Power, 64);
+            if (charge.Remaining > 1)
+            {
+                PaintUseCount(chip.transform, charge.Remaining);
+            }
+
+            chip.interactable = snapshot.CanAct;
             var power = charge.Power;
-            button.onClick.AddListener(() => PowerSelected?.Invoke(selected ? null : power));
+            chip.onClick.AddListener(() => PowerSelected?.Invoke(selected ? null : power));
+            x += ChipUnits + ChipGapUnits;
         }
 
         if (snapshot.SelectedPower is not null)
         {
             var back = Ui.Button("PlaceInstead", _powers, "Place instead", SplatPalette.Green, Ui.Rounded);
-            AnchorSlot(back.GetComponent<RectTransform>(), charges.Count, slots);
+            PlaceFromLeft(back.GetComponent<RectTransform>(), x, PlaceInsteadUnits, ChipUnits - 12f);
             back.onClick.AddListener(() => PowerSelected?.Invoke(null));
         }
     }
 
-    private static void AnchorSlot(RectTransform rect, int index, int slots)
+    private static void PaintUseCount(Transform chip, int remaining)
     {
-        var x = index / (float)slots;
-        Ui.Anchored(rect, new Vector2(x + 0.01f, 0f), new Vector2(x + (1f / slots) - 0.01f, 1f), Vector2.zero, Vector2.zero);
+        var badge = Ui.Image("Count", chip, Color.white, Ui.Rounded);
+        badge.rectTransform.anchorMin = Vector2.one;
+        badge.rectTransform.anchorMax = Vector2.one;
+        badge.rectTransform.sizeDelta = new Vector2(52f, 38f);
+        badge.rectTransform.anchoredPosition = new Vector2(-4f, -2f);
+        var label = Ui.Label("Label", badge.transform, 28, SplatPalette.Ink, TextAnchor.MiddleCenter);
+        Ui.Stretch(label.rectTransform);
+        label.text = "\u00d7" + remaining;
+    }
+
+    // Places rect at x from the left edge of the powers row, centred vertically.
+    private static void PlaceFromLeft(RectTransform rect, float x, float width, float height)
+    {
+        rect.anchorMin = new Vector2(0f, 0.5f);
+        rect.anchorMax = new Vector2(0f, 0.5f);
+        rect.sizeDelta = new Vector2(width, height);
+        rect.anchoredPosition = new Vector2(x + (width / 2f), 0f);
     }
 
     private static string PowerName(SymbolId power) => char.ToUpperInvariant(power.Value[0]) + power.Value.Substring(1);

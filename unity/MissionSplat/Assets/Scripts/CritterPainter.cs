@@ -2,12 +2,24 @@ namespace MissionSplat.Player
 {
 
 using UnityEngine;
+using UnityEngine.UI;
 
 // A seat's critter: the project's own splat tinted by seat order, with two googly eyes. slot should be square.
 internal static class CritterPainter
 {
     private const float EyeCentreY = 0.56f;
     private const float EyeRadius = 0.14f;
+
+    // Fits the critter, as large as it can be and square, inside a slot of any shape.
+    public static void PaintFitted(RectTransform slot, int seatIndex)
+    {
+        var critter = Ui.Rect("Critter", slot);
+        Ui.Stretch(critter);
+        var fit = critter.gameObject.AddComponent<AspectRatioFitter>();
+        fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
+        fit.aspectRatio = 1f;
+        Paint(critter, seatIndex);
+    }
 
     public static void Paint(RectTransform slot, int seatIndex)
     {

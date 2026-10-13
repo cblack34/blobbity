@@ -2,7 +2,6 @@ namespace MissionSplat.Player
 {
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
@@ -17,15 +16,12 @@ internal sealed class TablePlayView
     private const float StatusUnits = 110f;
     private const float NoticeUnits = 44f;
 
-    // Below this a tile is too small to tap with a finger; a board that needs more room is clipped, not shrunk further.
-    private const float MinimumCellUnits = 44f;
-
     private readonly Text _heading;
     private readonly Text _status;
     private readonly Text _notice;
     private readonly SeatBar _seatBar;
     private readonly ClaimsPanel _claimsPanel;
-    private readonly RectTransform _board;
+    private readonly BoardPanel _board;
     private readonly TurnTray _tray;
 
     public event Action<int, int> Tapped;
@@ -52,12 +48,11 @@ internal sealed class TablePlayView
         Band(_notice.rectTransform, SeatBarUnits + HeadingUnits + StatusUnits, NoticeUnits);
         _notice.gameObject.SetActive(false);
 
-        _board = Ui.Rect("Board", play);
-        Ui.Anchored(_board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.HeightUnits + 12f), new Vector2(-24f, -(SeatBarUnits + HeadingUnits + StatusUnits + NoticeUnits)));
-        _board.gameObject.AddComponent<RectMask2D>();
-        var boardFill = Ui.Image("BoardFill", _board, Color.white, Ui.Rounded);
-        Ui.Stretch(boardFill.rectTransform);
-        boardFill.color = new Color(1f, 1f, 1f, 0.35f);
+        var board = Ui.Rect("Board", play);
+        Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.HeightUnits + 12f), new Vector2(-24f, -(SeatBarUnits + HeadingUnits + StatusUnits + NoticeUnits)));
+        _board = new BoardPanel(board);
+        _board.Tapped += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
+        _board.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);
 
         _tray = new TurnTray(play);
         _tray.Confirmed += () => Confirmed?.Invoke();
@@ -72,15 +67,16 @@ internal sealed class TablePlayView
     public void Render(TableSnapshot snapshot)
     {
         Canvas.ForceUpdateCanvases();
-        _heading.text = HeadingText(snapshot);
+        var heading = HeadingText(snapshot);
+        _heading.text = heading;
         _status.text = InstructionText(snapshot);
         _notice.text = NoticeText(snapshot.Notice);
         _notice.gameObject.SetActive(snapshot.Notice != TableNotice.None);
         _seatBar.Paint(snapshot.View);
         // What the panel shows may be out of date after any action, so a render closes it.
         _claimsPanel.Hide();
-        _tray.Paint(snapshot, _heading.text);
-        PaintBoard(snapshot);
+        _tray.Paint(snapshot, heading);
+        _board.Paint(snapshot);
     }
 
     // A band across the screen: top units from the top edge, height units tall, inset on both sides.
@@ -94,8 +90,8 @@ internal sealed class TablePlayView
         var status = snapshot.Status;
         return status.Kind switch
         {
-            TableStatusKind.ToConfirm or TableStatusKind.ToAct => SeatBar.NameOf(status.Seat.Value) + "\u2019s turn!",
-            TableStatusKind.Won => SeatBar.NameOf(status.Seat.Value) + " wins!",
+            TableStatusKind.ToConfirm or TableStatusKind.ToAct => Seats.NameOf(status.Seat.Value) + "\u2019s turn!",
+            TableStatusKind.Won => Seats.NameOf(status.Seat.Value) + " wins!",
             TableStatusKind.Ended => "Game over",
             _ => "Play has stopped",
         };
@@ -107,11 +103,11 @@ internal sealed class TablePlayView
         switch (status.Kind)
         {
             case TableStatusKind.ToConfirm:
-                return "Hand the device to " + SeatBar.NameOf(status.Seat.Value) + ", then confirm.";
+                return "Hand the device to " + Seats.NameOf(status.Seat.Value) + ", then confirm.";
             case TableStatusKind.ToAct:
                 return ActInstruction(snapshot);
             case TableStatusKind.Won:
-                return OrdinaryCatalog.ClaimsRequiredToWin + " claims wins the game.";
+                return Seats.ClaimsToWin + " claims wins the game.";
             case TableStatusKind.Ended:
                 return "The game has ended.";
             default:
@@ -135,90 +131,5 @@ internal sealed class TablePlayView
 
     private static string NoticeText(TableNotice notice) =>
         notice == TableNotice.DeckReshuffled ? "The draw deck ran out; the board was reshuffled." : string.Empty;
-
-    private void PaintBoard(TableSnapshot snapshot)
-    {
-        // Child 0 is the permanent board fill.
-        Ui.Clear(_board, 1);
-
-        var view = snapshot.View;
-        // An emptied board still offers the origin, so only return when nothing is drawn or tappable.
-        if (view.Board.Cells.Count == 0 && snapshot.LegalPlacements.Count == 0)
-        {
-            return;
-        }
-
-        var minX = int.MaxValue;
-        var maxX = int.MinValue;
-        var minY = int.MaxValue;
-        var maxY = int.MinValue;
-        foreach (var occupiedCell in view.Board.Cells)
-        {
-            minX = Math.Min(minX, occupiedCell.CellX);
-            maxX = Math.Max(maxX, occupiedCell.CellX);
-            minY = Math.Min(minY, occupiedCell.CellY);
-            maxY = Math.Max(maxY, occupiedCell.CellY);
-        }
-
-        foreach (var highlight in snapshot.LegalPlacements)
-        {
-            minX = Math.Min(minX, highlight.TileX * 2);
-            maxX = Math.Max(maxX, (highlight.TileX * 2) + 1);
-            minY = Math.Min(minY, highlight.TileY * 2);
-            maxY = Math.Max(maxY, (highlight.TileY * 2) + 1);
-        }
-
-        var width = maxX - minX + 1;
-        var height = maxY - minY + 1;
-        var area = _board.rect;
-        var cellSize = Math.Max(MinimumCellUnits, Math.Min(area.width / (width + 1), area.height / (height + 1)));
-
-        var lattice = Ui.Rect("Lattice", _board);
-        lattice.anchorMin = new Vector2(0.5f, 0.5f);
-        lattice.anchorMax = new Vector2(0.5f, 0.5f);
-        lattice.pivot = new Vector2(0.5f, 0.5f);
-        lattice.sizeDelta = new Vector2(width * cellSize, height * cellSize);
-
-        var cells = new Dictionary<(int X, int Y), Cell>();
-        foreach (var occupied in view.Board.Cells)
-        {
-            cells[(occupied.CellX, occupied.CellY)] = occupied.Value;
-        }
-
-        foreach (var tile in view.Board.Tiles)
-        {
-            var block = Ui.Rect("Tile" + tile.Id.Value, lattice);
-            Ui.PlaceCell(block, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
-            TilePainter.Paint(block, tile.Id.Value, (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)], 0);
-        }
-
-        if (snapshot.ConcealVisible)
-        {
-            return;
-        }
-
-        // While a power is selected the snapshot offers no placements, so only its targets are drawn.
-        // A rotate target waits for a 1–3 amount; Rules would refuse zero, so the tap is not offered until the row is set.
-        var targetsLive = !(snapshot.SelectedPower is { } selected && selected.Equals(OrdinaryCatalog.Rotate) && snapshot.QuarterTurns == 0);
-        foreach (var target in snapshot.SelectedTargets)
-        {
-            var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, SplatPalette.TargetHighlight, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
-            button.interactable = targetsLive;
-        }
-
-        foreach (var highlight in snapshot.LegalPlacements)
-        {
-            var tint = highlight.Kind == PlacementKind.OnTop ? SplatPalette.StackHighlight : SplatPalette.Highlight;
-            AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, tint, minX, minY, cellSize, () => Tapped?.Invoke(highlight.TileX, highlight.TileY));
-        }
-    }
-
-    private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, Color tint, int minX, int minY, float cellSize, Action onTap)
-    {
-        var button = Ui.Button(name, lattice, string.Empty, tint);
-        Ui.PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
-        button.onClick.AddListener(() => onTap());
-        return button;
-    }
 }
 }

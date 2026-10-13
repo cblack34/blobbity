@@ -6,7 +6,8 @@ using MissionSplat.App;
 using UnityEngine;
 using UnityEngine.UI;
 
-// A seat's claimed missions over a dimmed table. A tap anywhere closes it.
+// A seat's claimed missions over a dimmed table. A tap anywhere closes it, and so does any render of the table
+// (TablePlayView.Render calls Hide), because an action may have changed the claims it shows.
 internal sealed class ClaimsPanel
 {
     private const float PanelHeightUnits = 620f;
@@ -28,23 +29,16 @@ internal sealed class ClaimsPanel
         Ui.Stretch(dim.GetComponent<RectTransform>());
         dim.onClick.AddListener(Hide);
 
-        var edge = Ui.Image("Edge", _root, SplatPalette.Ink, Ui.Rounded);
+        var edge = Ui.Outlined("Edge", _root, SplatPalette.Ink, Color.white, OutlineUnits);
         PlacePanel(edge.rectTransform);
-        var face = Ui.Image("Face", edge.transform, Color.white, Ui.Rounded);
-        Ui.Anchored(face.rectTransform, Vector2.zero, Vector2.one, new Vector2(OutlineUnits, OutlineUnits), new Vector2(-OutlineUnits, -OutlineUnits));
 
         var critterSlot = Ui.Rect("CritterSlot", edge.transform);
         Ui.Anchored(critterSlot, new Vector2(0.04f, 0.74f), new Vector2(0.16f, 0.97f), Vector2.zero, Vector2.zero);
-        var critter = Ui.Rect("Critter", critterSlot);
-        Ui.Stretch(critter);
-        var fit = critter.gameObject.AddComponent<AspectRatioFitter>();
-        fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        fit.aspectRatio = 1f;
-        CritterPainter.Paint(critter, seatIndex);
+        CritterPainter.PaintFitted(critterSlot, seatIndex);
         var title = Ui.Label("Title", edge.transform, 52, SplatPalette.Ink, TextAnchor.MiddleLeft);
         title.fontStyle = FontStyle.Bold;
         Ui.Anchored(title.rectTransform, new Vector2(0.18f, 0.76f), new Vector2(0.95f, 0.96f), Vector2.zero, Vector2.zero);
-        title.text = SeatBar.NameOf(claims.Seat) + "\u2019s claims";
+        title.text = Seats.NameOf(claims.Seat) + "\u2019s claims";
 
         var cards = Ui.Rect("Cards", edge.transform);
         Ui.Anchored(cards, new Vector2(0f, 0.04f), new Vector2(1f, 0.72f), Vector2.zero, Vector2.zero);

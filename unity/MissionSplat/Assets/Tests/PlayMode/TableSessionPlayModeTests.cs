@@ -5,9 +5,13 @@ using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Player;
 using MissionSplat.Rules;
+using System.Collections;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.TestTools;
 using UnityEngine.UI;
 
 public class TableSessionPlayModeTests
@@ -246,8 +250,7 @@ public class TableSessionPlayModeTests
         Assert.That(snapshot.View.PendingMatchTile, Is.Not.Null);
         Assert.That(snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
         Assert.That(snapshot.SelectedPower, Is.Null);
-        Assert.That(ButtonCaption("PowerRotate"), Does.Contain("0 left"));
-        Assert.That(LiveButton("PowerRotate").interactable, Is.False);
+        Assert.That(LiveButton("PowerRotate"), Is.Null, "a power with no use left has no chip");
         Assert.That(LiveButtons("Target"), Is.Empty);
         Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
     }
@@ -286,7 +289,7 @@ public class TableSessionPlayModeTests
         Assert.That(snapshot.View.PendingMatchTile, Is.Not.Null);
         Assert.That(snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
         Assert.That(snapshot.SelectedPower, Is.Null);
-        Assert.That(ButtonCaption("PowerBounce"), Does.Contain("0 left"));
+        Assert.That(LiveButton("PowerBounce"), Is.Null);
 
         LiveButtons("Highlight").First().onClick.Invoke();
 
@@ -309,7 +312,8 @@ public class TableSessionPlayModeTests
         Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
         Assert.That(LiveButtons("Target"), Is.Empty);
         Assert.That(LiveButton("PlaceInstead"), Is.Null);
-        Assert.That(ButtonCaption("PowerRotate"), Does.Contain("1 left"));
+        Assert.That(LiveButton("PowerRotate"), Is.Not.Null);
+        Assert.That(LiveButton("PowerRotate").transform.Find("Count"), Is.Null, "one use left shows no count");
     }
 
     [Test]
@@ -436,6 +440,7 @@ public class TableSessionPlayModeTests
         Assert.That(conceal.anchorMax, Is.EqualTo(secrets.anchorMax));
         Assert.That(LiveButton("Spin"), Is.Not.Null);
         Assert.That(LiveButton("Confirm"), Is.Not.Null);
+        Assert.That(_root.GetComponentsInChildren<RectTransform>(false).Any(rect => rect.name.StartsWith("Mission") && rect.name.Length > "Mission".Length && char.IsDigit(rect.name["Mission".Length])), Is.False, "no mission card is drawn under the cover");
     }
 
     [Test]
@@ -462,6 +467,178 @@ public class TableSessionPlayModeTests
         Assert.That(FindRect("Turn").gameObject.activeInHierarchy, Is.False);
         Assert.That(LiveButton("Spin"), Is.Null);
         Assert.That(_root.GetComponentsInChildren<Text>(false).Any(text => text.text == "Pending tile" || text.text == "Missions hidden"), Is.False);
+    }
+
+    [Test]
+    public void ARenderClosesTheClaimsPanel()
+    {
+        var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
+        LiveButton("Seat1").onClick.Invoke();
+        Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.True);
+
+        table.SelectPower(null);
+
+        Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.False);
+    }
+
+    [Test]
+    public void PowerChips_ShowOnlyPowersTheDrawnTileStillHas_AsIconsWithACountAboveOne()
+    {
+        var rotate = Cell.Symbol(OrdinaryCatalog.Rotate);
+        var table = BeginHumanTable(SetupFrom(
+            BlankTile("start"),
+            new Tile(new TileId("double"), rotate, rotate, Cell.Color(OrdinaryCatalog.Red), Cell.Color(OrdinaryCatalog.Red)),
+            BlankTile("pad")));
+
+        Assert.That(LiveButton("PowerRotate"), Is.Not.Null);
+        Assert.That(LiveButton("PowerBounce"), Is.Null, "the drawn tile has no bounce");
+        Assert.That(LiveButton("PowerRotate").GetComponentInChildren<Text>().text, Is.Empty, "a chip is an icon, not words");
+        Assert.That(LiveButton("PowerRotate").transform.Find("Count").GetComponentInChildren<Text>().text, Does.Contain("2"));
+
+        LiveButton("PowerRotate").onClick.Invoke();
+        Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
+        Assert.That(_root.GetComponentsInChildren<RectTransform>(false).Any(rect => rect.name == "TurnHint"), Is.False, "no turns chosen yet");
+        LiveButton("Spin").onClick.Invoke();
+        LiveButton("Spin").onClick.Invoke();
+        var hint = _root.GetComponentsInChildren<RectTransform>(false).Single(rect => rect.name == "TurnHint");
+        Assert.That(hint.childCount, Is.EqualTo(2), "one arrow per quarter-turn");
+    }
+
+    [Test]
+    public void ABoardThatFitsStaysCentred_AndOneThatDoesNotScrollsAndKeepsItsPlaceAcrossRenders()
+    {
+        var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();
+        var table = BeginHumanTable(SetupFrom(tiles));
+        var scroll = _root.GetComponentInChildren<ScrollRect>(true);
+        Assert.That(scroll, Is.Not.Null);
+        Assert.That(scroll.content.anchoredPosition, Is.EqualTo(Vector2.zero), "a board that fits is centred");
+        var view = scroll.GetComponent<RectTransform>();
+
+        for (var i = 0; i < 9; i++)
+        {
+            PlaceRightmost(table);
+        }
+
+        Canvas.ForceUpdateCanvases();
+        Assert.That(scroll.content.rect.width, Is.GreaterThan(view.rect.width), "ten tiles in a row need scrolling");
+        Assert.That(scroll.content.Find("Lattice").GetComponentsInChildren<Button>(false).Count(button => button.name.StartsWith("Highlight")), Is.GreaterThan(0));
+
+        // Scroll to the left end, then place another tile at the right end: the first tile stays where the player had it.
+        scroll.content.anchoredPosition = new Vector2((scroll.content.rect.width - view.rect.width) / 2f, 0f);
+        Canvas.ForceUpdateCanvases();
+        var first = TileCentreInView("Tilestart", view);
+        PlaceRightmost(table);
+        Canvas.ForceUpdateCanvases();
+        Assert.That(TileCentreInView("Tilestart", view).x, Is.EqualTo(first.x).Within(1f));
+        Assert.That(TileCentreInView("Tilestart", view).y, Is.EqualTo(first.y).Within(1f));
+    }
+
+    // Driven through the real input module with a virtual mouse: a drag on a highlight scrolls the board and does not place, a tap places.
+    [UnityTest]
+    public IEnumerator DraggingAHighlightScrollsTheBoard_AndATapStillPlaces()
+    {
+        var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();
+        var table = BeginHumanTable(SetupFrom(tiles));
+        for (var i = 0; i < 9; i++)
+        {
+            PlaceRightmost(table);
+        }
+
+        // A camera gives the canvas a screen of known size, so the pointer can land on it whatever the editor's game view is.
+        var target = new RenderTexture(1080, 2340, 24);
+        var camera = new GameObject("Camera").AddComponent<Camera>();
+        camera.targetTexture = target;
+        camera.orthographic = true;
+        var canvas = _root.GetComponentInChildren<Canvas>(true);
+        canvas.renderMode = RenderMode.ScreenSpaceCamera;
+        canvas.worldCamera = camera;
+        canvas.planeDistance = 1f;
+        canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+        canvas.GetComponent<CanvasScaler>().scaleFactor = 1f;
+        // The test player is not the focused application, so input is told to count anyway; the project's settings come back afterwards.
+        var settings = InputSystem.settings;
+        InputSystem.settings = ScriptableObject.CreateInstance<InputSettings>();
+        InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+        InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+        var mouse = InputSystem.AddDevice<Mouse>();
+        try
+        {
+            table.SelectPower(null);
+            yield return null;
+            Canvas.ForceUpdateCanvases();
+            table.SelectPower(null);
+            yield return null;
+            var scroll = _root.GetComponentInChildren<ScrollRect>(true);
+            var before = table.Snapshot.View.Board.Tiles.Count;
+            var view = scroll.viewport;
+            var placement = LiveButtons("Highlight").First(button => Mathf.Abs(view.InverseTransformPoint(button.transform.position).x) < (view.rect.width / 2f) - 100f);
+            var start = (Vector2)camera.WorldToScreenPoint(placement.transform.position);
+            Assert.That(scroll.content.rect.width, Is.GreaterThan(scroll.viewport.rect.width));
+            var contentBefore = scroll.content.anchoredPosition;
+
+            yield return Press(mouse, start);
+            for (var step = 1; step <= 8; step++)
+            {
+                yield return Press(mouse, start + new Vector2(-30f * step, 0f));
+            }
+
+            yield return Release(mouse, start + new Vector2(-240f, 0f));
+
+            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before), "a drag does not place");
+            Assert.That(scroll.content.anchoredPosition, Is.Not.EqualTo(contentBefore), "a drag scrolls the board");
+
+            placement = LiveButtons("Highlight").First(button => Mathf.Abs(view.InverseTransformPoint(button.transform.position).x) < (view.rect.width / 2f) - 100f);
+            var spot = (Vector2)camera.WorldToScreenPoint(placement.transform.position);
+            yield return Press(mouse, spot);
+            yield return Release(mouse, spot);
+
+            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before + 1), "a tap places");
+        }
+        finally
+        {
+            InputSystem.RemoveDevice(mouse);
+            Object.DestroyImmediate(InputSystem.settings);
+            InputSystem.settings = settings;
+            Object.DestroyImmediate(camera.gameObject);
+            target.Release();
+        }
+    }
+
+    private static IEnumerator Press(Mouse mouse, Vector2 position)
+    {
+        InputSystem.QueueStateEvent(mouse, new MouseState { position = position }.WithButton(MouseButton.Left));
+        yield return null;
+        yield return null;
+    }
+
+    private static IEnumerator Release(Mouse mouse, Vector2 position)
+    {
+        InputSystem.QueueStateEvent(mouse, new MouseState { position = position });
+        yield return null;
+        yield return null;
+    }
+
+    private void PlaceRightmost(TableSession table)
+    {
+        if (table.Snapshot.ConcealVisible)
+        {
+            table.ConfirmIncomingSeat();
+        }
+
+        var spot = table.Snapshot.LegalPlacements.OrderByDescending(slot => slot.TileX).First();
+        table.Tap(spot.TileX, spot.TileY);
+        if (table.Snapshot.ConcealVisible)
+        {
+            table.ConfirmIncomingSeat();
+        }
+    }
+
+    // Where a board tile's centre sits relative to the middle of the board view, in canvas units.
+    private Vector2 TileCentreInView(string tileName, RectTransform view)
+    {
+        var tile = _root.GetComponentsInChildren<RectTransform>(false).First(rect => rect.name == tileName);
+        var local = view.InverseTransformPoint(tile.TransformPoint(tile.rect.center));
+        return new Vector2(local.x, local.y);
     }
 
     private void AssertPips(string seatButton, int filled, int empty)
@@ -592,8 +769,6 @@ public class TableSessionPlayModeTests
 
     private Button[] LiveButtons(string prefix) =>
         _root.GetComponentsInChildren<Button>(false).Where(button => button.name.StartsWith(prefix)).ToArray();
-
-    private string ButtonCaption(string name) => LiveButton(name).GetComponentInChildren<Text>().text;
 
     private Button FindButton(string name)
     {
