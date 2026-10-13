@@ -5,6 +5,7 @@ using MissionSplat.Rules;
 // Everything a GUI draws for the seat holding the device. The lists are empty when nobody may act.
 public sealed class TableSnapshot
 {
+    // The pre-recap signature, kept so existing callers still compile; it carries no recap.
     public TableSnapshot(
         SeatView view,
         bool secretsVisible,
@@ -16,6 +17,23 @@ public sealed class TableSnapshot
         TableStatus status,
         SymbolId? selectedPower,
         TableNotice notice)
+        : this(view, secretsVisible, concealVisible, canAct, legalPlacements, legalTargets, quarterTurns, status, selectedPower, notice, null, [])
+    {
+    }
+
+    public TableSnapshot(
+        SeatView view,
+        bool secretsVisible,
+        bool concealVisible,
+        bool canAct,
+        IReadOnlyList<LegalPlacement> legalPlacements,
+        IReadOnlyList<PowerTargets> legalTargets,
+        int quarterTurns,
+        TableStatus status,
+        SymbolId? selectedPower,
+        TableNotice notice,
+        SeatId? recapSeat,
+        IReadOnlyList<RecapItem> recap)
     {
         View = view ?? throw new ArgumentNullException(nameof(view));
         SecretsVisible = secretsVisible;
@@ -27,6 +45,8 @@ public sealed class TableSnapshot
         Status = status ?? throw new ArgumentNullException(nameof(status));
         SelectedPower = selectedPower;
         Notice = notice;
+        RecapSeat = recapSeat;
+        Recap = Copied.Items(recap, nameof(recap));
         SelectedTargets = TargetsOf(LegalTargets, selectedPower);
     }
 
@@ -54,6 +74,12 @@ public sealed class TableSnapshot
 
     // What happened since the last accepted action that the seat could not have seen; None once a human seat's next action is accepted.
     public TableNotice Notice { get; }
+
+    // Whose recap this is: the human holding the device. During a hand-off that is the outgoing holder, not Status.Seat; null until a human holds it.
+    public SeatId? RecapSeat { get; }
+
+    // What the human holding the device has not yet seen, oldest first; empty when nothing is pending or nobody holds it. AcknowledgeRecap clears it.
+    public IReadOnlyList<RecapItem> Recap { get; }
 
     // The positions to highlight for SelectedPower; empty while the seat is placing.
     public IReadOnlyList<BoardPosition> SelectedTargets { get; }

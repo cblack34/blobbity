@@ -76,6 +76,21 @@ public sealed class BoardView
     public IReadOnlyList<OccupiedTile> Tiles { get; }
 
     public IReadOnlyList<OccupiedCell> Cells { get; }
+
+    // The four cells showing at a tile position, empty when no tile is there.
+    public OccupiedCell[] CellsOf(int tileX, int tileY)
+    {
+        var found = new List<OccupiedCell>(4);
+        foreach (var cell in Cells)
+        {
+            if (cell.CellX >= tileX * 2 && cell.CellX < (tileX * 2) + 2 && cell.CellY >= tileY * 2 && cell.CellY < (tileY * 2) + 2)
+            {
+                found.Add(cell);
+            }
+        }
+
+        return found.ToArray();
+    }
 }
 
 public readonly record struct OccupiedTile(TileId Id, int TileX, int TileY);

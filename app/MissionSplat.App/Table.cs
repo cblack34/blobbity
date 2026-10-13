@@ -15,6 +15,7 @@ public sealed class Table
     private readonly TableStart _start;
     private readonly GameSetup _setup;
     private readonly IPlayer?[] _players;
+    private readonly RecapFeed _recap;
     private TableSnapshot? _snapshot;
     private int _quarterTurns;
     private SymbolId? _selectedPower;
@@ -38,6 +39,7 @@ public sealed class Table
         _setup = setup ?? throw new ArgumentNullException(nameof(setup));
         RequireSameSeats(start, setup);
         _players = BindPlayers(session, start);
+        _recap = new RecapFeed(setup);
         _reshuffleSeed = reshuffleSeed;
     }
 
@@ -60,6 +62,7 @@ public sealed class Table
         _stop = null;
         _holder = null;
         _notice = TableNotice.None;
+        _recap.Reset();
         _reshuffleRandom = _reshuffleSeed is int seed ? new Random(seed ^ ReshuffleSeedSalt) : null;
         _conceal = IsHuman(_session.CurrentSeat);
         // The match can only await a reshuffle here with one tile, which that method stops on, so nothing is announced.
@@ -123,6 +126,15 @@ public sealed class Table
         _conceal = false;
         _holder = _session.CurrentSeat;
         Refresh();
+    }
+
+    // The holder has seen everything logged so far; nothing pending is a no-op. The table never blocks input on a pending recap, the GUI does.
+    public void AcknowledgeRecap()
+    {
+        if (IsStarted && _holder is { } holder && _recap.Acknowledge(holder))
+        {
+            Refresh();
+        }
     }
 
     public void SetQuarterTurns(int quarterTurns)
@@ -208,6 +220,7 @@ public sealed class Table
 
     private SessionResult Apply(SeatId seat, GameAction action)
     {
+        var before = _session.View(seat).Board;
         SessionResult result;
         try
         {
@@ -223,6 +236,8 @@ public sealed class Table
         {
             return result;
         }
+
+        Record(seat, result, before);
 
         // The amount a rotate used is spent with it, so it never becomes the next placement's orientation.
         if (action is Place || action is UseRotate)
@@ -262,6 +277,9 @@ public sealed class Table
         return result;
     }
 
+    private void Record(SeatId seat, SessionResult result, BoardView before) =>
+        _recap.Record(result.Events, before, _session.View(seat).Board);
+
     // The match asks for the new draw order from outside; the table supplies it so no seat has to tap for it.
     private bool ReshuffleWhenTheDeckIsEmpty()
     {
@@ -286,6 +304,7 @@ public sealed class Table
             return false;
         }
 
+        Record(seat, result, view.Board);
         return true;
     }
 
@@ -339,7 +358,9 @@ public sealed class Table
             _quarterTurns,
             StatusFor(seat, view),
             _selectedPower,
-            _notice);
+            _notice,
+            _holder,
+            _recap.PendingFor(_holder));
     }
 
     // A drawn tile with no placement and no power target (two different powers) is an open ruling; a GUI could never reach Submit to surface it.

@@ -402,13 +402,25 @@ public class TableTests
         var view = session.View(First);
         var targets = new List<BoardPosition> { new(0, 0) };
         var powers = new List<PowerTargets> { new(OrdinaryCatalog.Bounce, targets) };
-        var snapshot = new TableSnapshot(view, false, false, false, [], powers, 0, TableStatus.ToAct(First), null, TableNotice.None);
+        var snapshot = new TableSnapshot(view, false, false, false, [], powers, 0, TableStatus.ToAct(First), null, TableNotice.None, null, []);
 
         targets.Add(new BoardPosition(5, 5));
         powers.Add(new PowerTargets(OrdinaryCatalog.Rotate, []));
 
         Assert.That(snapshot.LegalTargets, Has.Count.EqualTo(1));
         Assert.That(snapshot.LegalTargets[0].Targets, Is.EqualTo(new[] { new BoardPosition(0, 0) }));
+    }
+
+    [Test]
+    public void ThePreRecapConstructor_StillBuildsASnapshot_WithNoRecap()
+    {
+        var session = new LocalSession();
+        session.Start(Setup(2, Cards.BlankTile("start"), Cards.BlankTile("drawn")));
+
+        var snapshot = new TableSnapshot(session.View(First), false, false, false, [], [], 0, TableStatus.ToAct(First), null, TableNotice.None);
+
+        Assert.That(snapshot.RecapSeat, Is.Null);
+        Assert.That(snapshot.Recap, Is.Empty);
     }
 
     [Test]
