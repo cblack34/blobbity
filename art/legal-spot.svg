@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- A legal placement: a dashed rounded square with a faint plus. It fills 84% of the sprite, so a tap anywhere in the tile's block still lands.
+       Colours are baked in (ink #1d1d1b), so the player draws it untinted. -->
+  <rect x="10" y="10" width="108" height="108" rx="24" ry="24" fill="#fff" fill-opacity=".75" stroke="#1d1d1b" stroke-width="3.8" stroke-dasharray="12 9"/>
+  <path d="M52 64h24M64 52v24" stroke="#1d1d1b" stroke-opacity=".35" stroke-width="6" stroke-linecap="round"/>
+</svg>

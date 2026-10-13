@@ -40,8 +40,7 @@ internal sealed class TablePlayView
         Band(seatBar, 0f, SeatBarUnits);
         _seatBar = new SeatBar(seatBar);
 
-        _heading = Ui.Label("Heading", play, 76, SplatPalette.Ink, TextAnchor.MiddleCenter);
-        _heading.fontStyle = FontStyle.Bold;
+        _heading = Ui.Label("Heading", play, 76, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
         Band(_heading.rectTransform, HeadingTopUnits, HeadingUnits);
         _status = Ui.Label("Status", play, 34, SplatPalette.Ink, TextAnchor.UpperCenter);
         // Stop rulings are long sentences. Only this label wraps; captions and buttons stay on one line.
@@ -53,7 +52,7 @@ internal sealed class TablePlayView
         _notice.gameObject.SetActive(false);
 
         var board = Ui.Rect("Board", play);
-        Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.HeightUnits + 12f), new Vector2(-24f, -BoardTopUnits));
+        Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.ReachUnits), new Vector2(-24f, -BoardTopUnits));
         _board = new BoardPanel(board);
         _board.PlacementTapped += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
         _board.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);

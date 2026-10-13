@@ -172,6 +172,60 @@ public class TableSessionPlayModeTests
     }
 
     [Test]
+    public void TheBackgroundArtIsDecorationOnly_NothingInItTakesATap()
+    {
+        _root = new GameObject("Table");
+        _root.AddComponent<TableSession>();
+
+        var art = FindRect("Background").GetComponentsInChildren<Image>(true);
+        Assert.That(art.Length, Is.GreaterThan(5), "the background paints splats and drips");
+        Assert.That(art.Any(image => image.raycastTarget), Is.False);
+    }
+
+    [Test]
+    public void StackAndTargetOutlines_AndLegalSpots_StillTakeTheTap()
+    {
+        var table = BeginHumanTable(RotateSetup());
+        Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
+        Assert.That(LiveButtons("Highlight").All(button => button.GetComponent<Image>().raycastTarget), Is.True, "a legal spot takes taps over its whole block");
+
+        LiveButton("PowerRotate").onClick.Invoke();
+        LiveButton("Spin").onClick.Invoke();
+
+        var target = LiveButton("Target0_0");
+        Assert.That(target.GetComponent<Image>().raycastTarget, Is.True, "a ring takes taps inside it too");
+        Assert.That(target.transform.Find("Ring").GetComponent<Image>().color, Is.EqualTo(SplatPalette.TargetRing));
+        Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
+    }
+
+    [TestCase(2)]
+    [TestCase(3)]
+    [TestCase(4)]
+    public void SeatEntriesAreSizedToContentAndSpacedEvenly_ForEverySeatCount(int seats)
+    {
+        _root = new GameObject("Table");
+        var table = _root.AddComponent<TableSession>();
+        table.Begin(new TableStart(seats, new bool[seats], 0, false));
+
+        var entries = Enumerable.Range(1, seats).Select(seat => FindRect("Seat" + seat)).ToArray();
+        var centres = entries.Select(entry => entry.anchorMin.x).ToArray();
+        Assert.That(entries.All(entry => entry.anchorMin.x == entry.anchorMax.x), "an entry hugs its share's middle, not the share's width");
+        for (var i = 0; i < seats; i++)
+        {
+            Assert.That(centres[i], Is.EqualTo((i + 0.5f) / seats).Within(0.0001f), "each entry is centred in an equal share of the bar");
+        }
+
+        Assert.That(entries.Select(entry => entry.sizeDelta.x).Distinct().Count(), Is.EqualTo(1));
+
+        // Before the first layout the bar has no width, so the reference width stands in, as the bar itself does.
+        var barWidth = FindRect("SeatBar").rect.width > 1f ? FindRect("SeatBar").rect.width : Ui.ReferenceWidthUnits;
+        foreach (var entry in entries)
+        {
+            Assert.That(entry.sizeDelta.x / 2f, Is.LessThanOrEqualTo(barWidth / seats / 2f), "an entry stays inside its share of the bar");
+        }
+    }
+
+    [Test]
     public void StatusStopTextWrapsInsideItsRect()
     {
         _root = new GameObject("Table");
@@ -590,7 +644,8 @@ public class TableSessionPlayModeTests
         var blank = Cell.Symbol(OrdinaryCatalog.Blank);
         var table = BeginHumanTable(SetupWith(new Tile(new TileId("twice"), bounce, bounce, blank, blank)));
         Assert.That(LiveButton("PowerBounce").interactable, Is.True);
-        Assert.That(LiveButton("PowerBounce").GetComponent<Image>().color, Is.EqualTo(SplatPalette.Muted));
+        Assert.That(ChipFace("PowerBounce"), Is.EqualTo(SplatPalette.BounceBadge));
+        Assert.That(ChipGrayedOut("PowerBounce"), Is.False);
 
         // Bouncing the only tile empties the board; the second bounce cell then has no tile to act on.
         table.SelectPower(OrdinaryCatalog.Bounce);
@@ -602,7 +657,16 @@ public class TableSessionPlayModeTests
         Assert.That(table.Snapshot.SelectedPower, Is.Null);
         Assert.That(LiveButton("PowerBounce"), Is.Not.Null, "one use is still left");
         Assert.That(LiveButton("PowerBounce").interactable, Is.False);
-        Assert.That(LiveButton("PowerBounce").GetComponent<Image>().color, Is.EqualTo(SplatPalette.Gray));
+        Assert.That(ChipGrayedOut("PowerBounce"), Is.True);
+    }
+
+    // A chip's face colour, and whether it shows as grayed out: its power's badge colour while it can be used, gray when it cannot.
+    private Color ChipFace(string chip) => Ui.ToyFace(LiveButton(chip)).GetComponent<Image>().color;
+
+    private bool ChipGrayedOut(string chip)
+    {
+        var cover = Ui.ToyFace(LiveButton(chip)).Find("Disabled");
+        return cover != null && cover.gameObject.activeSelf;
     }
 
     private TableSession BeginLongRowTable()

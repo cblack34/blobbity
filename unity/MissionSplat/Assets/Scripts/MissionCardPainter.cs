@@ -8,9 +8,8 @@ using UnityEngine.UI;
 
 internal static class MissionCardPainter
 {
-    // Fractions of the card's width: the border around the face, and the edge line.
-    private const float CardInset = 0.03f;
-    private const float CardEdge = 0.015f;
+    // The edge line, as a fraction of the card's width.
+    private const float CardEdge = 0.03f;
 
     // The splats sit on a 2 x 4 portrait lattice, so every pattern uses the same splat size.
     private const int LatticeWidth = 2;
@@ -38,13 +37,15 @@ internal static class MissionCardPainter
         var fit = card.gameObject.AddComponent<AspectRatioFitter>();
         fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         fit.aspectRatio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
-        CardPainter.Paint(card, Ui.MissionCard, CardInset, CardEdge, FittedWidth(slot));
+        CardPainter.Paint(card, Ui.MissionCard, CardEdge, FittedWidth(slot));
         PaintPattern(card, mission);
     }
 
     // The width the fitter will give the card inside slot, which sets how thick its edge line must be to stay visible.
+    // The slot was made a moment ago, so it is laid out first to give it its size; its parents must be active for that.
     private static float FittedWidth(RectTransform slot)
     {
+        Canvas.ForceUpdateCanvases();
         var ratio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
         var width = Mathf.Min(slot.rect.width, slot.rect.height * ratio);
         return width > 1f ? width : 100f;
@@ -54,7 +55,7 @@ internal static class MissionCardPainter
     {
         // The lattice fits its own ratio inside the card less a margin, so the splats stay round at any card size and clear of the edge.
         var area = Ui.Rect("Pattern", card);
-        Ui.Anchored(area, new Vector2(0.08f, 0.06f), new Vector2(0.92f, 0.94f), Vector2.zero, Vector2.zero);
+        Ui.Anchored(area, new Vector2(0.12f, 0.1f), new Vector2(0.88f, 0.9f), Vector2.zero, Vector2.zero);
         var lattice = Ui.Rect("Lattice", area);
         Ui.Stretch(lattice);
         var latticeFit = lattice.gameObject.AddComponent<AspectRatioFitter>();

@@ -11,7 +11,8 @@ using UnityEngine.UI;
 internal sealed class ClaimsPanel
 {
     private const float PanelHeightUnits = 620f;
-    private const float OutlineUnits = 6f;
+    private const float OutlineUnits = 8f;
+    private const float DropUnits = 14f;
 
     private readonly RectTransform _root;
 
@@ -25,22 +26,24 @@ internal sealed class ClaimsPanel
     public void Show(int seatIndex, SeatClaims claims)
     {
         Ui.Clear(_root);
-        var dim = Ui.Button("Dim", _root, string.Empty, SplatPalette.Overlay);
+        // Shown first: the cards measure their slots, and a slot under an inactive parent has no size to measure.
+        _root.gameObject.SetActive(true);
+        var dim = Ui.Tappable(Ui.Image("Dim", _root, SplatPalette.Overlay));
         Ui.Stretch(dim.GetComponent<RectTransform>());
         dim.onClick.AddListener(Hide);
 
-        var edge = Ui.Outlined("Edge", _root, SplatPalette.Ink, Color.white, OutlineUnits);
-        PlacePanel(edge.rectTransform);
+        var panel = Ui.Toy("Panel", _root, SplatPalette.Paper, Ui.Rounded, OutlineUnits, DropUnits);
+        PlacePanel(panel.rectTransform);
+        var face = Ui.ToyFace(panel);
 
-        var critterSlot = Ui.Rect("CritterSlot", edge.transform);
+        var critterSlot = Ui.Rect("CritterSlot", face);
         Ui.Anchored(critterSlot, new Vector2(0.04f, 0.74f), new Vector2(0.16f, 0.97f), Vector2.zero, Vector2.zero);
         CritterPainter.PaintFitted(critterSlot, seatIndex);
-        var title = Ui.Label("Title", edge.transform, 52, SplatPalette.Ink, TextAnchor.MiddleLeft);
-        title.fontStyle = FontStyle.Bold;
+        var title = Ui.Label("Title", face, 52, SplatPalette.Ink, TextAnchor.MiddleLeft, FontWeight.ExtraBold);
         Ui.Anchored(title.rectTransform, new Vector2(0.18f, 0.76f), new Vector2(0.95f, 0.96f), Vector2.zero, Vector2.zero);
         title.text = Seats.NameOf(claims.Seat) + "\u2019s claims";
 
-        var cards = Ui.Rect("Cards", edge.transform);
+        var cards = Ui.Rect("Cards", face);
         Ui.Anchored(cards, new Vector2(0f, 0.04f), new Vector2(1f, 0.72f), Vector2.zero, Vector2.zero);
         if (claims.Missions.Count == 0)
         {
@@ -56,8 +59,6 @@ internal sealed class ClaimsPanel
             Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
             MissionCardPainter.Paint(slot, claims.Missions[m]);
         }
-
-        _root.gameObject.SetActive(true);
     }
 
     public void Hide() => _root.gameObject.SetActive(false);
