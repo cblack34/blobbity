@@ -88,7 +88,10 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 
 ## Amendments
 
-None.
+- **2026-10-12, after the design review, by the maintainer's decisions:**
+  - Win count: the seat bar keeps the ordinary 4 for now, documented in code; showing the configured count is #51.
+  - Big boards: tiles keep a minimum size and the board scrolls, so every placement stays reachable. This replaces the plan's "stop rather than add scroll" condition. Pinch-zoom is #52.
+  - Power chips: shown only when the drawn tile has a power with uses left, as an icon without words. The quarter-turn count chip under Spin is removed; a turn hint shows only while rotate is selected.
 
 ## Delivery record
 
