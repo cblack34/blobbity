@@ -96,3 +96,28 @@ None.
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** The table and setup screen wear the splat party look:
+  - toy cards for tiles, the drawn tile and mission cards (white face, thick ink edge, hard shadow, chunkier corners), with secret missions tilted ±4°;
+  - dashed "+" legal spots;
+  - stack and power-target highlights as fixed-width rings instead of tints;
+  - coloured power badges (rotate yellow with a bold arrow, stack blue +, bounce pink −);
+  - faint background splats and short top drips;
+  - the wavy tray edge;
+  - Baloo 2 everywhere;
+  - seat entries sized and spaced for 2–4 seats;
+  - a setup panel sized to its rows.
+
+  The hand-off cover and the claims panel use the same toy box. New art goes through `art/*.svg` and `export.sh`. Baloo 2 ships as three fixed weights with its OFL licence.
+- **Verification:** On `58bc812`, `dotnet test` passed Rules 234 and App 66. `unity test unity/MissionSplat --mode PlayMode` passed 27 of 27, run by the implementation lead. The new tests check three things: background art is not a raycast target, legal spots and rings still take taps, and seat entries are centred and evenly spaced. All captures were retaken in portrait, and `setup.png` is new.
+- **Deviations:**
+  - The ink colour changed from navy `#1c3348` to `#1d1d1b`, to match the reference.
+  - Cards sit slightly smaller in their slots, because the inset now covers the shadow's reach.
+  - The hand-off cover is a white toy box instead of a dark translucent fill.
+  - A test-only `InternalsVisibleTo` lets the PlayMode tests reach `Ui`.
+- **Unresolved gates or risks:**
+  - At the smallest tile size, rings overlap the card edge slightly.
+  - With four seats, the current-seat box sits close to the right edge.
+  - The claim pop-up, pinch-zoom (#52), the win count (#51), a new way to show powers, critter colour choice, and play again (#54) remain later work.
+- **Refactor and handoff receipt:** In the PR body and on issue #55.
+- **Final PR:** see the PR linked from issue #55.
