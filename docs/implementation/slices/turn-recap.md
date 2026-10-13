@@ -138,13 +138,14 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - **Timing:** the outgoing player's own items play before the cover, and the incoming player's play after Confirm. A one-line summary stays until the next action.
 - **Verification:**
   - **PR 1:** on `823063b`, Rules 234 and App 85.
-  - **PR 2:** on `8f2e3cd`, Rules 234, App 85, and `unity test unity/MissionSplat --mode PlayMode` 41 of 41 (9 recap tests). They cover:
+  - **PR 2:** on `db888f1`, Rules 234, App 85, and `unity test unity/MissionSplat --mode PlayMode` 43 of 43 (11 recap tests). They cover:
     - human against AI;
     - two humans, where the outgoing recap plays before the cover, no incoming missions are drawn, and a Confirm during the recap is ignored;
     - one tap skips one item;
     - the summary line;
     - a failing item still ends and acknowledges;
     - the board scrolling to an off-screen tile;
+    - the board reaching a recap item beyond its edge, such as a tile a bounce removed;
     - the skip layer taking every tap.
   - **Captures:** `recap-placement.png` and `recap-claim.png`.
 - **Deviations:**
