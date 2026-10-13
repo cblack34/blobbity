@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="MissionSplat.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\rules\MissionSplat.Rules\MissionSplat.Rules.csproj" />
   </ItemGroup>
 

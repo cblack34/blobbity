@@ -16,7 +16,8 @@ public sealed class TableSnapshot
         TableStatus status,
         SymbolId? selectedPower,
         TableNotice notice,
-        IReadOnlyList<RecapItem>? recap = null)
+        SeatId? recapSeat,
+        IReadOnlyList<RecapItem> recap)
     {
         View = view ?? throw new ArgumentNullException(nameof(view));
         SecretsVisible = secretsVisible;
@@ -28,7 +29,8 @@ public sealed class TableSnapshot
         Status = status ?? throw new ArgumentNullException(nameof(status));
         SelectedPower = selectedPower;
         Notice = notice;
-        Recap = Copied.Items(recap ?? [], nameof(recap));
+        RecapSeat = recapSeat;
+        Recap = Copied.Items(recap, nameof(recap));
         SelectedTargets = TargetsOf(LegalTargets, selectedPower);
     }
 
@@ -56,6 +58,9 @@ public sealed class TableSnapshot
 
     // What happened since the last accepted action that the seat could not have seen; None once a human seat's next action is accepted.
     public TableNotice Notice { get; }
+
+    // Whose recap this is: the human holding the device. During a hand-off that is the outgoing holder, not Status.Seat; null until a human holds it.
+    public SeatId? RecapSeat { get; }
 
     // What the human holding the device has not yet seen, oldest first; empty when nothing is pending or nobody holds it. AcknowledgeRecap clears it.
     public IReadOnlyList<RecapItem> Recap { get; }

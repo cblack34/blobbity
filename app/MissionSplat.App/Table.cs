@@ -220,6 +220,7 @@ public sealed class Table
 
     private SessionResult Apply(SeatId seat, GameAction action)
     {
+        var before = _session.View(seat).Board;
         SessionResult result;
         try
         {
@@ -236,7 +237,7 @@ public sealed class Table
             return result;
         }
 
-        Record(seat, result);
+        Record(seat, result, before);
 
         // The amount a rotate used is spent with it, so it never becomes the next placement's orientation.
         if (action is Place || action is UseRotate)
@@ -276,7 +277,8 @@ public sealed class Table
         return result;
     }
 
-    private void Record(SeatId seat, SessionResult result) => _recap.Record(result.Events, _session.View(seat).Board);
+    private void Record(SeatId seat, SessionResult result, BoardView before) =>
+        _recap.Record(result.Events, before, _session.View(seat).Board);
 
     // The match asks for the new draw order from outside; the table supplies it so no seat has to tap for it.
     private bool ReshuffleWhenTheDeckIsEmpty()
@@ -302,7 +304,7 @@ public sealed class Table
             return false;
         }
 
-        Record(seat, result);
+        Record(seat, result, view.Board);
         return true;
     }
 
@@ -357,6 +359,7 @@ public sealed class Table
             StatusFor(seat, view),
             _selectedPower,
             _notice,
+            _holder,
             _recap.PendingFor(_holder));
     }
 

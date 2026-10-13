@@ -402,7 +402,7 @@ public class TableTests
         var view = session.View(First);
         var targets = new List<BoardPosition> { new(0, 0) };
         var powers = new List<PowerTargets> { new(OrdinaryCatalog.Bounce, targets) };
-        var snapshot = new TableSnapshot(view, false, false, false, [], powers, 0, TableStatus.ToAct(First), null, TableNotice.None);
+        var snapshot = new TableSnapshot(view, false, false, false, [], powers, 0, TableStatus.ToAct(First), null, TableNotice.None, null, []);
 
         targets.Add(new BoardPosition(5, 5));
         powers.Add(new PowerTargets(OrdinaryCatalog.Rotate, []));

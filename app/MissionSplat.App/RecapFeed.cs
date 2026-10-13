@@ -15,12 +15,12 @@ internal sealed class RecapFeed(GameSetup setup)
         _seen.Clear();
     }
 
-    // The board is the one the events produced, so a placement can report its cells as placed.
-    public void Record(IReadOnlyList<GameEvent> events, BoardView board)
+    // before and after are the board either side of the result, so a lifted tile's cells can still be reported.
+    public void Record(IReadOnlyList<GameEvent> events, BoardView before, BoardView after)
     {
         foreach (var gameEvent in events)
         {
-            _log.Add(ItemFor(gameEvent, board));
+            _log.Add(ItemFor(gameEvent, before, after));
         }
     }
 
@@ -51,7 +51,7 @@ internal sealed class RecapFeed(GameSetup setup)
 
     private int SeenBy(SeatId seat) => _seen.TryGetValue(seat, out var count) ? count : 0;
 
-    private RecapItem ItemFor(GameEvent gameEvent, BoardView board) => gameEvent switch
+    private RecapItem ItemFor(GameEvent gameEvent, BoardView before, BoardView after) => gameEvent switch
     {
         TilePlaced placed => new RecapPlaced(
             placed.Seat,
@@ -59,29 +59,25 @@ internal sealed class RecapFeed(GameSetup setup)
             placed.TileX,
             placed.TileY,
             placed.QuarterTurnsClockwise,
-            CellsAt(board, placed.TileX, placed.TileY),
+            after.CellsOf(placed.TileX, placed.TileY),
             placed.Covered is not null),
-        TileRotated rotated => new RecapRotated(rotated.Seat, rotated.TileX, rotated.TileY, rotated.QuarterTurnsClockwise),
-        TileBounced bounced => new RecapBounced(bounced.Seat, bounced.TileX, bounced.TileY),
+        TileRotated rotated => new RecapRotated(
+            rotated.Seat,
+            rotated.TileX,
+            rotated.TileY,
+            rotated.QuarterTurnsClockwise,
+            after.CellsOf(rotated.TileX, rotated.TileY)),
+        TileBounced bounced => new RecapBounced(
+            bounced.Seat,
+            bounced.TileX,
+            bounced.TileY,
+            before.CellsOf(bounced.TileX, bounced.TileY),
+            bounced.Revealed is null ? [] : after.CellsOf(bounced.TileX, bounced.TileY)),
         MissionClaimed claimed => new RecapClaimed(claimed.Seat, MissionOf(claimed.Mission)),
         GameWon won => new RecapWon(won.Seat, won.ClaimCount),
         BoardReshuffled reshuffled => new RecapReshuffled(reshuffled.Seat),
         _ => throw new InvalidOperationException("The recap has no item for " + gameEvent.GetType().Name + "."),
     };
-
-    private static OccupiedCell[] CellsAt(BoardView board, int tileX, int tileY)
-    {
-        var cells = new List<OccupiedCell>(4);
-        foreach (var cell in board.Cells)
-        {
-            if (cell.CellX >> 1 == tileX && cell.CellY >> 1 == tileY)
-            {
-                cells.Add(cell);
-            }
-        }
-
-        return cells.ToArray();
-    }
 
     private Mission MissionOf(MissionId id)
     {
