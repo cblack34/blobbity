@@ -267,14 +267,14 @@ public class RotateTests
     }
 
     [Test]
-    public void ARotateBeforeThePlacement_ThatLinesUpTheRow_ClaimsOnlyThroughThePlacedCells()
+    public void ARotateThatCompletesNothingItself_LeavesTheClaimToThePlacedCells()
     {
         var game = ReadyToFinishRedRow(OrdinaryCatalog.ClaimsRequiredToWin);
 
         var rotated = RepresentativeDeck.Rotate(game, 0, 0, 3);
         Assert.That(rotated.Events, Is.EqualTo(new[] { new TileRotated(Cards.Seat("a"), 0, 0, 3) }));
         var afterRotate = See.Game(rotated);
-        Assert.That(afterRotate.Claims(Cards.Seat("a")), Is.Empty, "a use never claims by itself");
+        Assert.That(afterRotate.Claims(Cards.Seat("a")), Is.Empty, "the rotated cells alone do not complete the row");
         Assert.That(afterRotate.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
 
         var placed = RepresentativeDeck.Play(afterRotate, 1, 0);
@@ -323,42 +323,108 @@ public class RotateTests
     }
 
     [Test]
-    public void ARotateThatFormsAPattern_ThePlacedCellsDoNotComplete_DoesNotClaim()
+    public void ARotateThatCompletesAMission_ClaimsItAtOnce_DrawsAReplacement_AndKeepsTheTurnAndTheDrawnTile()
     {
-        // East completes the red row only after it turns. The placed tile goes on the other side of the start.
-        var game = RepresentativeDeck.Start(
-            ["a", "b"],
-            "a",
-            [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
-                Cards.Purple("a2"),
-                Cards.Purple("b1"),
-                Cards.Purple("b2"),
-                Cards.Purple("repl"),
-            ],
-            [
-                Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
-                Cards.Tile("east", Cards.Blank, Cards.Red, Cards.Blank, Cards.Red),
-                Cards.BlankTile("pad"),
-                OneRotate("drawn"),
-            ]);
-        var afterEast = See.Game(RepresentativeDeck.Play(game, 1, 0));
-        var ready = See.Game(RepresentativeDeck.Play(afterEast, 0, 1));
+        var game = ReadyToRotateEast(RedRowThenSpares());
 
-        var afterRotate = See.Game(RepresentativeDeck.Rotate(ready, 1, 0));
-        var placed = RepresentativeDeck.Play(afterRotate, -1, 0);
+        var rotated = RepresentativeDeck.Rotate(game, 1, 0);
+        var next = See.Game(rotated);
+
+        Assert.That(
+            rotated.Events,
+            Is.EqualTo(new GameEvent[]
+            {
+                new TileRotated(Cards.Seat("a"), 1, 0, 1),
+                new MissionClaimed(Cards.Seat("a"), new MissionId("red-row")),
+            }));
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "blue-row" }));
+        Assert.That(next.MissionDeckRemaining, Is.EqualTo(1));
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("a")), "a rotate claim does not end the turn");
+        Assert.That(next.PendingMatchTile?.Id.Value, Is.EqualTo("drawn"));
+        Assert.That(next.HasEnded, Is.False);
+        Assert.That(next.RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(0));
+    }
+
+    [Test]
+    public void AReplacementDrawnAfterARotateClaim_IsClaimedLaterThatTurnByThePlacement()
+    {
+        var afterRotate = See.Game(RepresentativeDeck.Rotate(ReadyToRotateEast(RedRowThenSpares()), 1, 0));
+
+        var placed = RepresentativeDeck.Play(afterRotate, 1, 1);
         var next = See.Game(placed);
 
-        Assert.That(next.CellAt(0, 0), Is.EqualTo(Cards.Red));
-        Assert.That(next.CellAt(1, 0), Is.EqualTo(Cards.Red));
-        Assert.That(next.CellAt(2, 0), Is.EqualTo(Cards.Red));
-        Assert.That(next.CellAt(3, 0), Is.EqualTo(Cards.Red));
-        Assert.That(next.CellAt(-2, 0), Is.EqualTo(Rotate));
+        Assert.That(
+            placed.Events.Select(e => e.GetType()),
+            Is.EqualTo(new[] { typeof(TilePlaced), typeof(MissionClaimed) }));
+        Assert.That(((MissionClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "spare" }));
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")), "the placement ends the turn");
+    }
+
+    [Test]
+    public void ARotateClaimThatReachesTheWinCount_WinsAtOnce_AndTheDrawnTileIsNeverPlaced()
+    {
+        var game = ReadyToRotateEast(RedRowThenSpares(), claimsRequiredToWin: 1);
+
+        var rotated = RepresentativeDeck.Rotate(game, 1, 0);
+        var won = See.Game(rotated);
+
+        Assert.That(
+            rotated.Events,
+            Is.EqualTo(new GameEvent[]
+            {
+                new TileRotated(Cards.Seat("a"), 1, 0, 1),
+                new MissionClaimed(Cards.Seat("a"), new MissionId("red-row")),
+                new GameWon(Cards.Seat("a"), 1),
+            }));
+        Assert.That(won.HasEnded, Is.True);
+        Assert.That(won.PendingMatchTile, Is.Null);
+        Expect.Rejected(won, RepresentativeDeck.Try(won, new Place(1, 1, 0)), RejectionReason.GameOver);
+        Expect.Rejected(won, RepresentativeDeck.Try(won, new UseRotate(0, 0, 1)), RejectionReason.GameOver);
+        Assert.That(won.TileCount, Is.EqualTo(3), "the drawn tile was never placed");
+    }
+
+    [Test]
+    public void TwoMissionsOnIdenticalCells_ClaimOnlyOnce_WithinOneRotatePass()
+    {
+        var game = ReadyToRotateEast(
+        [
+            Cards.Mission("red-row-1", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Mission("red-row-2", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Purple("b1"),
+            Cards.Purple("b2"),
+            Cards.Purple("repl"),
+            Cards.Purple("spare"),
+        ]);
+
+        var next = See.Game(RepresentativeDeck.Rotate(game, 1, 0));
+
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row-1" }));
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row-2", "repl" }));
+    }
+
+    [Test]
+    public void ARotateThatCompletesAnotherSeatsMission_DoesNotClaimItForThem()
+    {
+        var game = ReadyToRotateEast(
+        [
+            Cards.Purple("a1"),
+            Cards.Purple("a2"),
+            Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Purple("b2"),
+            Cards.Purple("repl"),
+        ]);
+
+        var rotated = RepresentativeDeck.Rotate(game, 1, 0);
+        var next = See.Game(rotated);
+
+        Assert.That(rotated.Events, Is.EqualTo(new[] { new TileRotated(Cards.Seat("a"), 1, 0, 1) }));
         Assert.That(next.Claims(Cards.Seat("a")), Is.Empty);
-        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "a2" }));
-        Assert.That(placed.Events, Has.Count.EqualTo(1));
-        Assert.That(placed.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(next.TileCount, Is.EqualTo(4));
+        Assert.That(next.Claims(Cards.Seat("b")), Is.Empty);
+        Assert.That(See.Ids(next.Hand(Cards.Seat("b"))), Is.EqualTo(new[] { "red-row", "b2" }));
+        Assert.That(next.CellAt(3, 0), Is.EqualTo(Cards.Red), "the pattern exists");
     }
 
     [TestCase(0)]
@@ -430,6 +496,36 @@ public class RotateTests
             tiles.ToArray(),
             claimsRequiredToWin);
     }
+
+    // Start (red bottom row) and east (red at its bottom right) share the y=0 row; turning east once puts both of its
+    // red cells in that row, completing red-row from the rotate's own cells. Pad and the drawn tile hold a blue row
+    // that the drawn tile finishes at (1, 1), for a replacement mission to claim later in the turn.
+    private static Game ReadyToRotateEast(Mission[] missions, int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin)
+    {
+        var game = RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            missions,
+            [
+                Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
+                Cards.Tile("east", Cards.Blank, Cards.Red, Cards.Blank, Cards.Red),
+                Cards.Tile("pad", Cards.Blue, Cards.Blue, Cards.Blank, Cards.Blank),
+                Cards.Tile("drawn", Cards.Blue, Cards.Blue, Rotate, Cards.Blank),
+            ],
+            claimsRequiredToWin);
+        var afterEast = See.Game(RepresentativeDeck.Play(game, 1, 0));
+        return See.Game(RepresentativeDeck.Play(afterEast, 0, 1));
+    }
+
+    private static Mission[] RedRowThenSpares() =>
+    [
+        Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+        Cards.Purple("a2"),
+        Cards.Purple("b1"),
+        Cards.Purple("b2"),
+        Cards.Mission("blue-row", MissionPattern.Row, OrdinaryCatalog.Blue),
+        Cards.Purple("spare"),
+    ];
 
     private static Game CenterWithAnOpenSouth()
     {

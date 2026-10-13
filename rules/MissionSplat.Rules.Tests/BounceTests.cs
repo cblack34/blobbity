@@ -341,6 +341,7 @@ public class BounceTests
 
         var bounce = RepresentativeDeck.Bounce(stacked, 0, 0);
         var exposed = See.Game(bounce);
+        Assert.That(exposed.Claims(Cards.Seat("a")), Is.Empty, "a bounce writes nothing, so it never claims");
         var placed = RepresentativeDeck.Play(exposed, 2, 0);
         var next = See.Game(placed);
 

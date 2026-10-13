@@ -189,28 +189,53 @@ public sealed class Game
         IReadOnlyList<(int X, int Y, Cell Value)> located,
         TileId? covered)
     {
-        var acting = _seats[_currentIndex];
-        var completed = _ruleset.CompletedMissions(nextGrid, located, acting.Hand);
-        if (completed.Count > _missionDeck.Length)
-        {
-            throw new UnresolvedRulingException(
-                "The mission deck cannot replace every mission this placement completed. Exhausting the mission deck is an open ruling, so this command was not applied.");
-        }
-
-        var hand = new List<Mission>(acting.Hand);
-        var claims = new List<Mission>(acting.Claims);
-        var missionDeck = new List<Mission>(_missionDeck);
         var events = new List<GameEvent>
         {
             new TilePlaced(
-                acting.Id,
+                CurrentSeat,
                 tile.Id,
                 place.TileX,
                 place.TileY,
                 place.QuarterTurnsClockwise,
                 covered),
         };
+        var (seat, missionDeck, won) = ResolveClaims(nextGrid, located, events);
 
+        var seats = (SeatSnapshot[])_seats.Clone();
+        seats[_currentIndex] = seat;
+        var next = new Game(
+            seats,
+            (_currentIndex + 1) % seats.Length,
+            missionDeck,
+            _matchDeck[1..],
+            nextGrid,
+            _ruleset,
+            ClaimsRequiredToWin,
+            default,
+            won);
+
+        return CommandResult.Accept(next, events);
+    }
+
+    // The one claim pass, shared by a placement and a rotate: the acting seat claims each mission its hand completes
+    // through the cells just written, draws a replacement per claim, and wins on reaching the claim count. It appends
+    // MissionClaimed (and GameWon) to the events and returns the seat and mission deck after the pass.
+    private (SeatSnapshot Seat, Mission[] MissionDeck, bool Won) ResolveClaims(
+        Grid grid,
+        IReadOnlyList<(int X, int Y, Cell Value)> written,
+        List<GameEvent> events)
+    {
+        var acting = _seats[_currentIndex];
+        var completed = _ruleset.CompletedMissions(grid, written, acting.Hand);
+        if (completed.Count > _missionDeck.Length)
+        {
+            throw new UnresolvedRulingException(
+                "The mission deck cannot replace every mission this command completed. Exhausting the mission deck is an open ruling, so this command was not applied.");
+        }
+
+        var hand = new List<Mission>(acting.Hand);
+        var claims = new List<Mission>(acting.Claims);
+        var missionDeck = new List<Mission>(_missionDeck);
         foreach (var mission in completed)
         {
             hand.Remove(mission);
@@ -227,20 +252,7 @@ public sealed class Game
             events.Add(new GameWon(acting.Id, claims.Count));
         }
 
-        var seats = (SeatSnapshot[])_seats.Clone();
-        seats[_currentIndex] = new SeatSnapshot(acting.Id, hand.ToArray(), claims.ToArray());
-        var next = new Game(
-            seats,
-            (_currentIndex + 1) % seats.Length,
-            missionDeck.ToArray(),
-            _matchDeck[1..],
-            nextGrid,
-            _ruleset,
-            ClaimsRequiredToWin,
-            default,
-            won);
-
-        return CommandResult.Accept(next, events);
+        return (new SeatSnapshot(acting.Id, hand.ToArray(), claims.ToArray()), missionDeck.ToArray(), won);
     }
 
     private CommandResult ApplyRotate(UseRotate rotate)
@@ -264,10 +276,28 @@ public sealed class Game
         }
 
         var grid = _ruleset.Rotate(_grid, rotate);
-        var next = AfterPower(grid, _matchDeck, _spent.WithUse(OrdinaryCatalog.Rotate));
-        return CommandResult.Accept(
-            next,
-            [new TileRotated(CurrentSeat, rotate.TileX, rotate.TileY, rotate.QuarterTurnsClockwise)]);
+
+        // A rotate writes its tile's four cells, so they can claim at once. It does not end the turn: the seat and
+        // the drawn tile stay, and a win ends the game before that tile is placed.
+        var events = new List<GameEvent>
+        {
+            new TileRotated(CurrentSeat, rotate.TileX, rotate.TileY, rotate.QuarterTurnsClockwise),
+        };
+        var (seat, missionDeck, won) = ResolveClaims(grid, _ruleset.CellsOf(grid, rotate.TileX, rotate.TileY), events);
+
+        var seats = (SeatSnapshot[])_seats.Clone();
+        seats[_currentIndex] = seat;
+        var next = new Game(
+            seats,
+            _currentIndex,
+            missionDeck,
+            _matchDeck,
+            grid,
+            _ruleset,
+            ClaimsRequiredToWin,
+            _spent.WithUse(OrdinaryCatalog.Rotate),
+            won);
+        return CommandResult.Accept(next, events);
     }
 
     private CommandResult ApplyBounce(UseBounce bounce)

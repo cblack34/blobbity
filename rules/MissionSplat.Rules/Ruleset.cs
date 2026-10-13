@@ -35,7 +35,7 @@ internal sealed class Ruleset
     public int Remaining(Tile drawn, SymbolId power, SpentUses spent) =>
         IsInPlay(power) ? CountSymbol(drawn, power) - spent.Of(power) : 0;
 
-    // A mission completes only when a cell this placement wrote is part of its pattern, and each claim needs its own
+    // A mission completes only when a cell this placement or rotate wrote is part of its pattern, and each claim needs its own
     // four cells, so the claims are the most missions, earliest in hand order, that can take distinct sets.
     public List<Mission> CompletedMissions(
         Grid grid,
@@ -188,6 +188,19 @@ internal sealed class Ruleset
     // The board after a rotate the refusal already passed.
     public Grid Rotate(Grid grid, UseRotate use) =>
         grid.TurnClockwise(use.TileX, use.TileY, use.QuarterTurnsClockwise);
+
+    // The four cells a tile shows at its position, as a rotate wrote them.
+    public IReadOnlyList<(int X, int Y, Cell Value)> CellsOf(Grid grid, int tileX, int tileY)
+    {
+        var cells = new (int X, int Y, Cell Value)[4];
+        for (var i = 0; i < cells.Length; i++)
+        {
+            var (x, y) = ((tileX * 2) + (i % 2), (tileY * 2) + (i / 2));
+            cells[i] = (x, y, grid.At(x, y) ?? throw new InvalidOperationException("A board tile is missing one of its cells."));
+        }
+
+        return cells;
+    }
 
     private Rejection? BounceRefusal(Grid grid, Tile drawn, SpentUses spent, int tileX, int tileY)
     {

@@ -30,7 +30,7 @@ Final acceptance in [`docs/acceptance.md`](docs/acceptance.md) is required on th
 ## Non-negotiables
 
 1. Rules do not reference Unity. The same library must be callable from `dotnet test` and, later, from a server.
-2. A claim scores only when the current seat placed the completing tile.
+2. A claim scores only when the current seat wrote the completing cells, by placing a tile or rotating one.
 3. Pass-and-play is 2–4 human seats on one in-process session, not a network mode.
 4. No physical-game name, logo, farm characters, or photographed art ships in the repo or the player.
 

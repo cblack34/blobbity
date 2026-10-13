@@ -208,7 +208,7 @@ public class ResolutionTests
         Assert.That(
             () => { RepresentativeDeck.Try(game, new Place(1, 0, 0)); },
             Throws.TypeOf<UnresolvedRulingException>().With.Message.EqualTo(
-                "The mission deck cannot replace every mission this placement completed. Exhausting the mission deck is an open ruling, so this command was not applied."));
+                "The mission deck cannot replace every mission this command completed. Exhausting the mission deck is an open ruling, so this command was not applied."));
 
         Assert.That(game.TileCount, Is.EqualTo(tiles));
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(matchRemaining));
