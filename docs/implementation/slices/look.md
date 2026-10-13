@@ -91,7 +91,7 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 
 ## Amendments
 
-None.
+- 2026-10-13: Out of scope listed "the hand-off screen redesign". The hand-off cover kept its behaviour and placement, but the implementation lead restyled it as a white toy box during the design-review pass, to unify the toy-box styling with the claims panel. The PR body flagged this as a judgement call. The maintainer then checked the result on the device and reported that the game looks good.
 
 ## Delivery record
 

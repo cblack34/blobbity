@@ -198,18 +198,31 @@ public class TableSessionPlayModeTests
         Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
     }
 
-    [Test]
-    public void SeatEntriesAreSizedToContentAndSpacedEvenly_ForTwoAndThreeSeats()
+    [TestCase(2)]
+    [TestCase(3)]
+    [TestCase(4)]
+    public void SeatEntriesAreSizedToContentAndSpacedEvenly_ForEverySeatCount(int seats)
     {
         _root = new GameObject("Table");
         var table = _root.AddComponent<TableSession>();
-        table.Begin(new TableStart(3, new[] { false, false, false }, 0, false));
+        table.Begin(new TableStart(seats, new bool[seats], 0, false));
 
-        var entries = new[] { "Seat1", "Seat2", "Seat3" }.Select(name => FindRect(name)).ToArray();
+        var entries = Enumerable.Range(1, seats).Select(seat => FindRect("Seat" + seat)).ToArray();
         var centres = entries.Select(entry => entry.anchorMin.x).ToArray();
         Assert.That(entries.All(entry => entry.anchorMin.x == entry.anchorMax.x), "an entry hugs its share's middle, not the share's width");
-        Assert.That(centres[1] - centres[0], Is.EqualTo(centres[2] - centres[1]).Within(0.0001f));
+        for (var i = 0; i < seats; i++)
+        {
+            Assert.That(centres[i], Is.EqualTo((i + 0.5f) / seats).Within(0.0001f), "each entry is centred in an equal share of the bar");
+        }
+
         Assert.That(entries.Select(entry => entry.sizeDelta.x).Distinct().Count(), Is.EqualTo(1));
+
+        // Before the first layout the bar has no width, so the reference width stands in, as the bar itself does.
+        var barWidth = FindRect("SeatBar").rect.width > 1f ? FindRect("SeatBar").rect.width : Ui.ReferenceWidthUnits;
+        foreach (var entry in entries)
+        {
+            Assert.That(entry.sizeDelta.x / 2f, Is.LessThanOrEqualTo(barWidth / seats / 2f), "an entry stays inside its share of the bar");
+        }
     }
 
     [Test]
