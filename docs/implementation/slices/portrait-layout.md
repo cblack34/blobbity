@@ -96,3 +96,23 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** The table follows the splat party layout on a portrait canvas (1080 wide reference):
+  - a seat bar of googly-eyed splat critters in seat-order colours, with names, score pips, and the current seat boxed;
+  - a heading naming whose turn it is, with one instruction line;
+  - a scrolling board panel;
+  - a turn tray with a large drawn tile, Spin, and icon-only power chips, which show only for powers the drawn tile still has and grey out with no target;
+  - the secret missions;
+  - tapping a seat opens its claims, and the claims row is gone;
+  - the hand-off cover sits over the missions only, and the tray names the winner at game end.
+
+  New Player classes: `SeatBar`, `TurnTray`, `ClaimsPanel`, `BoardPanel`, `CritterPainter`, `Seats`, `RotateAmount`. No Rules or App change.
+- **Verification:** On `05316d4`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 24 of 24, run by the implementation lead. The tests cover Spin, score pips, the claims panel (open, close, closed by a render), the hand-off cover hiding the missions, the winner tray, a drag that scrolls without placing next to a tap that places, scroll memory across renders and its reset for a new game, and a greyed chip. Nine portrait captures are committed; `seat-claims.png` and `board-scrolled.png` are new, and `claim-row.png` is retired.
+- **Deviations:** The amendment above, from the maintainer's decisions after the first design review.
+- **Unresolved gates or risks:**
+  - #51: the configured win count.
+  - #52: pinch-zoom.
+  - The look slice: toy tiles, background splats, legal-spot and highlight styling, power icons, fonts, two-seat bar spacing, setup restyle.
+  - The reshuffle capture still uses a blank-tile fixture.
+- **Refactor and handoff receipt:** In the PR body and on issue #50.
+- **Final PR:** see the PR linked from issue #50.
