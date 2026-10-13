@@ -10,6 +10,7 @@ from fontTools.varLib.instancer import instantiateVariableFont
 
 here = Path(__file__).resolve().parent
 out = here.parent.parent / "unity/MissionSplat/Assets/Art/Resources/Fonts"
+out.mkdir(parents=True, exist_ok=True)
 for name, weight in (("Regular", 400), ("SemiBold", 600), ("ExtraBold", 800)):
     font = instantiateVariableFont(TTFont(here / "Baloo2[wght].ttf"), {"wght": weight}, updateFontNames=True)
     font.save(out / f"Baloo2-{name}.ttf")
