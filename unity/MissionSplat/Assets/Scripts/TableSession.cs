@@ -50,7 +50,11 @@ public sealed class TableSession : MonoBehaviour
 
     public void Begin(TableStart start, GameSetup setup) => Adopt(start, new Table(new LocalSession(), start, setup));
 
-    // Same seats and choices, the first seat moved on. Every game started from setup is shuffled, so each one is a fresh deal.
+    // The start the current game began from; New setup pre-fills from it.
+    internal TableStart CurrentStart => _start;
+
+    // Same seats and choices, the first seat moved on, and always shuffled so each game is a fresh deal,
+    // even after a game that began unshuffled.
     public void PlayAgain()
     {
         if (_start is null)
@@ -58,7 +62,7 @@ public sealed class TableSession : MonoBehaviour
             return;
         }
 
-        Begin(new TableStart(_start.SeatCount, _start.AiSeats, (_start.FirstSeatIndex + 1) % _start.SeatCount, _start.Shuffle));
+        Begin(new TableStart(_start.SeatCount, _start.AiSeats, (_start.FirstSeatIndex + 1) % _start.SeatCount, shuffle: true));
     }
 
     // Setup comes back filled with the finished game's choices.

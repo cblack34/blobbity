@@ -527,6 +527,7 @@ public class TableSessionPlayModeTests
         Assert.That(table.Snapshot.View.Claims.Count, Is.EqualTo(3));
         Assert.That(table.Snapshot.View.Claims.All(claims => claims.Missions.Count == 0), Is.True);
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
+        Assert.That(table.CurrentStart.Shuffle, Is.True, "Play again deals fresh even after an unshuffled game");
         Assert.That(FindRect("Winner").gameObject.activeInHierarchy, Is.False);
         Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.False, "the claims panel does not carry over into the new game");
 
