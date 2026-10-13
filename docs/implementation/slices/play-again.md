@@ -87,3 +87,24 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** The game-end tray shows the winner, a large **Play again** button and a smaller **New setup** button.
+  - **Play again** starts a new game at once with the same seats and AI choices. The first seat moves on to the next seat, wrapping around.
+  - **New setup** opens setup pre-filled with the finished game's choices, including that game's first seat.
+  - The setup screen no longer has a Shuffle toggle, so every game a player starts is shuffled.
+  - The seat bar highlights the winner when the game is won, and no seat when a game ends without a winner.
+  - A new game resets the board scroll and closes the claims panel.
+  - `TableSession` remembers the `TableStart` the current game began from and starts the next one through the same path as setup. No Rules or App change.
+- **Verification:** On `95659c5`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 31 of 31.
+  - New tests check that Play again starts a fresh game with the next first seat, empty claims and a closed claims panel.
+  - They check that New setup pre-fills the finished game's choices and shows no Shuffle button.
+  - They check that the winner is the highlighted seat.
+  - `game-end.png` is new and `setup.png` was retaken.
+- **Deviations:**
+  - The shuffle amendment above.
+  - The seat-bar winner highlight. It was found during the slice and fixed here, because it sits on the screen this slice adds.
+- **Unresolved gates or risks:**
+  - The "game over without a winner" highlight path has no test fixture.
+  - Moving the next-game rule into `TableStart` would make it testable with `dotnet test`. That is an App change for a later slice.
+- **Refactor and handoff receipt:** In the PR body and on issue #54.
+- **Final PR:** see the PR linked from issue #54.
