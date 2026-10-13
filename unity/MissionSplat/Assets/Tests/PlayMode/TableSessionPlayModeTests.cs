@@ -47,7 +47,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(placements.Any(slot => slot.TileX == 1 && slot.TileY == 1), Is.False);
         Assert.That(placements.Any(slot => slot.TileX == 1 && slot.TileY == 0), Is.True);
 
-        table.Tap(1, 0);
+        table.Place(1, 0);
 
         var view = table.Snapshot.View;
         Assert.That(view.Board.Tiles.Count, Is.EqualTo(3));
@@ -63,7 +63,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     }
 
     [Test]
-    public void StackTile_OffersAnOnTopPlacement_AndTappingItCoversWithoutAddingATile()
+    public void StackTile_OffersAnOnTopPlacement_AndPlacingItCoversWithoutAddingATile()
     {
         var table = NewTable();
         table.Begin(TableStart.PassAndPlayDraft(), StackSetup());
@@ -83,7 +83,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(highlight.anchoredPosition, Is.EqualTo(block.anchoredPosition));
         Assert.That(highlight.sizeDelta, Is.EqualTo(block.sizeDelta));
 
-        FindButton("Highlight0_0").onClick.Invoke();
+        PlaceAt(FindButton("Highlight0_0"));
 
         var after = table.Snapshot.View.Board;
         Assert.That(after.Tiles.Count, Is.EqualTo(1));
@@ -108,7 +108,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(origin, Is.Not.Null);
         Assert.That(origin.transform.parent.name, Is.EqualTo("Lattice"));
 
-        origin.onClick.Invoke();
+        PlaceAt(origin);
 
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
     }
@@ -292,10 +292,10 @@ public class TableSessionPlayModeTests : TableSessionFixture
     }
 
     [Test]
-    public void SelectingBounce_RemovesTheTappedTile_ThenAHighlightPlacesTheDrawnTile()
+    public void SelectingBounce_RemovesTheTappedTile_ThenAConfirmedHighlightPlacesTheDrawnTile()
     {
         var table = BeginHumanTable(BounceBoardSetup());
-        LiveButton("Highlight1_0").onClick.Invoke();
+        PlaceAt(LiveButton("Highlight1_0"));
         table.ConfirmIncomingSeat();
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
@@ -327,7 +327,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(snapshot.SelectedPower, Is.Null);
         Assert.That(LiveButton("PowerBounce"), Is.Null);
 
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
 
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
@@ -369,11 +369,11 @@ public class TableSessionPlayModeTests : TableSessionFixture
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two")));
         Assert.That(FindText("Notice").gameObject.activeInHierarchy, Is.False);
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
         table.ConfirmIncomingSeat();
         Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.None));
 
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
 
         Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.DeckReshuffled));
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
@@ -399,7 +399,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         AssertPips("Seat1", filled: 0, empty: 4);
 
         // Placing the second purple tile beside the first finishes a purple row, so the seat claims both of its purple-row missions.
-        table.Tap(1, 0);
+        table.Place(1, 0);
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(2));
 
@@ -439,7 +439,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
             new Tile(new TileId("start"), purple, purple, purple, purple),
             new Tile(new TileId("next"), purple, purple, purple, purple),
             BlankTile("pad")));
-        table.Tap(1, 0);
+        table.Place(1, 0);
         Assert.That(table.Snapshot.ConcealVisible, Is.True);
         var panel = FindRect("ClaimsPanel");
         Assert.That(panel.gameObject.activeSelf, Is.False);
@@ -465,7 +465,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     public void TheHandOffCover_SitsOverTheSecretMissionsOnly()
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
-        LiveButtons("Highlight").First().onClick.Invoke();
+        PlaceAt(LiveButtons("Highlight").First());
         Assert.That(table.Snapshot.ConcealVisible, Is.True);
 
         var conceal = FindRect("Conceal");
@@ -648,7 +648,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         }
 
         var left = table.Snapshot.LegalPlacements.OrderBy(slot => slot.TileX).First();
-        table.Tap(left.TileX, left.TileY);
+        table.Place(left.TileX, left.TileY);
         Assert.That(table.Snapshot.ConcealVisible, Is.True);
         Canvas.ForceUpdateCanvases();
         table.ConfirmIncomingSeat();
@@ -682,7 +682,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
 
     // Driven through the real input module with a virtual mouse: a drag on a highlight scrolls the board and does not place, a tap places.
     [UnityTest]
-    public IEnumerator DraggingAHighlightScrollsTheBoard_AndATapStillPlaces()
+    public IEnumerator DraggingAHighlightScrollsTheBoard_AndATapStillPreviewsAndPlaceStillPlaces()
     {
         var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();
         var table = BeginHumanTable(SetupFrom(tiles));
@@ -748,7 +748,9 @@ public class TableSessionPlayModeTests : TableSessionFixture
             yield return Hold(mouse, spot);
             yield return Release(mouse, spot);
 
-            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before + 1), "a tap places");
+            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before), "a tap only previews");
+            LiveButton("Place").onClick.Invoke();
+            Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before + 1), "Place places");
         }
         finally
         {

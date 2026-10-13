@@ -29,7 +29,7 @@ public sealed class TableSession : MonoBehaviour
             _view = gameObject.AddComponent<TableView>();
         }
 
-        _view.Tapped += Tap;
+        _view.PlaceRequested += Place;
         _view.Confirmed += ConfirmIncomingSeat;
         _view.QuarterTurnsSelected += SetQuarterTurns;
         _view.PowerSelected += SelectPower;
@@ -77,7 +77,7 @@ public sealed class TableSession : MonoBehaviour
         }
     }
 
-    public void Tap(int tileX, int tileY) => Commit(() => _table.Place(tileX, tileY));
+    public void Place(int tileX, int tileY) => Commit(() => _table.Place(tileX, tileY));
 
     public void SelectPower(SymbolId? power) => Forward(() => _table.SelectPower(power));
 

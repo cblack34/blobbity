@@ -31,6 +31,24 @@ public abstract class TableSessionFixture
         }
     }
 
+    // The view alone, with no session: a test that renders snapshots into it by hand, to change the game under a preview without the view's Place.
+    protected TableView NewViewOnly()
+    {
+        _root = new GameObject("Table");
+        var view = _root.AddComponent<TableView>();
+        view.Recap.PlaysInstantly = true;
+        return view;
+    }
+
+    // An App table past its first hand-off, with the seat ready to act.
+    protected static Table StartedTable(GameSetup setup)
+    {
+        var table = new Table(new LocalSession(), TableStart.PassAndPlayDraft(), setup);
+        table.Start();
+        table.Confirm();
+        return table;
+    }
+
     protected TableSession NewTable()
     {
         _root = new GameObject("Table");
@@ -77,7 +95,11 @@ public abstract class TableSessionFixture
         yield return null;
     }
 
-    protected void PlaceRightmost(TableSession table)
+    protected void PlaceRightmost(TableSession table) => PlaceBy(table, spots => spots.OrderByDescending(slot => slot.TileX).First());
+
+    protected void PlaceLowest(TableSession table) => PlaceBy(table, spots => spots.OrderBy(slot => slot.TileY).ThenBy(slot => slot.TileX).First());
+
+    private void PlaceBy(TableSession table, System.Func<System.Collections.Generic.IReadOnlyList<LegalPlacement>, LegalPlacement> choose)
     {
         if (table.Snapshot.ConcealVisible)
         {
@@ -85,8 +107,8 @@ public abstract class TableSessionFixture
             SkipTheWholeRecap();
         }
 
-        var spot = table.Snapshot.LegalPlacements.OrderByDescending(slot => slot.TileX).First();
-        table.Tap(spot.TileX, spot.TileY);
+        var spot = choose(table.Snapshot.LegalPlacements);
+        table.Place(spot.TileX, spot.TileY);
         SkipTheWholeRecap();
         if (table.Snapshot.ConcealVisible)
         {
@@ -174,7 +196,7 @@ public abstract class TableSessionFixture
         var table = NewTable();
         table.Begin(start, setup);
         table.ConfirmIncomingSeat();
-        table.Tap(1, 0);
+        table.Place(1, 0);
         Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.Won), table.Snapshot.Status.Message);
         return table;
     }
@@ -276,6 +298,16 @@ public abstract class TableSessionFixture
     // A re-render leaves the replaced buttons inactive until the frame ends, so only live ones count.
     protected Button LiveButton(string name) =>
         _root.GetComponentsInChildren<Button>(false).FirstOrDefault(button => button.name == name);
+
+    protected RectTransform LiveRect(string name) =>
+        _root.GetComponentsInChildren<RectTransform>(false).FirstOrDefault(rect => rect.name == name);
+
+    // Taps a legal spot, which previews the drawn tile there, then presses Place.
+    protected void PlaceAt(Button spot)
+    {
+        spot.onClick.Invoke();
+        LiveButton("Place").onClick.Invoke();
+    }
 
     protected Button[] LiveButtons(string prefix) =>
         _root.GetComponentsInChildren<Button>(false).Where(button => button.name.StartsWith(prefix)).ToArray();

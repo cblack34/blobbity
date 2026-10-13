@@ -26,7 +26,7 @@ public sealed class TableView : MonoBehaviour
     private TableSnapshot _rendered;
     private string _summary;
 
-    public event Action<int, int> Tapped;
+    public event Action<int, int> PlaceRequested;
     public event Action Confirmed;
     public event Action<int> QuarterTurnsSelected;
     public event Action<SymbolId?> PowerSelected;
@@ -84,7 +84,7 @@ public sealed class TableView : MonoBehaviour
     public void RenderNewGame(TableSnapshot snapshot)
     {
         _playView.CancelRecap();
-        _playView.ForgetScroll();
+        _playView.NewGame();
         Render(snapshot);
     }
 
@@ -125,7 +125,7 @@ public sealed class TableView : MonoBehaviour
         Ui.Stretch(_setup);
         _playView = new TablePlayView(_play);
         _setupView = new TableSetupView(_setup);
-        _playView.Tapped += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
+        _playView.PlaceRequested += (tileX, tileY) => PlaceRequested?.Invoke(tileX, tileY);
         _playView.Confirmed += () => Confirmed?.Invoke();
         _playView.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
         _playView.PowerSelected += power => PowerSelected?.Invoke(power);
@@ -175,7 +175,7 @@ public sealed class TableView : MonoBehaviour
         RenderCurrentSnapshot();
     }
 
-    private void RenderCurrentSnapshot()
+    internal void RenderCurrentSnapshot()
     {
         if (_rendered == null || _play == null || !_play.gameObject.activeSelf)
         {
