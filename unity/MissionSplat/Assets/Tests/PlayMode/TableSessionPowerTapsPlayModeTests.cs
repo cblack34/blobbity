@@ -85,13 +85,19 @@ public class TableSessionPowerTapsPlayModeTests : TableSessionFixture
         Assert.That(LiveRect("Preview"), Is.Not.Null);
     }
 
-    [Test]
-    public void Confirm_AppliesTheTurnsShown_AndTheStripGoes()
+    [TestCase(1)]
+    [TestCase(2)]
+    [TestCase(3)]
+    public void Confirm_AppliesTheTurnsShown_AndTheStripGoes(int turns)
     {
         var table = BeginHumanTable(RotateSetup());
         var before = CellsOf(table.Snapshot.View);
         LiveButton("Target0_0").onClick.Invoke();
-        LiveButton("Turn").onClick.Invoke();
+        for (var press = 0; press < turns; press++)
+        {
+            LiveButton("Turn").onClick.Invoke();
+        }
+
         var shown = PreviewColours();
 
         LiveButton("RotateConfirm").onClick.Invoke();
@@ -108,6 +114,22 @@ public class TableSessionPowerTapsPlayModeTests : TableSessionFixture
         Assert.That(LiveButtons("Target"), Is.Empty);
         Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
         Assert.That(FindText("Status").text, Is.EqualTo("Place your tile."));
+    }
+
+    [Test]
+    public void AConfirmedRotate_LeavesTheDrawnTilesSpinWhereItWas()
+    {
+        var table = BeginHumanTable(RotateSetup());
+        LiveButton("Spin").onClick.Invoke();
+        LiveButton("Spin").onClick.Invoke();
+        Assert.That(table.Snapshot.QuarterTurns, Is.EqualTo(2));
+        LiveButton("Target0_0").onClick.Invoke();
+        LiveButton("Turn").onClick.Invoke();
+
+        LiveButton("RotateConfirm").onClick.Invoke();
+
+        Assert.That(table.Snapshot.QuarterTurns, Is.EqualTo(2), "the rotate has its own turns; Spin is for the placement");
+        Assert.That(table.Snapshot.View.PendingMatchTile.Id.Value, Is.EqualTo("spinner"));
     }
 
     [Test]
@@ -280,6 +302,86 @@ public class TableSessionPowerTapsPlayModeTests : TableSessionFixture
 
         Assert.That(LiveRect("Preview"), Is.Null, "the drawn tile has no rotate left");
         Assert.That(LiveButton("RotateConfirm"), Is.Null);
+    }
+
+    // The next three render another table's snapshot into the view under a live bounce selection, so each render differs from the selected one
+    // in just one way and only one reason to drop the selection applies.
+    [Test]
+    public void ASelectedBounce_DoesNotSurviveItsUseBeingSpent()
+    {
+        var view = NewViewOnly();
+        var table = BounceTableAtSecondSeat(BounceTile("lid", 1));
+        view.RenderNewGame(table.Snapshot);
+        LiveButton("Target0_0").onClick.Invoke();
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+
+        table.Submit(new UseBounce(1, 0));
+        table.AcknowledgeRecap();
+        Assert.That(table.Snapshot.View.PendingMatchTile.Id.Value, Is.EqualTo("lid"), "the same drawn tile");
+        Assert.That(table.Snapshot.Recap, Is.Empty);
+        Assert.That(table.Snapshot.View.Board.Tiles.Any(tile => tile.TileX == 0 && tile.TileY == 0), Is.True, "the selected tile is still on the board");
+
+        view.Render(table.Snapshot);
+
+        Assert.That(LiveRect("Preview"), Is.Null);
+        Assert.That(LiveButton("Bounce"), Is.Null);
+    }
+
+    [Test]
+    public void ASelectedBounce_DoesNotSurviveARecapPending_EvenWithTheTargetAndAUseLeft()
+    {
+        var view = NewViewOnly();
+        var table = BounceTableAtSecondSeat(BounceTile("twice", 2));
+        view.RenderNewGame(table.Snapshot);
+        LiveButton("Target0_0").onClick.Invoke();
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+
+        table.Submit(new UseBounce(1, 0));
+        Assert.That(table.Snapshot.Recap, Is.Not.Empty);
+        Assert.That(table.Snapshot.LegalTargets.Single(entry => entry.Power.Equals(OrdinaryCatalog.Bounce)).Targets, Does.Contain(new BoardPosition(0, 0)));
+        Assert.That(table.Snapshot.View.RemainingUses.Single(charge => charge.Power.Equals(OrdinaryCatalog.Bounce)).Remaining, Is.EqualTo(1));
+
+        view.Render(table.Snapshot);
+
+        Assert.That(LiveRect("Preview"), Is.Null);
+        Assert.That(LiveButton("Bounce"), Is.Null);
+    }
+
+    [Test]
+    public void ASelectedBounce_DoesNotSurviveADifferentDrawnTile_EvenWithTheSameTarget()
+    {
+        var view = NewViewOnly();
+        var other = BounceTableAtSecondSeat(BounceTile("other", 1));
+        view.RenderNewGame(BounceTableAtSecondSeat(BounceTile("lid", 1)).Snapshot);
+        LiveButton("Target0_0").onClick.Invoke();
+        Assert.That(LiveRect("Preview"), Is.Not.Null);
+        Assert.That(other.Snapshot.LegalTargets.Single(entry => entry.Power.Equals(OrdinaryCatalog.Bounce)).Targets, Does.Contain(new BoardPosition(0, 0)));
+        Assert.That(other.Snapshot.Recap, Is.Empty);
+
+        view.Render(other.Snapshot);
+
+        Assert.That(LiveRect("Preview"), Is.Null);
+        Assert.That(LiveButton("Bounce"), Is.Null);
+    }
+
+    private static Tile BounceTile(string id, int bounceCells)
+    {
+        var bounce = Cell.Symbol(OrdinaryCatalog.Bounce);
+        var blank = Cell.Symbol(OrdinaryCatalog.Blank);
+        return new Tile(new TileId(id), bounce, bounceCells > 1 ? bounce : blank, blank, blank);
+    }
+
+    // Two tiles on the board and the second seat holding the bounce tile, with the first seat's placement already seen.
+    private static Table BounceTableAtSecondSeat(Tile bounce)
+    {
+        var table = StartedTable(SetupFrom(BlankTile("start"), BlankTile("side"), bounce, BlankTile("pad")));
+        table.Place(1, 0);
+        table.AcknowledgeRecap();
+        table.Confirm();
+        table.AcknowledgeRecap();
+        Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
+        Assert.That(table.Snapshot.Recap, Is.Empty);
+        return table;
     }
 
     // The colours of the live "Preview" tile's four splats, in board order (bottom row then top row, left to right).

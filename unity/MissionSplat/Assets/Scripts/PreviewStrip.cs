@@ -2,6 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
+using MissionSplat.Rules;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,8 +15,13 @@ internal sealed class PreviewStrip
     private const float EdgeUnits = 24f;
     private const float AirUnits = 10f;
 
-    // The turn button's arrow, as a fraction of the button's face on each side.
-    private const float ArrowMargin = 0.14f;
+    // Where each button sits across the strip, as fractions of its width. Cancel takes the left; the primary button takes the rest.
+    private const float PlaceCancelRight = 0.38f;
+    private const float PlaceLeft = 0.42f;
+    private const float RotateCancelRight = 0.28f;
+    private const float TurnLeft = 0.31f;
+    private const float TurnRight = 0.58f;
+    private const float RotateConfirmLeft = 0.62f;
 
     private readonly RectTransform _strip;
 
@@ -30,9 +36,8 @@ internal sealed class PreviewStrip
 
     public event Action Turned;
 
-    public event Action RotateConfirmed;
-
-    public event Action Bounced;
+    // Confirm on a rotate, or Bounce on a bounce.
+    public event Action PowerConfirmed;
 
     public event Action Cancelled;
 
@@ -48,40 +53,34 @@ internal sealed class PreviewStrip
 
         switch (preview.Kind)
         {
+            case PreviewKind.Placement:
+                AddCancel(PlaceCancelRight);
+                AddButton("Place", "Place", SplatPalette.Go, PlaceLeft, 1f, 60, () => Placed?.Invoke());
+                break;
             case PreviewKind.Rotate:
-                AddCancel(0.28f);
-                var turn = AddButton("Turn", string.Empty, SplatPalette.Sunny, 0.31f, 0.58f, 0, Turned);
-                PaintArrow(Ui.ToyFace(turn));
-                // A rotate by no turns is no rotate, so there is nothing yet to confirm.
-                Ui.SetEnabled(AddButton("RotateConfirm", "Confirm", SplatPalette.Go, 0.62f, 1f, 52, RotateConfirmed), preview.Turns > 0);
+                AddCancel(RotateCancelRight);
+                var turn = AddButton("Turn", string.Empty, SplatPalette.Sunny, TurnLeft, TurnRight, 0, () => Turned?.Invoke());
+                PowerBadge.PaintMark(Ui.ToyFace(turn), OrdinaryCatalog.Rotate);
+                Ui.SetEnabled(AddButton("RotateConfirm", "Confirm", SplatPalette.Go, RotateConfirmLeft, 1f, 52, () => PowerConfirmed?.Invoke()), preview.CanConfirm);
                 break;
             case PreviewKind.Bounce:
-                AddCancel(0.38f);
-                AddButton("Bounce", "Bounce", SplatPalette.BounceBadge, 0.42f, 1f, 60, Bounced);
+                AddCancel(PlaceCancelRight);
+                AddButton("Bounce", "Bounce", SplatPalette.BounceBadge, PlaceLeft, 1f, 60, () => PowerConfirmed?.Invoke());
                 break;
             default:
-                AddCancel(0.38f);
-                AddButton("Place", "Place", SplatPalette.Go, 0.42f, 1f, 60, Placed);
-                break;
+                throw new ArgumentOutOfRangeException(nameof(preview), preview.Kind, "Unknown kind of preview.");
         }
     }
 
-    private void AddCancel(float right) => AddButton("Cancel", "Cancel", SplatPalette.Paper, 0f, right, 44, Cancelled);
+    private void AddCancel(float right) => AddButton("Cancel", "Cancel", SplatPalette.Paper, 0f, right, 44, () => Cancelled?.Invoke());
 
-    // A button across the strip from left to right (fractions of its width). The handler is read when the button is pressed, not now.
+    // A button across the strip from left to right (fractions of its width).
     private Button AddButton(string name, string caption, Color fill, float left, float right, int fontSize, Action pressed)
     {
         var button = Ui.Button(name, _strip, caption, fill, Ui.Rounded, fontSize);
         Ui.Anchored(button.GetComponent<RectTransform>(), new Vector2(left, 0f), new Vector2(right, 1f), new Vector2(0f, AirUnits), new Vector2(0f, -AirUnits));
-        button.onClick.AddListener(() => pressed?.Invoke());
+        button.onClick.AddListener(() => pressed());
         return button;
-    }
-
-    private static void PaintArrow(RectTransform face)
-    {
-        var arrow = Ui.Image("Arrow", face, SplatPalette.Ink, Ui.RotateArrow);
-        arrow.preserveAspect = true;
-        Ui.Anchored(arrow.rectTransform, new Vector2(ArrowMargin, ArrowMargin), new Vector2(1f - ArrowMargin, 1f - ArrowMargin), Vector2.zero, Vector2.zero);
     }
 }
 }

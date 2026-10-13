@@ -95,7 +95,7 @@ public sealed class TableSession : MonoBehaviour
 
     private bool IsBlocked => !IsStarted || _view.Recap.IsPlaying;
 
-    // The recap's line stays until the next thing the player does that moves the game on; choosing a power or a turn amount keeps it.
+    // The recap's line stays until the next thing the player does that moves the game on; Spin keeps it.
     private void Commit(Action act)
     {
         if (!IsBlocked)

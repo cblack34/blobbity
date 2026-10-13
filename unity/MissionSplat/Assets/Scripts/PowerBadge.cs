@@ -62,9 +62,9 @@ internal static class PowerBadge
         PaintMark(face.rectTransform, power);
     }
 
-    // The power's mark in ink, centred in face: the rotate arrow, or a plus or minus drawn as bars
-    // (the glyphs of a font would sit off-centre in a disc).
-    private static void PaintMark(RectTransform face, SymbolId power)
+    // The power's mark on its own, in ink, centred in face: the rotate arrow, or a plus or minus drawn as bars
+    // (the glyphs of a font would sit off-centre in a disc). The preview strip's turn button draws the rotate arrow with it.
+    public static void PaintMark(RectTransform face, SymbolId power)
     {
         switch (LookOf(power).Mark)
         {

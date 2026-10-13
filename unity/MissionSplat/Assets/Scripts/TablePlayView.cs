@@ -75,7 +75,7 @@ internal sealed class TablePlayView
         var board = Ui.Rect("Board", play);
         Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.ReachUnits), new Vector2(-24f, -BoardTopUnits));
         _board = new BoardPanel(board);
-        _board.TileTapped += Preview;
+        _board.TileTapped += OnTileTapped;
 
         _tray = new TurnTray(play);
         _tray.Confirmed += () => Confirmed?.Invoke();
@@ -86,8 +86,7 @@ internal sealed class TablePlayView
         _strip = new PreviewStrip(play);
         _strip.Placed += Place;
         _strip.Turned += Turn;
-        _strip.RotateConfirmed += UsePower;
-        _strip.Bounced += UsePower;
+        _strip.PowerConfirmed += UsePower;
         _strip.Cancelled += ClearPreview;
 
         // Last, so it draws over everything else.
@@ -164,10 +163,10 @@ internal sealed class TablePlayView
         PaintBoard();
     }
 
-    // A tap on a legal spot only tries the drawn tile there; a tap on a power target only selects that tile.
-    private void Preview(int tileX, int tileY)
+    // A tap on a legal spot only tries the drawn tile there; a tap on a power target only selects that tile. Nothing starts while a recap is pending.
+    private void OnTileTapped(int tileX, int tileY)
     {
-        if (_recap.IsPlaying || _snapshot == null || TilePreview.Tapped(_snapshot, tileX, tileY) is not { } tried)
+        if (_snapshot == null || TilePreview.Tapped(_snapshot, tileX, tileY) is not { } tried)
         {
             return;
         }
@@ -206,13 +205,7 @@ internal sealed class TablePlayView
     // Confirm on a rotate, or Bounce, on the selected tile.
     private void UsePower()
     {
-        GameAction action = _preview switch
-        {
-            { Kind: PreviewKind.Rotate, Turns: > 0 } rotate => new UseRotate(rotate.TileX, rotate.TileY, rotate.Turns),
-            { Kind: PreviewKind.Bounce } bounce => new UseBounce(bounce.TileX, bounce.TileY),
-            _ => null,
-        };
-        if (action == null)
+        if (_preview?.ToAction() is not { } action)
         {
             return;
         }
@@ -273,10 +266,13 @@ internal sealed class TablePlayView
                 return "Turn the tile, then confirm.";
             case PreviewKind.Bounce:
                 return "Bounce this tile?";
-            default:
+            case null:
+            case PreviewKind.Placement:
                 return TilePreview.PowerTargets(snapshot).Any()
                     ? "Place your tile, or tap a ringed tile to use a power."
                     : "Place your tile.";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(preview), preview.Kind, "Unknown kind of preview.");
         }
     }
 

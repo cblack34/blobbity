@@ -145,22 +145,18 @@ internal sealed class BoardPanel
             cells[(occupied.CellX, occupied.CellY)] = occupied.Value;
         }
 
-        // A tile selected for a power is drawn lifted below instead, turned as the player has it.
-        (string Id, Func<int, int, Cell> CellAt)? selected = null;
+        // A tile selected for a power is drawn lifted, by PaintPreview, instead.
         foreach (var tile in view.Board.Tiles)
         {
-            Func<int, int, Cell> cellAt = (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)];
-            if (preview is { Kind: not PreviewKind.Placement } && preview.TileX == tile.TileX && preview.TileY == tile.TileY)
+            if (preview?.SelectsBoardTile(tile.TileX, tile.TileY) == true)
             {
-                selected = (tile.Id.Value, cellAt);
                 continue;
             }
 
             var block = Ui.Rect("Tile" + tile.Id.Value, lattice);
             Ui.PlaceCell(block, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
-            TilePainter.Paint(block, tile.Id.Value, cellAt, 0);
+            TilePainter.Paint(block, tile.Id.Value, CellsOf(cells, tile.TileX, tile.TileY), 0);
         }
-
         _content = content;
         _lattice = lattice;
         _origin = new Vector2Int(minX, minY);
@@ -171,33 +167,33 @@ internal sealed class BoardPanel
         content.anchoredPosition = ScrolledTo(_focus, content.sizeDelta, area.size);
         _placedAt = content.anchoredPosition;
 
-        if (snapshot.ConcealVisible)
+        if (!snapshot.ConcealVisible)
         {
-            return;
+            PaintTapTargets(lattice, snapshot, preview, minX, minY, cellSize);
         }
 
-        // A tile the drawn tile's power can act on gets a ring, so the player can see what is worth a tap.
-        var targets = TilePreview.PowerTargets(snapshot).ToHashSet();
-        foreach (var target in targets)
-        {
-            if (preview is { Kind: not PreviewKind.Placement } && preview.TileX == target.TileX && preview.TileY == target.TileY)
-            {
-                continue;
-            }
+        // Last, so no neighbour's tap target or spot draws over the lifted tile.
+        PaintPreview(lattice, snapshot, preview, cells, minX, minY, cellSize);
+    }
 
+    // The cell at local (x, y) of the tile at (tileX, tileY), as the board holds it.
+    private static Func<int, int, Cell> CellsOf(Dictionary<(int X, int Y), Cell> cells, int tileX, int tileY) =>
+        (x, y) => cells[((tileX * 2) + x, (tileY * 2) + y)];
+
+    // A ring and a tap on each tile the drawn tile's power can act on, so the player can see what is worth a tap, and a tap target on each legal spot.
+    // What is being previewed shows the tile itself instead.
+    private void PaintTapTargets(RectTransform lattice, TableSnapshot snapshot, TilePreview preview, int minX, int minY, float cellSize)
+    {
+        var targets = TilePreview.PowerTargets(snapshot).ToHashSet();
+        foreach (var target in targets.Where(target => preview?.IsAt(target.TileX, target.TileY) != true))
+        {
             var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, minX, minY, cellSize, () => TileTapped?.Invoke(target.TileX, target.TileY));
             PaintRing(button.transform, SplatPalette.TargetRing, cellSize);
         }
 
-        foreach (var highlight in snapshot.LegalPlacements)
+        // A power target is already tappable above; a tap there selects the power.
+        foreach (var highlight in snapshot.LegalPlacements.Where(spot => preview?.IsAt(spot.TileX, spot.TileY) != true && !targets.Contains(new BoardPosition(spot.TileX, spot.TileY))))
         {
-            // The previewed spot shows the tile instead, and a power target is already tappable (a tap there selects the power).
-            if (preview is { Kind: PreviewKind.Placement } && preview.TileX == highlight.TileX && preview.TileY == highlight.TileY
-                || targets.Contains(new BoardPosition(highlight.TileX, highlight.TileY)))
-            {
-                continue;
-            }
-
             var button = AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, minX, minY, cellSize, () => TileTapped?.Invoke(highlight.TileX, highlight.TileY));
             // A stack target is a tile to cover, so it gets a ring around the tile; any other placement is an empty spot to fill.
             if (highlight.Kind == PlacementKind.OnTop)
@@ -211,15 +207,32 @@ internal sealed class BoardPanel
                 Ui.Stretch(spot.rectTransform);
             }
         }
+    }
 
-        // Last, so no neighbour's tap target or spot draws over the lifted tile.
-        if (preview is { Kind: PreviewKind.Placement } && view.PendingMatchTile is { } drawn)
+    // The previewed tile, lifted: the drawn tile at its spot as Spin has it, or the selected board tile as the player has turned it.
+    private static void PaintPreview(RectTransform lattice, TableSnapshot snapshot, TilePreview preview, Dictionary<(int X, int Y), Cell> cells, int minX, int minY, float cellSize)
+    {
+        switch (preview?.Kind)
         {
-            PaintLifted(lattice, drawn.Id.Value, drawn.Local, snapshot.QuarterTurns, preview, minX, minY, cellSize);
-        }
-        else if (preview != null && selected is { } chosen)
-        {
-            PaintLifted(lattice, chosen.Id, chosen.CellAt, preview.Turns, preview, minX, minY, cellSize);
+            case null:
+                return;
+            case PreviewKind.Placement:
+                if (snapshot.View.PendingMatchTile is { } drawn)
+                {
+                    PaintLifted(lattice, drawn.Id.Value, drawn.Local, snapshot.QuarterTurns, preview, minX, minY, cellSize);
+                }
+
+                return;
+            case PreviewKind.Rotate:
+            case PreviewKind.Bounce:
+                foreach (var tile in snapshot.View.Board.Tiles.Where(tile => preview.SelectsBoardTile(tile.TileX, tile.TileY)))
+                {
+                    PaintLifted(lattice, tile.Id.Value, CellsOf(cells, tile.TileX, tile.TileY), preview.Turns, preview, minX, minY, cellSize);
+                }
+
+                return;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(preview), preview.Kind, "Unknown kind of preview.");
         }
     }
 

@@ -62,7 +62,7 @@ The maintainer asked for direct, confirmable power use (#59), and the confirm st
 
 ## Architecture and contracts
 
-- **Affected seams:** Unity player (`BoardPanel`, `TablePlayView`, `PlacementStrip`, `TurnTray`, `PowerChips` removed, `TableSession`).
+- **Affected seams:** Unity player (`BoardPanel`, `TablePlayView`, `PreviewStrip` (was `PlacementStrip`), `TurnTray`, `PowerChips` removed, `TableSession`).
 - **Public contracts:** Rules and App unchanged. A rotate submits a `UseRotate` with its own quarter turns through the existing submit path. If the table driver needs a change to accept that amount, stop and ask.
 - **Data and migration considerations:** none.
 

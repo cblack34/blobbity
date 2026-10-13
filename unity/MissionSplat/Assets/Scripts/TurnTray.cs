@@ -13,7 +13,7 @@ using UnityEngine.UI;
 // When the game is over it shows the winner instead.
 internal sealed class TurnTray
 {
-    public const float HeightUnits = 560f;
+    public const float HeightUnits = 450f;
 
     // The wavy top edge rises above the tray's white body, so the board stops this far above the tray to keep clear of it.
     public const float WaveUnits = 56f;
@@ -26,18 +26,20 @@ internal sealed class TurnTray
     // The drawn tile's side before the first layout has given its slot a size.
     private const float FallbackTileUnits = 72f;
 
-    private const float SecretsMinX = 0.58f;
-    private const float SecretsMinY = 0.03f;
-    private const float SecretsMaxX = 0.97f;
-    private const float SecretsMaxY = 0.74f;
+    // The turn tray's rows, as fractions of its height: the drawn tile, Spin, and the secret missions fill the tray from the bottom margin to the top.
+    private const float ContentBottom = 0.03f;
+    private const float ContentTop = 0.97f;
 
-    // The game-end tray's rows, as fractions of the winner area (about 515 units tall): each button is at least the
+    private const float SecretsMinX = 0.58f;
+    private const float SecretsMaxX = 0.97f;
+
+    // The game-end tray's rows, as fractions of the winner area (about 415 units tall): each button is at least the
     // 120-unit tap size (see BoardPanel), and the result sits above them.
-    private const float NewSetupTop = 0.24f;
-    private const float PlayAgainBottom = 0.26f;
-    private const float PlayAgainTop = 0.50f;
-    private const float ResultBottom = 0.52f;
-    private const float ResultSplit = 0.76f;
+    private const float NewSetupTop = 0.30f;
+    private const float PlayAgainBottom = 0.32f;
+    private const float PlayAgainTop = 0.62f;
+    private const float ResultBottom = 0.64f;
+    private const float ResultSplit = 0.78f;
 
     private readonly RectTransform _turn;
     private readonly RectTransform _pending;
@@ -56,12 +58,12 @@ internal sealed class TurnTray
         Ui.Anchored(wave.rectTransform, new Vector2(0f, 1f), Vector2.one, Vector2.zero, new Vector2(0f, WaveUnits));
         _turn = Ui.Rect("Turn", tray.transform);
         Ui.Stretch(_turn);
-        _pending = Area("Pending", _turn, 0.03f, 0.03f, 0.37f, 0.74f);
-        _spin = Area("Spin", _turn, 0.38f, 0.03f, 0.56f, 0.74f);
+        _pending = Area("Pending", _turn, 0.03f, ContentBottom, 0.37f, ContentTop);
+        _spin = Area("Spin", _turn, 0.38f, ContentBottom, 0.56f, ContentTop);
         _secrets = SecretsArea("Secrets", _turn);
         _winner = Area("Winner", tray.transform, 0.03f, 0.04f, 0.97f, 0.96f);
 
-        // Over the secret missions only; the tile, Spin, and powers beside it stay in view.
+        // Over the secret missions only; the tile and Spin beside it stay in view.
         _conceal = SecretsArea("Conceal", _turn);
         var cover = Ui.Toy("Cover", _conceal, SplatPalette.Paper);
         Ui.Stretch(cover.rectTransform);
@@ -120,7 +122,7 @@ internal sealed class TurnTray
 
     // The secret missions' area, which the hand-off cover sits exactly over.
     private static RectTransform SecretsArea(string name, Transform parent) =>
-        Area(name, parent, SecretsMinX, SecretsMinY, SecretsMaxX, SecretsMaxY);
+        Area(name, parent, SecretsMinX, ContentBottom, SecretsMaxX, ContentTop);
 
     private void PaintWinner(TableSnapshot snapshot, string heading)
     {
