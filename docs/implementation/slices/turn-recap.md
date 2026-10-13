@@ -125,3 +125,36 @@ None.
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** Each human sees, in order, every public event since they last held the device.
+  - **The feed (PR 1, #63):** `Table` logs accepted events, tracks a per-human seen cursor, and exposes `TableSnapshot.Recap` and `RecapSeat` for the holder. `AcknowledgeRecap()` marks them seen. Items are a closed public set with the cells needed to draw them, and they never carry the deck order.
+  - **The playback (PR 2):** Unity plays the items over the table:
+    - a placement drops with a pulse;
+    - a rotate turns the tile, and a bounce lifts it off;
+    - a claim pops the card up, then flies it to the seat's pip;
+    - a reshuffle or a win shows a banner.
+
+    The board scrolls to a tile that is out of view. Pacing is 0.5 s per board item and 1 s per claim or win. A tap finishes only the current item. Input is blocked twice over, by the overlay and in `TableSession`. While a recap plays, the heading names the item; the next turn's heading, the hand-off cover and the winner tray wait for the acknowledge.
+  - **Timing:** the outgoing player's own items play before the cover, and the incoming player's play after Confirm. A one-line summary stays until the next action.
+- **Verification:**
+  - **PR 1:** on `823063b`, Rules 234 and App 85.
+  - **PR 2:** on `db888f1`, Rules 234, App 85, and `unity test unity/MissionSplat --mode PlayMode` 43 of 43 (11 recap tests). They cover:
+    - human against AI;
+    - two humans, where the outgoing recap plays before the cover, no incoming missions are drawn, and a Confirm during the recap is ignored;
+    - one tap skips one item;
+    - the summary line;
+    - a failing item still ends and acknowledges;
+    - the board scrolling to an off-screen tile;
+    - the board reaching a recap item beyond its edge, such as a tile a bounce removed;
+    - the skip layer taking every tap.
+  - **Captures:** `recap-placement.png` and `recap-claim.png`.
+- **Deviations:**
+  - The win plays as its own one-second banner after the claim that wins, so a winning claim takes two taps.
+  - The heading names the playing item, an addition from review, so the outgoing player is never prompted to hand off mid-recap.
+- **Unresolved gates or risks:**
+  - The seat bar's winner highlight appears before the win banner plays.
+  - If automated seats win before any human has confirmed, there is no recap; the win still shows.
+  - A layout change mid-recap leaves that item's overlay at the old position.
+  - Confirm or cancel (#58), powers by tapping (#59), and the power splash (#60) build on this timing.
+- **Refactor and handoff receipt:** In each PR body and on issues #61 and #62.
+- **Final PR:** see the PR linked from issue #62.

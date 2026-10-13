@@ -27,6 +27,7 @@ internal sealed class BoardPanel
 
     // The content as last drawn: the lattice's origin cell, its size, and its cell size, to turn a scroll position into a cell.
     private RectTransform _content;
+    private RectTransform _lattice;
     private Vector2Int _origin;
     private Vector2 _latticeSize;
     private float _cellSize;
@@ -56,6 +57,7 @@ internal sealed class BoardPanel
     public void ForgetScroll()
     {
         _content = null;
+        _lattice = null;
         _focus = null;
         _placedAt = Vector2.zero;
     }
@@ -71,6 +73,7 @@ internal sealed class BoardPanel
         // Child 0 is the permanent board fill.
         Ui.Clear(_viewport, 1);
         _content = null;
+        _lattice = null;
 
         var view = snapshot.View;
         // An emptied board still offers the origin, so only return when nothing is drawn or tappable.
@@ -91,12 +94,29 @@ internal sealed class BoardPanel
             maxY = Math.Max(maxY, occupiedCell.CellY);
         }
 
+        void Include(int tileX, int tileY)
+        {
+            minX = Math.Min(minX, tileX * 2);
+            maxX = Math.Max(maxX, (tileX * 2) + 1);
+            minY = Math.Min(minY, tileY * 2);
+            maxY = Math.Max(maxY, (tileY * 2) + 1);
+        }
+
         foreach (var highlight in snapshot.LegalPlacements)
         {
-            minX = Math.Min(minX, highlight.TileX * 2);
-            maxX = Math.Max(maxX, (highlight.TileX * 2) + 1);
-            minY = Math.Min(minY, highlight.TileY * 2);
-            maxY = Math.Max(maxY, (highlight.TileY * 2) + 1);
+            Include(highlight.TileX, highlight.TileY);
+        }
+
+        // A pending recap plays on this board as it now is, but its items sit where the tiles were: a bounce or a reshuffle can leave
+        // one outside what is drawn. The lattice reaches them too, so the board can scroll to each and its animation is seen.
+        foreach (var item in snapshot.Recap)
+        {
+            switch (item)
+            {
+                case RecapPlaced placed: Include(placed.TileX, placed.TileY); break;
+                case RecapRotated rotated: Include(rotated.TileX, rotated.TileY); break;
+                case RecapBounced bounced: Include(bounced.TileX, bounced.TileY); break;
+            }
         }
 
         var width = maxX - minX + 1;
@@ -125,6 +145,7 @@ internal sealed class BoardPanel
         }
 
         _content = content;
+        _lattice = lattice;
         _origin = new Vector2Int(minX, minY);
         _latticeSize = latticeSize;
         _cellSize = cellSize;
@@ -163,6 +184,39 @@ internal sealed class BoardPanel
                 Ui.Stretch(spot.rectTransform);
             }
         }
+    }
+
+    // Where the board last drew the tile at (tileX, tileY): its centre in world space and its side in canvas units. The position need not hold a tile,
+    // and may be scrolled out of view. Null when nothing is drawn.
+    public (Vector3 Centre, float Side)? TileSlot(int tileX, int tileY)
+    {
+        if (_lattice == null)
+        {
+            return null;
+        }
+
+        var local = _lattice.rect.min + new Vector2(((tileX * 2) - _origin.x + 1) * _cellSize, ((tileY * 2) - _origin.y + 1) * _cellSize);
+        return (_lattice.TransformPoint(local), 2f * _cellSize);
+    }
+
+    // Scrolls the board so the tile at (tileX, tileY) is wholly in view, if it is not. The scroll stays where it ends: the next render keeps
+    // whatever is then at the middle of the view, as for any scroll by the player.
+    public void RevealTile(int tileX, int tileY)
+    {
+        if (TileSlot(tileX, tileY) is not { } slot)
+        {
+            return;
+        }
+
+        var local = (Vector2)_viewport.InverseTransformPoint(slot.Centre);
+        var reach = (_viewport.rect.size / 2f) - new Vector2(slot.Side / 2f, slot.Side / 2f);
+        if (Mathf.Abs(local.x) <= reach.x && Mathf.Abs(local.y) <= reach.y)
+        {
+            return;
+        }
+
+        _content.anchoredPosition = ScrolledTo(new Vector2((tileX * 2) + 1, (tileY * 2) + 1), _content.sizeDelta, _viewport.rect.size);
+        _scroll.velocity = Vector2.zero;
     }
 
     // The board cell at the middle of the view as last drawn and scrolled.

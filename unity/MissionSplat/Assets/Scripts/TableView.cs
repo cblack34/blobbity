@@ -2,6 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
+using System.Collections.Generic;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -23,6 +24,7 @@ public sealed class TableView : MonoBehaviour
     private TablePlayView _playView;
     private TableSetupView _setupView;
     private TableSnapshot _rendered;
+    private string _summary;
 
     public event Action<int, int> Tapped;
     public event Action Confirmed;
@@ -32,6 +34,11 @@ public sealed class TableView : MonoBehaviour
     public event Action<TableStart> Started;
     public event Action PlayAgainRequested;
     public event Action NewSetupRequested;
+
+    // Raised with the items a finished recap showed; the session acknowledges them.
+    public event Action<IReadOnlyList<RecapItem>> RecapFinished;
+
+    internal RecapPlayer Recap => _playView.Recap;
 
     private void Awake()
     {
@@ -44,6 +51,7 @@ public sealed class TableView : MonoBehaviour
     // Lattices keep pixel sizes from the last Render, so that snapshot is painted again. Setup has none and stays put.
     private void Update()
     {
+        _playView?.Tick(Time.unscaledDeltaTime);
         if (_safe != null && SafeAreaChanged())
         {
             ApplySafeArea();
@@ -64,7 +72,9 @@ public sealed class TableView : MonoBehaviour
 
     public void ShowSetup(TableStart draft)
     {
+        _playView.CancelRecap();
         _rendered = null;
+        _summary = null;
         _play.gameObject.SetActive(false);
         _setup.gameObject.SetActive(true);
         _setupView.Show(draft);
@@ -73,16 +83,20 @@ public sealed class TableView : MonoBehaviour
     // A new game starts with its board centred, wherever the last one was scrolled.
     public void RenderNewGame(TableSnapshot snapshot)
     {
+        _playView.CancelRecap();
         _playView.ForgetScroll();
         Render(snapshot);
     }
 
-    public void Render(TableSnapshot snapshot)
+    // summary is what the last recap showed, in a line, or null. Any recap the snapshot carries starts last: it may end at once, and its end renders again.
+    public void Render(TableSnapshot snapshot, string summary = null)
     {
         _rendered = snapshot;
+        _summary = summary;
         _setup.gameObject.SetActive(false);
         _play.gameObject.SetActive(true);
-        _playView.Render(snapshot);
+        _playView.Render(snapshot, summary);
+        _playView.PlayRecap(snapshot);
     }
 
     private void BuildCanvas()
@@ -118,6 +132,7 @@ public sealed class TableView : MonoBehaviour
         _playView.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);
         _playView.PlayAgainRequested += () => PlayAgainRequested?.Invoke();
         _playView.NewSetupRequested += () => NewSetupRequested?.Invoke();
+        _playView.RecapFinished += shown => RecapFinished?.Invoke(shown);
         _setupView.Started += draft => Started?.Invoke(draft);
         _play.gameObject.SetActive(false);
     }
@@ -169,7 +184,7 @@ public sealed class TableView : MonoBehaviour
 
         // Anchor changes do not update child rects until the canvas lays out. The board measures those rects.
         Canvas.ForceUpdateCanvases();
-        _playView.Render(_rendered);
+        _playView.Render(_rendered, _summary);
     }
 
     private void EnsureEventSystem()

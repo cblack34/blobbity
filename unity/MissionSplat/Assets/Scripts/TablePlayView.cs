@@ -2,6 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
@@ -10,11 +11,11 @@ using UnityEngine.UI;
 
 internal sealed class TablePlayView
 {
-    // Canvas units, top to bottom: the seat bar, the heading, one instruction line, a notice strip, then the board, then the turn tray.
+    // Canvas units, top to bottom: the seat bar, the heading, one instruction line, a notice strip (the recap summary, or the reshuffle notice), then the board, then the turn tray.
     private const float SeatBarUnits = 230f;
     private const float HeadingUnits = 100f;
     private const float StatusUnits = 110f;
-    private const float NoticeUnits = 44f;
+    private const float NoticeUnits = 60f;
     private const float HeadingTopUnits = SeatBarUnits;
     private const float StatusTopUnits = HeadingTopUnits + HeadingUnits;
     private const float NoticeTopUnits = StatusTopUnits + StatusUnits;
@@ -27,6 +28,7 @@ internal sealed class TablePlayView
     private readonly ClaimsPanel _claimsPanel;
     private readonly BoardPanel _board;
     private readonly TurnTray _tray;
+    private readonly RecapPlayer _recap;
 
     public event Action<int, int> Tapped;
     public event Action Confirmed;
@@ -35,6 +37,9 @@ internal sealed class TablePlayView
     public event Action<int, int> TargetTapped;
     public event Action PlayAgainRequested;
     public event Action NewSetupRequested;
+
+    // Raised with the items a finished recap showed.
+    public event Action<IReadOnlyList<RecapItem>> RecapFinished;
 
     public TablePlayView(RectTransform play)
     {
@@ -48,8 +53,12 @@ internal sealed class TablePlayView
         // Stop rulings are long sentences. Only this label wraps; captions and buttons stay on one line.
         _status.horizontalOverflow = HorizontalWrapMode.Wrap;
         Band(_status.rectTransform, StatusTopUnits, StatusUnits, 40f);
-        // A one-line fact under the instruction; hidden while there is nothing to say.
+        // A short fact under the instruction; hidden while there is nothing to say. A long recap summary wraps to two lines, so it shrinks to fit.
         _notice = Ui.Label("Notice", play, 28, SplatPalette.Muted, TextAnchor.MiddleCenter);
+        _notice.horizontalOverflow = HorizontalWrapMode.Wrap;
+        _notice.resizeTextForBestFit = true;
+        _notice.resizeTextMinSize = 18;
+        _notice.resizeTextMaxSize = 28;
         Band(_notice.rectTransform, NoticeTopUnits, NoticeUnits);
         _notice.gameObject.SetActive(false);
 
@@ -69,19 +78,37 @@ internal sealed class TablePlayView
         // Last, so it draws over everything else.
         _claimsPanel = new ClaimsPanel(play);
         _seatBar.SeatTapped += _claimsPanel.Show;
+
+        // After the claims panel, so it draws over everything and takes every tap while a recap plays.
+        _recap = new RecapPlayer(new RecapStage(play, board, _board, _seatBar));
+        _recap.Finished += shown => RecapFinished?.Invoke(shown);
+        // The heading says what is playing until the recap ends.
+        _recap.ItemStarted += item => _heading.text = RecapSummary.Caption(item);
     }
+
+    internal RecapPlayer Recap => _recap;
+
+    // Starts the snapshot's recap, if it has one and none is playing; the caller has rendered the snapshot first.
+    public void PlayRecap(TableSnapshot snapshot) => _recap.Play(snapshot);
+
+    public void Tick(float unscaledSeconds) => _recap.Tick(unscaledSeconds);
+
+    public void CancelRecap() => _recap.Cancel();
 
     // A new game starts with its board centred.
     public void ForgetScroll() => _board.ForgetScroll();
 
-    public void Render(TableSnapshot snapshot)
+    // summary is the line a finished recap left, or null; it takes the notice strip until the next action.
+    public void Render(TableSnapshot snapshot, string summary = null)
     {
         Canvas.ForceUpdateCanvases();
-        var heading = HeadingText(snapshot);
-        _heading.text = heading;
-        _status.text = InstructionText(snapshot);
-        _notice.text = NoticeText(snapshot.Notice);
-        _notice.gameObject.SetActive(snapshot.Notice != TableNotice.None);
+        // What happens next waits for the recap that led to it: the heading names the item playing, and the instruction is blank.
+        var recapPending = snapshot.Recap.Count > 0;
+        var heading = recapPending ? string.Empty : HeadingText(snapshot);
+        _heading.text = _recap.IsPlaying ? RecapSummary.Caption(_recap.Current) : heading;
+        _status.text = recapPending ? string.Empty : InstructionText(snapshot);
+        _notice.text = summary ?? NoticeText(snapshot.Notice);
+        _notice.gameObject.SetActive(_notice.text.Length > 0);
         _seatBar.Paint(snapshot.View, HighlightedSeat(snapshot));
         // What the panel shows may be out of date after any action, so a render closes it.
         _claimsPanel.Hide();

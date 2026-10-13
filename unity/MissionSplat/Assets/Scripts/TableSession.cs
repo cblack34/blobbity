@@ -2,6 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
+using System.Collections.Generic;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -14,6 +15,7 @@ public sealed class TableSession : MonoBehaviour
     private Table _table;
     private TableStart _start;
     private TableView _view;
+    private string _summary;
 
     public bool IsStarted => _table != null && _table.IsStarted;
 
@@ -35,6 +37,7 @@ public sealed class TableSession : MonoBehaviour
         _view.Started += Begin;
         _view.PlayAgainRequested += PlayAgain;
         _view.NewSetupRequested += NewSetup;
+        _view.RecapFinished += FinishRecap;
     }
 
     // The shuffle seed is drawn here, at the edge, so the App table stays deterministic.
@@ -74,15 +77,15 @@ public sealed class TableSession : MonoBehaviour
         }
     }
 
-    public void Tap(int tileX, int tileY) => Forward(() => _table.Place(tileX, tileY));
+    public void Tap(int tileX, int tileY) => Commit(() => _table.Place(tileX, tileY));
 
     public void SelectPower(SymbolId? power) => Forward(() => _table.SelectPower(power));
 
-    public void UseAt(int tileX, int tileY) => Forward(() => _table.UseAt(tileX, tileY));
+    public void UseAt(int tileX, int tileY) => Commit(() => _table.UseAt(tileX, tileY));
 
-    public void Submit(GameAction action) => Forward(() => _table.Submit(action));
+    public void Submit(GameAction action) => Commit(() => _table.Submit(action));
 
-    public void ConfirmIncomingSeat() => Forward(() => _table.Confirm());
+    public void ConfirmIncomingSeat() => Commit(() => _table.Confirm());
 
     public void SetQuarterTurns(int quarterTurns) => Forward(() => _table.SetQuarterTurns(quarterTurns));
 
@@ -91,18 +94,40 @@ public sealed class TableSession : MonoBehaviour
         table.Start();
         _table = table;
         _start = start;
+        _summary = null;
         _view.RenderNewGame(_table.Snapshot);
     }
 
+    private bool IsBlocked => !IsStarted || _view.Recap.IsPlaying;
+
+    // The recap's line stays until the next thing the player does that moves the game on; choosing a power or a turn amount keeps it.
+    private void Commit(Action act)
+    {
+        if (!IsBlocked)
+        {
+            _summary = null;
+        }
+
+        Forward(act);
+    }
+
+    // The view has played what the snapshot carried; this is the one place that acknowledges it, so the table counts it seen.
+    private void FinishRecap(IReadOnlyList<RecapItem> shown)
+    {
+        _summary = RecapSummary.Of(shown);
+        Forward(() => _table.AcknowledgeRecap());
+    }
+
+    // Input while a recap plays is dropped here too, not only by the view's skip layer, so the table cannot move under the recap.
     private void Forward(Action act)
     {
-        if (!IsStarted)
+        if (IsBlocked)
         {
             return;
         }
 
         act();
-        _view.Render(_table.Snapshot);
+        _view.Render(_table.Snapshot, _summary);
     }
 }
 }

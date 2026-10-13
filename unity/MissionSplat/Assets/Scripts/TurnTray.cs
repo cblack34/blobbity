@@ -91,7 +91,8 @@ internal sealed class TurnTray
     // heading names the winner when the game is over.
     public void Paint(TableSnapshot snapshot, string heading)
     {
-        var ended = snapshot.Status.Kind is TableStatusKind.Won or TableStatusKind.Ended;
+        // The result waits for the recap that led to it.
+        var ended = snapshot.Status.Kind is TableStatusKind.Won or TableStatusKind.Ended && snapshot.Recap.Count == 0;
         _turn.gameObject.SetActive(!ended);
         _winner.gameObject.SetActive(ended);
         if (ended)
@@ -105,12 +106,16 @@ internal sealed class TurnTray
         PaintSpin(snapshot);
         _chips.Paint(snapshot);
         PaintSecrets(snapshot);
-        _conceal.gameObject.SetActive(snapshot.ConcealVisible);
-        if (snapshot.ConcealVisible)
+        var covered = CoverUp(snapshot);
+        _conceal.gameObject.SetActive(covered);
+        if (covered)
         {
             _concealLabel.text = Seats.NameOf(snapshot.View.CurrentSeat) + ", confirm to see your missions.";
         }
     }
+
+    // The hand-off cover waits for the outgoing player's recap: until they have seen their own turn, the device is still theirs.
+    private static bool CoverUp(TableSnapshot snapshot) => snapshot.ConcealVisible && snapshot.Recap.Count == 0;
 
     private static RectTransform Area(string name, Transform parent, float minX, float minY, float maxX, float maxY)
     {
@@ -212,7 +217,7 @@ internal sealed class TurnTray
     {
         Ui.Clear(_secrets);
         // The hand-off cover sits over this area, and says what is hidden itself.
-        if (snapshot.ConcealVisible)
+        if (CoverUp(snapshot))
         {
             return;
         }
@@ -248,11 +253,7 @@ internal sealed class TurnTray
             side = FallbackTileUnits;
         }
 
-        var block = Ui.Rect("Tile", slot);
-        block.anchorMin = new Vector2(0.5f, 0.5f);
-        block.anchorMax = new Vector2(0.5f, 0.5f);
-        block.pivot = new Vector2(0.5f, 0.5f);
-        block.sizeDelta = new Vector2(side, side);
+        var block = Ui.Centered("Tile", slot, new Vector2(side, side));
         TilePainter.Paint(block, tile.Id.Value, tile.Local, quarterTurns);
     }
 }

@@ -2,6 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
+using System.Collections.Generic;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -25,6 +26,7 @@ internal sealed class SeatBar
     private const float TextLeftUnits = CritterMarginUnits + CritterUnits + 8f;
 
     private readonly RectTransform _bar;
+    private readonly Dictionary<SeatId, List<(MissionId Mission, RectTransform Pip)>> _pips = new Dictionary<SeatId, List<(MissionId, RectTransform)>>();
 
     public SeatBar(RectTransform bar)
     {
@@ -38,6 +40,7 @@ internal sealed class SeatBar
     public void Paint(SeatView view, SeatId? highlighted)
     {
         Ui.Clear(_bar);
+        _pips.Clear();
         var seats = view.Claims.Count;
         // Before the first layout the bar has no width; the reference width stands in.
         var share = (_bar.rect.width > 1f ? _bar.rect.width : Ui.ReferenceWidthUnits) / seats;
@@ -46,6 +49,23 @@ internal sealed class SeatBar
         {
             PaintEntry(i, seats, entryWidth, view.Claims[i], view.Claims[i].Seat.Equals(highlighted));
         }
+    }
+
+    // The pip a claimed mission fills in the seat's entry, as last painted; null when it is not drawn.
+    public RectTransform PipOf(SeatId seat, MissionId mission)
+    {
+        if (_pips.TryGetValue(seat, out var pips))
+        {
+            foreach (var (claimed, pip) in pips)
+            {
+                if (claimed.Equals(mission) && pip != null)
+                {
+                    return pip;
+                }
+            }
+        }
+
+        return null;
     }
 
     private void PaintEntry(int index, int seats, float entryWidth, SeatClaims claims, bool isCurrent)
@@ -71,13 +91,20 @@ internal sealed class SeatBar
         // The pips share what is left of the entry, so a longer row shrinks them instead of spilling out of the entry.
         var pips = Math.Max(Seats.ClaimsToWin, claims.Missions.Count);
         var step = Math.Min(PipStepUnits, Math.Max(1f, (entryWidth - TextLeftUnits - CritterMarginUnits) / pips));
+        var filled = new List<(MissionId, RectTransform)>();
+        _pips[claims.Seat] = filled;
         for (var p = 0; p < pips; p++)
         {
-            PaintPip(box.transform, TextLeftUnits + ((p + 0.5f) * step), Math.Min(PipUnits, step), p < claims.Missions.Count, index, p);
+            var claimed = p < claims.Missions.Count;
+            var pip = PaintPip(box.transform, TextLeftUnits + ((p + 0.5f) * step), Math.Min(PipUnits, step), claimed, index, p);
+            if (claimed)
+            {
+                filled.Add((claims.Missions[p].Id, pip));
+            }
         }
     }
 
-    private static void PaintPip(Transform entry, float centreX, float size, bool claimed, int seatIndex, int position)
+    private static RectTransform PaintPip(Transform entry, float centreX, float size, bool claimed, int seatIndex, int position)
     {
         var pip = Ui.Rect(claimed ? "PipFilled" : "PipEmpty", entry);
         pip.anchorMin = new Vector2(0f, 0.3f);
@@ -87,13 +114,14 @@ internal sealed class SeatBar
         if (claimed)
         {
             CellPainter.Splat(pip, SplatPalette.CritterOf(seatIndex), Vector2.zero, Vector2.one, CellPainter.SplatAngle("pip" + position), -0.1f);
-            return;
+            return pip;
         }
 
         var rim = Ui.Image("Rim", pip, SplatPalette.Ink, Ui.Circle);
         Ui.Stretch(rim.rectTransform);
         var hollow = Ui.Image("Hollow", rim.transform, SplatPalette.Paper, Ui.Circle);
         Ui.Anchored(hollow.rectTransform, new Vector2(0.14f, 0.14f), new Vector2(0.86f, 0.86f), Vector2.zero, Vector2.zero);
+        return pip;
     }
 }
 }
