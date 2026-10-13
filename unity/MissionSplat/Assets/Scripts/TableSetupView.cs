@@ -28,11 +28,11 @@ internal sealed class TableSetupView
     {
         Ui.Clear(_root);
         var panel = Ui.Image("Panel", _root, Color.white);
-        Ui.Anchored(panel.rectTransform, new Vector2(0.22f, 0.12f), new Vector2(0.78f, 0.88f), Vector2.zero, Vector2.zero);
-        var title = Ui.Label("Title", panel.transform, 36, SplatPalette.Ink, TextAnchor.MiddleCenter);
+        Ui.Anchored(panel.rectTransform, new Vector2(0.05f, 0.2f), new Vector2(0.95f, 0.8f), Vector2.zero, Vector2.zero);
+        var title = Ui.Label("Title", panel.transform, 64, SplatPalette.Ink, TextAnchor.MiddleCenter);
         Ui.Anchored(title.rectTransform, new Vector2(0.05f, 0.86f), new Vector2(0.95f, 0.98f), Vector2.zero, Vector2.zero);
         title.text = "Mission Splat";
-        var seats = Ui.Label("Seats", panel.transform, 22, SplatPalette.Ink, TextAnchor.MiddleLeft);
+        var seats = Ui.Label("Seats", panel.transform, 36, SplatPalette.Ink, TextAnchor.MiddleLeft);
         Ui.Anchored(seats.rectTransform, new Vector2(0.08f, 0.74f), new Vector2(0.40f, 0.84f), Vector2.zero, Vector2.zero);
         seats.text = "Seats";
         for (var count = 2; count <= 4; count++)
@@ -48,7 +48,7 @@ internal sealed class TableSetupView
         {
             var index = i;
             var row = 0.58f - (i * 0.10f);
-            var label = Ui.Label("Seat" + i, panel.transform, 20, SplatPalette.Ink, TextAnchor.MiddleLeft);
+            var label = Ui.Label("Seat" + i, panel.transform, 34, SplatPalette.Ink, TextAnchor.MiddleLeft);
             Ui.Anchored(label.rectTransform, new Vector2(0.08f, row), new Vector2(0.28f, row + 0.09f), Vector2.zero, Vector2.zero);
             label.text = "Seat " + _draft.SeatAt(i).Value;
             var human = Ui.Button("Human" + i, panel.transform, "Human", _draft.IsAi(i) ? SplatPalette.Muted : SplatPalette.Blue);

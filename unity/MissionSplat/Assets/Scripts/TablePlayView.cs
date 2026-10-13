@@ -3,6 +3,7 @@ namespace MissionSplat.Player
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -10,16 +11,22 @@ using UnityEngine.UI;
 
 internal sealed class TablePlayView
 {
+    // Canvas units, top to bottom: the seat bar, the heading, one instruction line, a notice strip, then the board, then the turn tray.
+    private const float SeatBarUnits = 230f;
+    private const float HeadingUnits = 100f;
+    private const float StatusUnits = 110f;
+    private const float NoticeUnits = 44f;
+
+    // Below this a tile is too small to tap with a finger; a board that needs more room is clipped, not shrunk further.
+    private const float MinimumCellUnits = 44f;
+
+    private readonly Text _heading;
     private readonly Text _status;
     private readonly Text _notice;
-    private readonly RectTransform _pending;
-    private readonly RectTransform _secrets;
+    private readonly SeatBar _seatBar;
+    private readonly ClaimsPanel _claimsPanel;
     private readonly RectTransform _board;
-    private readonly RectTransform _claims;
-    private readonly RectTransform _rotation;
-    private readonly RectTransform _powers;
-    private readonly RectTransform _conceal;
-    private readonly Text _concealLabel;
+    private readonly TurnTray _tray;
 
     public event Action<int, int> Tapped;
     public event Action Confirmed;
@@ -29,118 +36,105 @@ internal sealed class TablePlayView
 
     public TablePlayView(RectTransform play)
     {
-        _status = Ui.Label("Status", play, 28, SplatPalette.Ink, TextAnchor.MiddleLeft);
+        var seatBar = Ui.Rect("SeatBar", play);
+        Band(seatBar, 0f, SeatBarUnits);
+        _seatBar = new SeatBar(seatBar);
+
+        _heading = Ui.Label("Heading", play, 76, SplatPalette.Ink, TextAnchor.MiddleCenter);
+        _heading.fontStyle = FontStyle.Bold;
+        Band(_heading.rectTransform, SeatBarUnits, HeadingUnits);
+        _status = Ui.Label("Status", play, 34, SplatPalette.Ink, TextAnchor.UpperCenter);
         // Stop rulings are long sentences. Only this label wraps; captions and buttons stay on one line.
         _status.horizontalOverflow = HorizontalWrapMode.Wrap;
-        Ui.Anchored(_status.rectTransform, new Vector2(0.02f, 0.935f), new Vector2(0.98f, 0.99f), Vector2.zero, Vector2.zero);
-        // A one-line fact under the status, in the strip above the top band; hidden while there is nothing to say.
-        _notice = Ui.Label("Notice", play, 16, SplatPalette.Muted, TextAnchor.MiddleLeft);
-        Ui.Anchored(_notice.rectTransform, new Vector2(0.02f, 0.912f), new Vector2(0.98f, 0.935f), Vector2.zero, Vector2.zero);
+        Band(_status.rectTransform, SeatBarUnits + HeadingUnits, StatusUnits, 40f);
+        // A one-line fact under the instruction; hidden while there is nothing to say.
+        _notice = Ui.Label("Notice", play, 28, SplatPalette.Muted, TextAnchor.MiddleCenter);
+        Band(_notice.rectTransform, SeatBarUnits + HeadingUnits + StatusUnits, NoticeUnits);
         _notice.gameObject.SetActive(false);
 
-        _pending = Ui.Rect("Pending", play);
-        Ui.Anchored(_pending, new Vector2(0.02f, 0.72f), new Vector2(0.18f, 0.91f), Vector2.zero, Vector2.zero);
-        _secrets = Ui.Rect("Secrets", play);
-        Ui.Anchored(_secrets, new Vector2(0.20f, 0.72f), new Vector2(0.72f, 0.91f), Vector2.zero, Vector2.zero);
-        _rotation = Ui.Rect("Rotation", play);
-        Ui.Anchored(_rotation, new Vector2(0.74f, 0.72f), new Vector2(0.98f, 0.91f), Vector2.zero, Vector2.zero);
-        // The power band sits under the top band, so the quarter-turn row above it doubles as the rotate amount.
-        _powers = Ui.Rect("Powers", play);
-        Ui.Anchored(_powers, new Vector2(0.02f, 0.63f), new Vector2(0.98f, 0.71f), Vector2.zero, Vector2.zero);
         _board = Ui.Rect("Board", play);
-        Ui.Anchored(_board, new Vector2(0.02f, 0.18f), new Vector2(0.98f, 0.62f), Vector2.zero, Vector2.zero);
-        var boardFill = Ui.Image("BoardFill", _board, Color.white);
+        Ui.Anchored(_board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.HeightUnits + 12f), new Vector2(-24f, -(SeatBarUnits + HeadingUnits + StatusUnits + NoticeUnits)));
+        _board.gameObject.AddComponent<RectMask2D>();
+        var boardFill = Ui.Image("BoardFill", _board, Color.white, Ui.Rounded);
         Ui.Stretch(boardFill.rectTransform);
         boardFill.color = new Color(1f, 1f, 1f, 0.35f);
-        _claims = Ui.Rect("Claims", play);
-        Ui.Anchored(_claims, new Vector2(0.02f, 0.02f), new Vector2(0.98f, 0.16f), Vector2.zero, Vector2.zero);
 
-        _conceal = Ui.Rect("Conceal", play);
-        Ui.Anchored(_conceal, new Vector2(0.20f, 0.72f), new Vector2(0.72f, 0.91f), Vector2.zero, Vector2.zero);
-        var concealFill = Ui.Image("Fill", _conceal, SplatPalette.Overlay);
-        Ui.Stretch(concealFill.rectTransform);
-        concealFill.raycastTarget = true;
-        _concealLabel = Ui.Label("Message", _conceal, 22, Color.white, TextAnchor.MiddleCenter);
-        Ui.Anchored(_concealLabel.rectTransform, new Vector2(0.04f, 0.42f), new Vector2(0.96f, 0.95f), Vector2.zero, Vector2.zero);
-        var confirm = Ui.Button("Confirm", _conceal, "Confirm", SplatPalette.Green);
-        Ui.Anchored(confirm.GetComponent<RectTransform>(), new Vector2(0.30f, 0.08f), new Vector2(0.70f, 0.38f), Vector2.zero, Vector2.zero);
-        confirm.onClick.AddListener(() => Confirmed?.Invoke());
-        _conceal.gameObject.SetActive(false);
+        _tray = new TurnTray(play);
+        _tray.Confirmed += () => Confirmed?.Invoke();
+        _tray.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
+        _tray.PowerSelected += power => PowerSelected?.Invoke(power);
+
+        // Last, so it draws over everything else.
+        _claimsPanel = new ClaimsPanel(play);
+        _seatBar.SeatTapped += _claimsPanel.Show;
     }
 
     public void Render(TableSnapshot snapshot)
     {
         Canvas.ForceUpdateCanvases();
-        _status.text = StatusText(snapshot);
+        _heading.text = HeadingText(snapshot);
+        _status.text = InstructionText(snapshot);
         _notice.text = NoticeText(snapshot.Notice);
         _notice.gameObject.SetActive(snapshot.Notice != TableNotice.None);
-        // Only rotate repurposes the quarter-turn row as its amount, so only then does the pending tile not preview it.
-        PaintPending(snapshot.View.PendingMatchTile, snapshot.SelectedPower is { } power && power.Equals(OrdinaryCatalog.Rotate) ? 0 : snapshot.QuarterTurns);
-        PaintSecrets(snapshot);
+        _seatBar.Paint(snapshot.View);
+        // What the panel shows may be out of date after any action, so a render closes it.
+        _claimsPanel.Hide();
+        _tray.Paint(snapshot, _heading.text);
         PaintBoard(snapshot);
-        PaintClaims(snapshot.View);
-        PaintRotation(snapshot);
-        PaintPowers(snapshot);
-        _conceal.gameObject.SetActive(snapshot.ConcealVisible);
-        if (snapshot.ConcealVisible)
-        {
-            _concealLabel.text = SeatLabel(snapshot.View.CurrentSeat) + ", confirm to see your missions.";
-        }
     }
 
-    private static string SeatLabel(SeatId seat) => "Seat " + seat.Value;
+    // A band across the screen: top units from the top edge, height units tall, inset on both sides.
+    private static void Band(RectTransform rect, float top, float height, float inset = 0f)
+    {
+        Ui.Anchored(rect, new Vector2(0f, 1f), Vector2.one, new Vector2(inset, -(top + height)), new Vector2(-inset, -top));
+    }
 
-    private static string StatusText(TableSnapshot snapshot)
+    private static string HeadingText(TableSnapshot snapshot)
     {
         var status = snapshot.Status;
         return status.Kind switch
         {
-            TableStatusKind.ToConfirm => SeatLabel(status.Seat.Value) + " to confirm.",
-            TableStatusKind.ToAct => SeatLabel(status.Seat.Value) + (snapshot.SelectedPower is { } power ? ": pick a tile to " + power.Value + "." : " to place."),
-            TableStatusKind.Won => SeatLabel(status.Seat.Value) + " wins.",
-            TableStatusKind.Ended => "The game has ended.",
-            _ => status.Message,
+            TableStatusKind.ToConfirm or TableStatusKind.ToAct => SeatBar.NameOf(status.Seat.Value) + "\u2019s turn!",
+            TableStatusKind.Won => SeatBar.NameOf(status.Seat.Value) + " wins!",
+            TableStatusKind.Ended => "Game over",
+            _ => "Play has stopped",
         };
+    }
+
+    private static string InstructionText(TableSnapshot snapshot)
+    {
+        var status = snapshot.Status;
+        switch (status.Kind)
+        {
+            case TableStatusKind.ToConfirm:
+                return "Hand the device to " + SeatBar.NameOf(status.Seat.Value) + ", then confirm.";
+            case TableStatusKind.ToAct:
+                return ActInstruction(snapshot);
+            case TableStatusKind.Won:
+                return OrdinaryCatalog.ClaimsRequiredToWin + " claims wins the game.";
+            case TableStatusKind.Ended:
+                return "The game has ended.";
+            default:
+                return status.Message;
+        }
+    }
+
+    private static string ActInstruction(TableSnapshot snapshot)
+    {
+        if (snapshot.SelectedPower is { } power)
+        {
+            return power.Equals(OrdinaryCatalog.Rotate) && snapshot.QuarterTurns == 0
+                ? "Spin to choose the turns, then pick a tile to rotate."
+                : "Pick a tile to " + power.Value + ".";
+        }
+
+        return snapshot.View.RemainingUses.Any(charge => charge.Remaining > 0)
+            ? "Place your tile, or use a power first."
+            : "Place your tile.";
     }
 
     private static string NoticeText(TableNotice notice) =>
         notice == TableNotice.DeckReshuffled ? "The draw deck ran out; the board was reshuffled." : string.Empty;
-
-    private void PaintPending(Tile pending, int quarterTurns)
-    {
-        Ui.Clear(_pending);
-        var title = Ui.Label("Title", _pending, 18, SplatPalette.Muted, TextAnchor.UpperLeft);
-        Ui.Anchored(title.rectTransform, new Vector2(0f, 0.82f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
-        title.text = "Pending tile";
-        if (pending is null)
-        {
-            return;
-        }
-
-        PaintTile(_pending, pending, new Vector2(0.1f, 0.02f), new Vector2(0.9f, 0.80f), quarterTurns);
-    }
-
-    private void PaintSecrets(TableSnapshot snapshot)
-    {
-        Ui.Clear(_secrets);
-        var title = Ui.Label("Title", _secrets, 18, SplatPalette.Muted, TextAnchor.UpperLeft);
-        Ui.Anchored(title.rectTransform, new Vector2(0f, 0.82f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
-        title.text = snapshot.SecretsVisible ? SeatLabel(snapshot.View.Seat) + " missions" : "Missions hidden";
-        if (!snapshot.SecretsVisible)
-        {
-            return;
-        }
-
-        var missions = snapshot.View.UnclaimedMissions;
-        for (var i = 0; i < missions.Count; i++)
-        {
-            var slot = Ui.Rect("Mission" + i, _secrets);
-            var min = new Vector2(0.02f + (i * 0.48f), 0.02f);
-            var max = new Vector2(0.46f + (i * 0.48f), 0.80f);
-            Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
-            MissionCardPainter.Paint(slot, missions[i]);
-        }
-    }
 
     private void PaintBoard(TableSnapshot snapshot)
     {
@@ -177,11 +171,7 @@ internal sealed class TablePlayView
         var width = maxX - minX + 1;
         var height = maxY - minY + 1;
         var area = _board.rect;
-        var cellSize = Math.Min(area.width / (width + 1), area.height / (height + 1));
-        if (cellSize <= 1f)
-        {
-            cellSize = 36f;
-        }
+        var cellSize = Math.Max(MinimumCellUnits, Math.Min(area.width / (width + 1), area.height / (height + 1)));
 
         var lattice = Ui.Rect("Lattice", _board);
         lattice.anchorMin = new Vector2(0.5f, 0.5f);
@@ -229,122 +219,6 @@ internal sealed class TablePlayView
         Ui.PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
         button.onClick.AddListener(() => onTap());
         return button;
-    }
-
-    private void PaintClaims(SeatView view)
-    {
-        Ui.Clear(_claims);
-        var title = Ui.Label("Title", _claims, 18, SplatPalette.Muted, TextAnchor.UpperLeft);
-        Ui.Anchored(title.rectTransform, new Vector2(0f, 0.78f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
-        title.text = "Claims";
-        var seats = view.Claims.Count;
-        for (var i = 0; i < seats; i++)
-        {
-            var row = view.Claims[i];
-            var min = new Vector2(i / (float)seats, 0f);
-            var max = new Vector2((i + 1) / (float)seats, 0.76f);
-            var group = Ui.Rect("Seat" + row.Seat.Value, _claims);
-            Ui.Anchored(group, min, max, new Vector2(6f, 0f), new Vector2(-6f, 0f));
-            var label = Ui.Label("Label", group, 16, SplatPalette.Ink, TextAnchor.UpperLeft);
-            Ui.Anchored(label.rectTransform, new Vector2(0f, 0.72f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
-            label.text = SeatLabel(row.Seat);
-            for (var m = 0; m < row.Missions.Count; m++)
-            {
-                var slot = Ui.Rect("Claim" + m, group);
-                var (cardMin, cardMax) = ClaimCardAnchors(m, row.Missions.Count);
-                Ui.Anchored(slot, cardMin, cardMax, Vector2.zero, Vector2.zero);
-                MissionCardPainter.Paint(slot, row.Missions[m]);
-            }
-        }
-    }
-
-    private void PaintRotation(TableSnapshot snapshot)
-    {
-        Ui.Clear(_rotation);
-        var title = Ui.Label("Title", _rotation, 18, SplatPalette.Muted, TextAnchor.UpperLeft);
-        Ui.Anchored(title.rectTransform, new Vector2(0f, 0.82f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
-        var rotating = snapshot.SelectedPower is { } power && power.Equals(OrdinaryCatalog.Rotate);
-        title.text = rotating ? "Rotate by" : "Quarter-turns";
-        for (var turn = 0; turn < 4; turn++)
-        {
-            var chosen = turn;
-            // Rules refuses a rotate by zero, so that choice is greyed out instead of offering a dead tap.
-            var offered = !(rotating && turn == 0);
-            var fill = !offered ? SplatPalette.Gray : turn == snapshot.QuarterTurns ? SplatPalette.Green : SplatPalette.Muted;
-            var button = Ui.Button("Turn" + turn, _rotation, turn.ToString(), fill);
-            var x = turn / 4f;
-            Ui.Anchored(button.GetComponent<RectTransform>(), new Vector2(x + 0.02f, 0.15f), new Vector2(x + 0.23f, 0.75f), Vector2.zero, Vector2.zero);
-            button.interactable = offered && snapshot.CanAct;
-            button.onClick.AddListener(() => QuarterTurnsSelected?.Invoke(chosen));
-        }
-    }
-
-    private void PaintPowers(TableSnapshot snapshot)
-    {
-        Ui.Clear(_powers);
-        var title = Ui.Label("Title", _powers, 18, SplatPalette.Muted, TextAnchor.UpperLeft);
-        Ui.Anchored(title.rectTransform, new Vector2(0f, 0.78f), new Vector2(1f, 1f), Vector2.zero, Vector2.zero);
-        title.text = "Powers";
-        var charges = snapshot.View.RemainingUses;
-        var slots = Math.Max(3, charges.Count + 1);
-        for (var i = 0; i < charges.Count; i++)
-        {
-            var charge = charges[i];
-            var selected = snapshot.SelectedPower is { } current && current.Equals(charge.Power);
-            var usable = snapshot.CanAct && charge.Remaining > 0;
-            var name = PowerName(charge.Power);
-            var fill = selected ? SplatPalette.PowerSelected : usable ? SplatPalette.Muted : SplatPalette.Gray;
-            var button = Ui.Button("Power" + name, _powers, name + " · " + charge.Remaining + " left", fill);
-            AnchorSlot(button.GetComponent<RectTransform>(), i, slots);
-            button.interactable = usable;
-            var power = charge.Power;
-            button.onClick.AddListener(() => PowerSelected?.Invoke(selected ? null : power));
-        }
-
-        if (snapshot.SelectedPower is not null)
-        {
-            var back = Ui.Button("PlaceInstead", _powers, "Place instead", SplatPalette.Green);
-            AnchorSlot(back.GetComponent<RectTransform>(), charges.Count, slots);
-            back.onClick.AddListener(() => PowerSelected?.Invoke(null));
-        }
-    }
-
-    private static void AnchorSlot(RectTransform rect, int index, int slots)
-    {
-        var x = index / (float)slots;
-        Ui.Anchored(rect, new Vector2(x + 0.01f, 0.05f), new Vector2(x + (1f / slots) - 0.01f, 0.76f), Vector2.zero, Vector2.zero);
-    }
-
-    private static string PowerName(SymbolId power) => char.ToUpperInvariant(power.Value[0]) + power.Value.Substring(1);
-
-    // Four is the ordinary row. One placement can claim both held missions, so a row at three can finish at five and must stay inside its group.
-    private static (Vector2 Min, Vector2 Max) ClaimCardAnchors(int index, int missionCount)
-    {
-        var slots = Math.Max(4, missionCount);
-        const float margin = 0.02f;
-        const float gap = 0.02f;
-        var width = (1f - (2f * margin) - ((slots - 1) * gap)) / slots;
-        var left = margin + (index * (width + gap));
-        return (new Vector2(left, 0.02f), new Vector2(left + width, 0.70f));
-    }
-
-    private static void PaintTile(RectTransform parent, Tile tile, Vector2 min, Vector2 max, int quarterTurns)
-    {
-        var slot = Ui.Rect("Slot", parent);
-        Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
-        Canvas.ForceUpdateCanvases();
-        var side = Math.Min(slot.rect.width, slot.rect.height);
-        if (side <= 1f)
-        {
-            side = 72f;
-        }
-
-        var block = Ui.Rect("Tile", slot);
-        block.anchorMin = new Vector2(0.5f, 0.5f);
-        block.anchorMax = new Vector2(0.5f, 0.5f);
-        block.pivot = new Vector2(0.5f, 0.5f);
-        block.sizeDelta = new Vector2(side, side);
-        TilePainter.Paint(block, tile.Id.Value, tile.Local, quarterTurns);
     }
 }
 }

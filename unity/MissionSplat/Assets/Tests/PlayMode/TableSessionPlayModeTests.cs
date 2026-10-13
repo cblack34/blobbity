@@ -215,12 +215,8 @@ public class TableSessionPlayModeTests
         var lattice = FindRect("Lattice");
         Assert.That(lattice, Is.Not.Null);
         Assert.That(lattice.GetComponentsInChildren<Button>(true).Any(button => button.name.StartsWith("Highlight")), Is.False);
-        foreach (var turn in new[] { "Turn0", "Turn1", "Turn2", "Turn3" })
-        {
-            var button = FindButton(turn);
-            Assert.That(button, Is.Not.Null, turn);
-            Assert.That(button.interactable, Is.False, turn);
-        }
+        Assert.That(FindButton("Spin"), Is.Not.Null);
+        Assert.That(FindButton("Spin").interactable, Is.False);
     }
 
     [Test]
@@ -236,11 +232,12 @@ public class TableSessionPlayModeTests
         Assert.That(LiveButtons("Highlight"), Is.Empty);
         Assert.That(LiveButton("Target0_0"), Is.Not.Null);
         Assert.That(LiveButton("Target0_0").interactable, Is.False, "a rotate target waits for a 1–3 amount");
-        Assert.That(LiveButton("Turn0").interactable, Is.False);
-        Assert.That(LiveButton("Turn2").interactable, Is.True);
+        Assert.That(LiveButton("Spin").interactable, Is.True);
         Assert.That(FindText("Status").text, Does.Contain("rotate"));
 
-        LiveButton("Turn2").onClick.Invoke();
+        LiveButton("Spin").onClick.Invoke();
+        LiveButton("Spin").onClick.Invoke();
+        Assert.That(table.Snapshot.QuarterTurns, Is.EqualTo(2));
         Assert.That(LiveButton("Target0_0").interactable, Is.True);
         LiveButton("Target0_0").onClick.Invoke();
 
@@ -267,15 +264,19 @@ public class TableSessionPlayModeTests
         LiveButton("PowerBounce").onClick.Invoke();
 
         Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Bounce));
-        Assert.That(LiveButton("Turn0").interactable, Is.True);
+        Assert.That(LiveButton("Spin").interactable, Is.True);
         Assert.That(FindText("Status").text, Does.Contain("bounce"));
 
         // The lifter's bounce cell is local (0, 0); a quarter-turn moves it up the pending tile's lattice, so bounce still previews the turn.
         Assert.That(PendingCellPosition("C00"), Is.EqualTo(Vector2.zero));
-        LiveButton("Turn1").onClick.Invoke();
+        LiveButton("Spin").onClick.Invoke();
         Assert.That(PendingCellPosition("C00").x, Is.EqualTo(0f));
         Assert.That(PendingCellPosition("C00").y, Is.GreaterThan(0f));
-        LiveButton("Turn0").onClick.Invoke();
+        for (var i = 0; i < 3; i++)
+        {
+            LiveButton("Spin").onClick.Invoke();
+        }
+
         Assert.That(PendingCellPosition("C00"), Is.EqualTo(Vector2.zero));
 
         LiveButton("Target1_0").onClick.Invoke();
@@ -353,16 +354,121 @@ public class TableSessionPlayModeTests
             new Tile(new TileId("next"), purple, purple, purple, purple),
             BlankTile("pad")));
 
-        // Secrets: the seat's two unclaimed missions, drawn in the secrets panel.
+        // Secrets: the seat's two unclaimed missions, drawn in the turn tray.
         AssertMissionCards("Mission", 2);
+        AssertPips("Seat1", filled: 0, empty: 4);
 
         // Placing the second purple tile beside the first finishes a purple row, so the seat claims both of its purple-row missions.
         table.Tap(1, 0);
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(2));
 
-        // Claims: the claimed missions are drawn in the claims row with the same painter.
+        // The score shows as pips; the claimed missions themselves open on a tap, drawn with the same painter.
+        AssertPips("Seat1", filled: 2, empty: 2);
+        AssertPips("Seat2", filled: 0, empty: 4);
+        Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.False);
+        LiveButton("Seat1").onClick.Invoke();
         AssertMissionCards("Claim", 2);
+    }
+
+    [Test]
+    public void SpinTurnsTheDrawnTileOneQuarterAtATime_AndWrapsFromThreeToZero()
+    {
+        var table = BeginHumanTable(RotateSetup());
+        var before = PendingCellPosition("C00");
+
+        var seen = new System.Collections.Generic.List<int>();
+        for (var i = 0; i < 4; i++)
+        {
+            LiveButton("Spin").onClick.Invoke();
+            seen.Add(table.Snapshot.QuarterTurns);
+            Assert.That(LiveButton("Spin").GetComponentInChildren<Text>().text, Is.EqualTo("Spin"));
+        }
+
+        Assert.That(seen, Is.EqualTo(new[] { 1, 2, 3, 0 }));
+        Assert.That(PendingCellPosition("C00"), Is.EqualTo(before));
+        Assert.That(LiveButtons("Turn"), Is.Empty);
+    }
+
+    [Test]
+    public void TappingASeat_OpensItsClaims_AndTappingAnywhereClosesThem_EvenDuringTheHandOff()
+    {
+        var purple = Cell.Color(OrdinaryCatalog.Purple);
+        var table = BeginHumanTable(SetupFrom(
+            new[] { "a1", "a2", "b1", "b2", "r1", "r2", "r3", "r4" },
+            new Tile(new TileId("start"), purple, purple, purple, purple),
+            new Tile(new TileId("next"), purple, purple, purple, purple),
+            BlankTile("pad")));
+        table.Tap(1, 0);
+        Assert.That(table.Snapshot.ConcealVisible, Is.True);
+        var panel = FindRect("ClaimsPanel");
+        Assert.That(panel.gameObject.activeSelf, Is.False);
+
+        LiveButton("Seat1").onClick.Invoke();
+
+        Assert.That(panel.gameObject.activeSelf, Is.True);
+        AssertMissionCards("Claim", 2);
+        Assert.That(FindText("Title", panel).text, Does.Contain("Seat 1"));
+        Assert.That(table.Snapshot.ConcealVisible, Is.True, "reading claims does not confirm the hand-off");
+
+        LiveButton("Dim").onClick.Invoke();
+        Assert.That(panel.gameObject.activeSelf, Is.False);
+
+        LiveButton("Seat2").onClick.Invoke();
+        Assert.That(panel.gameObject.activeSelf, Is.True);
+        Assert.That(FindText("None", panel).text, Is.EqualTo("No claims yet."));
+        LiveButton("Dim").onClick.Invoke();
+        Assert.That(table.Snapshot.ConcealVisible, Is.True);
+    }
+
+    [Test]
+    public void TheHandOffCover_SitsOverTheSecretMissionsOnly()
+    {
+        var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
+        LiveButtons("Highlight").First().onClick.Invoke();
+        Assert.That(table.Snapshot.ConcealVisible, Is.True);
+
+        var conceal = FindRect("Conceal");
+        var secrets = FindRect("Secrets");
+        Assert.That(conceal.gameObject.activeSelf, Is.True);
+        Assert.That(conceal.parent, Is.SameAs(secrets.parent));
+        Assert.That(conceal.anchorMin, Is.EqualTo(secrets.anchorMin));
+        Assert.That(conceal.anchorMax, Is.EqualTo(secrets.anchorMax));
+        Assert.That(LiveButton("Spin"), Is.Not.Null);
+        Assert.That(LiveButton("Confirm"), Is.Not.Null);
+    }
+
+    [Test]
+    public void WhenTheGameEnds_TheTrayNamesTheWinner()
+    {
+        var purple = Cell.Color(OrdinaryCatalog.Purple);
+        var seats = TableStart.PassAndPlayDraft().SeatsInTurnOrder();
+        var setup = new GameSetup(
+            seats,
+            seats[0],
+            OrdinaryCatalog.Colors,
+            OrdinaryCatalog.NonScoringSymbols,
+            OrdinaryCatalog.Patterns,
+            1,
+            new[] { "a1", "a2", "b1", "b2", "r1", "r2" }.Select(id => new Mission(new MissionId(id), MissionPattern.Row, OrdinaryCatalog.Purple)).ToArray(),
+            new[] { new Tile(new TileId("start"), purple, purple, purple, purple), new Tile(new TileId("next"), purple, purple, purple, purple), BlankTile("pad") });
+        var table = BeginHumanTable(setup);
+
+        table.Tap(1, 0);
+
+        Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.Won), table.Snapshot.Status.Message);
+        Assert.That(FindText("Heading").text, Is.EqualTo("Seat 1 wins!"));
+        Assert.That(FindRect("Winner").gameObject.activeInHierarchy, Is.True);
+        Assert.That(FindRect("Turn").gameObject.activeInHierarchy, Is.False);
+        Assert.That(LiveButton("Spin"), Is.Null);
+        Assert.That(_root.GetComponentsInChildren<Text>(false).Any(text => text.text == "Pending tile" || text.text == "Missions hidden"), Is.False);
+    }
+
+    private void AssertPips(string seatButton, int filled, int empty)
+    {
+        var pips = LiveButton(seatButton).GetComponentsInChildren<RectTransform>(false);
+        Assert.That(pips.Count(rect => rect.name == "PipFilled"), Is.EqualTo(filled), seatButton + " filled pips");
+        Assert.That(pips.Count(rect => rect.name == "PipEmpty"), Is.EqualTo(empty), seatButton + " empty pips");
     }
 
     // Every live slot named prefix + index holds one 5:7 fit-in-parent Card whose pattern is four splats.
@@ -500,6 +606,11 @@ public class TableSessionPlayModeTests
         }
 
         return null;
+    }
+
+    private static Text FindText(string name, Component within)
+    {
+        return within.GetComponentsInChildren<Text>(true).First(text => text.name == name);
     }
 
     private Text FindText(string name)
