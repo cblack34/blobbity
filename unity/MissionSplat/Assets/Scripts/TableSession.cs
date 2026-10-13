@@ -6,7 +6,8 @@ using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
 
-// Forwards the view's input to the App table and draws its snapshot; it decides nothing about the game.
+// Forwards the view's input to the App table and draws its snapshot. It starts games, and builds the next game's start from the last
+// (same seats, the first seat moved on); it never decides a move.
 [DefaultExecutionOrder(-100)]
 public sealed class TableSession : MonoBehaviour
 {
@@ -44,10 +45,10 @@ public sealed class TableSession : MonoBehaviour
             throw new ArgumentNullException(nameof(start));
         }
 
-        Begin(start, new Table(new LocalSession(), start, start.Shuffle ? new System.Random().Next() : (int?)null));
+        Adopt(start, new Table(new LocalSession(), start, start.Shuffle ? new System.Random().Next() : (int?)null));
     }
 
-    public void Begin(TableStart start, GameSetup setup) => Begin(start, new Table(new LocalSession(), start, setup));
+    public void Begin(TableStart start, GameSetup setup) => Adopt(start, new Table(new LocalSession(), start, setup));
 
     // Same seats and choices, the first seat moved on. Every game started from setup is shuffled, so each one is a fresh deal.
     public void PlayAgain()
@@ -81,7 +82,7 @@ public sealed class TableSession : MonoBehaviour
 
     public void SetQuarterTurns(int quarterTurns) => Forward(() => _table.SetQuarterTurns(quarterTurns));
 
-    private void Begin(TableStart start, Table table)
+    private void Adopt(TableStart start, Table table)
     {
         table.Start();
         _table = table;

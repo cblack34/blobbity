@@ -36,7 +36,6 @@ internal sealed class TableSetupView
 
     public void Show(TableStart draft)
     {
-        // The deck is always shuffled for a player, so a draft that was not is shown, and started, as shuffled.
         ReplaceDraft(draft.SeatCount, CopyFlags(draft), draft.FirstSeatIndex);
     }
 
@@ -122,6 +121,7 @@ internal sealed class TableSetupView
 
     private void ReplaceDraft(int seatCount, bool[] flags, int first)
     {
+        // The deck is always shuffled for a player, so every draft is, whatever Show was given.
         _draft = new TableStart(seatCount, flags, first, shuffle: true);
         Rebuild();
     }
