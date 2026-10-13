@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 36" width="390" height="36" preserveAspectRatio="none">
+  <!-- The tray's wavy top: white below an ink line, stretched across the screen. The wave is the reference's. -->
+  <path d="M0 21q97.5-18 195 0t195 0V36H0z" fill="#fff"/>
+  <path d="M0 21q97.5-18 195 0t195 0" fill="none" stroke="#1d1d1b" stroke-width="3"/>
+</svg>

@@ -1,4 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
-  <!-- A tile card face: a rounded square, white so the player tints it. -->
-  <rect x="0" y="0" width="128" height="128" rx="22" ry="22" fill="#fff"/>
+  <!-- A tile card face: a rounded square with toy-sized corners, white so the player tints it. -->
+  <rect x="0" y="0" width="128" height="128" rx="24" ry="24" fill="#fff"/>
 </svg>
