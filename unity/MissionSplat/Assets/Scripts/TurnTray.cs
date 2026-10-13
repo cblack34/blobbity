@@ -105,12 +105,16 @@ internal sealed class TurnTray
         PaintSpin(snapshot);
         _chips.Paint(snapshot);
         PaintSecrets(snapshot);
-        _conceal.gameObject.SetActive(snapshot.ConcealVisible);
-        if (snapshot.ConcealVisible)
+        var covered = CoverUp(snapshot);
+        _conceal.gameObject.SetActive(covered);
+        if (covered)
         {
             _concealLabel.text = Seats.NameOf(snapshot.View.CurrentSeat) + ", confirm to see your missions.";
         }
     }
+
+    // The hand-off cover waits for the outgoing player's recap: until they have seen their own turn, the device is still theirs.
+    private static bool CoverUp(TableSnapshot snapshot) => snapshot.ConcealVisible && snapshot.Recap.Count == 0;
 
     private static RectTransform Area(string name, Transform parent, float minX, float minY, float maxX, float maxY)
     {
@@ -212,7 +216,7 @@ internal sealed class TurnTray
     {
         Ui.Clear(_secrets);
         // The hand-off cover sits over this area, and says what is hidden itself.
-        if (snapshot.ConcealVisible)
+        if (CoverUp(snapshot))
         {
             return;
         }

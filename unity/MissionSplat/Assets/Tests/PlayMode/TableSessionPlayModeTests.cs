@@ -14,13 +14,21 @@ using UnityEngine.InputSystem.UI;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
 
-public class TableSessionPlayModeTests
+public partial class TableSessionPlayModeTests
 {
     private GameObject _root;
+
+    // Most tests tap and assert straight away, so a recap is over the moment it starts; the recap tests turn playing back on.
+    [SetUp]
+    public void SetUp()
+    {
+        RecapPlayer.PlaysInstantly = true;
+    }
 
     [TearDown]
     public void TearDown()
     {
+        RecapPlayer.PlaysInstantly = false;
         if (_root != null)
         {
             Object.DestroyImmediate(_root);

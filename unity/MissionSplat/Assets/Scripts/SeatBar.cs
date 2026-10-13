@@ -48,6 +48,30 @@ internal sealed class SeatBar
         }
     }
 
+    // The score pip at position (from 0) in the seat's entry, or null when it is not drawn. A render leaves the entries it replaced inactive
+    // until the frame ends, so only live ones count.
+    public RectTransform PipOf(SeatId seat, int position)
+    {
+        foreach (Transform entry in _bar)
+        {
+            if (!entry.gameObject.activeSelf || entry.name != "Seat" + seat.Value)
+            {
+                continue;
+            }
+
+            var pip = 0;
+            foreach (Transform child in entry)
+            {
+                if (child.gameObject.activeSelf && child.name.StartsWith("Pip") && pip++ == position)
+                {
+                    return (RectTransform)child;
+                }
+            }
+        }
+
+        return null;
+    }
+
     private void PaintEntry(int index, int seats, float entryWidth, SeatClaims claims, bool isCurrent)
     {
         var box = Ui.Outlined("Seat" + claims.Seat.Value, _bar, isCurrent ? SplatPalette.Ink : Color.clear, isCurrent ? SplatPalette.Paper : Color.clear, OutlineUnits);

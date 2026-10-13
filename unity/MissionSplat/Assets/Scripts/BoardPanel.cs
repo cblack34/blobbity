@@ -27,6 +27,7 @@ internal sealed class BoardPanel
 
     // The content as last drawn: the lattice's origin cell, its size, and its cell size, to turn a scroll position into a cell.
     private RectTransform _content;
+    private RectTransform _lattice;
     private Vector2Int _origin;
     private Vector2 _latticeSize;
     private float _cellSize;
@@ -56,6 +57,7 @@ internal sealed class BoardPanel
     public void ForgetScroll()
     {
         _content = null;
+        _lattice = null;
         _focus = null;
         _placedAt = Vector2.zero;
     }
@@ -71,6 +73,7 @@ internal sealed class BoardPanel
         // Child 0 is the permanent board fill.
         Ui.Clear(_viewport, 1);
         _content = null;
+        _lattice = null;
 
         var view = snapshot.View;
         // An emptied board still offers the origin, so only return when nothing is drawn or tappable.
@@ -125,6 +128,7 @@ internal sealed class BoardPanel
         }
 
         _content = content;
+        _lattice = lattice;
         _origin = new Vector2Int(minX, minY);
         _latticeSize = latticeSize;
         _cellSize = cellSize;
@@ -163,6 +167,19 @@ internal sealed class BoardPanel
                 Ui.Stretch(spot.rectTransform);
             }
         }
+    }
+
+    // Where the board last drew the tile at (tileX, tileY): its centre in world space and its side in canvas units. The position need not hold a tile,
+    // and may be scrolled out of view. Null when nothing is drawn.
+    public (Vector3 Centre, float Side)? TileSlot(int tileX, int tileY)
+    {
+        if (_lattice == null)
+        {
+            return null;
+        }
+
+        var local = _lattice.rect.min + new Vector2(((tileX * 2) - _origin.x + 1) * _cellSize, ((tileY * 2) - _origin.y + 1) * _cellSize);
+        return (_lattice.TransformPoint(local), 2f * _cellSize);
     }
 
     // The board cell at the middle of the view as last drawn and scrolled.
