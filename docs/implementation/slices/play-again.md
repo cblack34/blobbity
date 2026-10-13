@@ -95,7 +95,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - The seat bar highlights the winner when the game is won, and no seat when a game ends without a winner.
   - A new game resets the board scroll and closes the claims panel.
   - `TableSession` remembers the `TableStart` the current game began from and starts the next one through the same path as setup. No Rules or App change.
-- **Verification:** On `0869e17`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 32 of 32.
+- **Verification:** On `b5ab625`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 32 of 32. Play again always shuffles, even after a game that began unshuffled, and the Play again test asserts it. The maintainer then reported that it works well in play.
   - New tests check that Play again starts a fresh game with the next first seat, empty claims and a closed claims panel.
   - They check that New setup pre-fills the finished game's choices and shows no Shuffle button.
   - They check that the winner is the highlighted seat.
