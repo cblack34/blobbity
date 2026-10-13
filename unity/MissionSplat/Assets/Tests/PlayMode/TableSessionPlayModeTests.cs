@@ -510,6 +510,7 @@ public class TableSessionPlayModeTests
         Assert.That(LiveButton("Spin"), Is.Null);
         Assert.That(LiveButton("PlayAgain"), Is.Not.Null);
         Assert.That(LiveButton("NewSetup"), Is.Not.Null);
+        Assert.That(HighlightedSeats(), Is.EqualTo(new[] { "Seat1" }), "the winner is highlighted, not the seat that would be next");
         Assert.That(_root.GetComponentsInChildren<Text>(false).Any(text => text.text == "Pending tile" || text.text == "Missions hidden"), Is.False);
     }
 
@@ -554,6 +555,9 @@ public class TableSessionPlayModeTests
             Assert.That(ButtonFace("First" + i), Is.EqualTo(i == firstSeat ? SplatPalette.Sunny : SplatPalette.Paper), "first " + i);
         }
     }
+
+    private string[] HighlightedSeats() =>
+        LiveButtons("Seat").Where(button => button.GetComponent<Image>().color.a > 0f).Select(button => button.name).ToArray();
 
     private Color ButtonFace(string name) => Ui.ToyFace(LiveButton(name)).GetComponent<Image>().color;
 

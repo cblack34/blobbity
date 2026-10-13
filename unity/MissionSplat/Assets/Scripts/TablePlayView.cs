@@ -82,7 +82,7 @@ internal sealed class TablePlayView
         _status.text = InstructionText(snapshot);
         _notice.text = NoticeText(snapshot.Notice);
         _notice.gameObject.SetActive(snapshot.Notice != TableNotice.None);
-        _seatBar.Paint(snapshot.View);
+        _seatBar.Paint(snapshot.View, HighlightedSeat(snapshot));
         // What the panel shows may be out of date after any action, so a render closes it.
         _claimsPanel.Hide();
         _tray.Paint(snapshot, heading);
@@ -94,6 +94,14 @@ internal sealed class TablePlayView
     {
         Ui.Anchored(rect, new Vector2(0f, 1f), Vector2.one, new Vector2(inset, -(top + height)), new Vector2(-inset, -top));
     }
+
+    // The seat to play, or the winner once the game is won; nobody when it ended without one.
+    private static SeatId? HighlightedSeat(TableSnapshot snapshot) => snapshot.Status.Kind switch
+    {
+        TableStatusKind.Won => snapshot.Status.Seat,
+        TableStatusKind.Ended => null,
+        _ => snapshot.View.CurrentSeat,
+    };
 
     private static string HeadingText(TableSnapshot snapshot)
     {
