@@ -96,8 +96,38 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 
 ## Amendments
 
-None.
+- **2026-10-13, by the maintainer, after the design review:**
+  - One App change: `Table.Apply` no longer resets the drawn tile's placement turn after a `UseRotate`, so Spin survives a confirmed rotate. A placement still resets it.
+  - The unused App power-selection path (`Table.SelectPower`/`UseAt`, `TableSnapshot.SelectedPower`/`SelectedTargets`) is left for #74.
 
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** Rotate and bounce are used by tapping a board tile.
+  - **Tap routing:** `TilePreview` is the one home for the preview: a placement, a rotate, or a bounce. A tap creates only a preview that still holds for the snapshot.
+  - **Rotate:** the selected tile lifts with a green ring and turns live, previewed with ↻. Confirm submits `UseRotate` with that amount and is disabled at zero. A completed mission claims at once.
+  - **Bounce:** the strip shows Bounce and Cancel.
+  - **Tap targets:** orange rings mark the tiles a power can act on.
+  - **Removed:** the power chips, "Place instead", and the Spin rotate hint.
+  - **Remaining uses:** spent badges grey out on the drawn tile.
+  - **Tray:** it shrank from 560 to 450 units, giving the board 110.
+  - **Spin:** it survives a confirmed rotate (the amendment).
+- **Verification:** On `325cba2`, Rules 241, App 86, and `unity test unity/MissionSplat --mode PlayMode` 70 of 70 (in a scratch copy, because the maintainer's editor was open). `4ca6727` changes only captures. The PlayMode tests cover:
+  - selection, live preview, Confirm and Cancel, and zero-turn Confirm disabled;
+  - the preview equalling the applied board at 1, 2, and 3 turns;
+  - rotate claims;
+  - Bounce and Cancel;
+  - spent badges;
+  - taps doing nothing without a power, or during a recap;
+  - bounce and rotate stale-state drops;
+  - stack still working;
+  - Spin kept through a rotate.
+
+  The captures `rotate-preview.png` and `bounce-select.png` are new, every capture was retaken for the shorter tray, and `power-panel.png` was removed.
+- **Deviations:** the amendment above. `TableSession.SelectPower`/`UseAt` were removed from the player.
+- **Unresolved gates or risks:**
+  - #74 removes the unused App power-selection path.
+  - The rotate preview duplicates the Rules quarter-turn mapping. Tests pin it at 1, 2, and 3 turns.
+- **Refactor and handoff receipt:** In the PR body and on issue #59.
+- **Final PR:** see the PR linked from issue #59.
