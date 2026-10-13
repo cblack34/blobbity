@@ -352,6 +352,42 @@ public class RecapTests
     }
 
     [Test]
+    public void ARotateClaim_IsRecappedAsRotatedThenClaimed_ForTheActingSeat()
+    {
+        var redRow = Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red);
+        var setup = new GameSetup(
+            [First, Second],
+            First,
+            OrdinaryCatalog.Colors,
+            OrdinaryCatalog.NonScoringSymbols,
+            OrdinaryCatalog.Patterns,
+            OrdinaryCatalog.ClaimsRequiredToWin,
+            [redRow, Cards.Row("a2"), Cards.Row("b1"), Cards.Row("b2"), Cards.Row("spare")],
+            [
+                Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
+                Cards.Tile("east", Cards.Blank, Cards.Red, Cards.Blank, Cards.Red),
+                Cards.BlankTile("pad"),
+                Cards.Tile("spinner", Cell.Symbol(OrdinaryCatalog.Rotate), Cards.Blank, Cards.Blank, Cards.Blank),
+            ]);
+        var table = new Table(new LocalSession(), Humans(2), setup);
+        table.Start();
+        table.Confirm();
+        table.Submit(new Place(1, 0, 0));
+        table.Confirm();
+        table.Submit(new Place(0, 1, 0));
+        table.Confirm();
+        table.SelectPower(OrdinaryCatalog.Rotate);
+        table.SetQuarterTurns(1);
+
+        table.UseAt(1, 0);
+
+        var recap = table.Snapshot.Recap;
+        Assert.That(recap.TakeLast(2).Select(item => item.GetType()), Is.EqualTo(new[] { typeof(RecapRotated), typeof(RecapClaimed) }));
+        Assert.That(recap[^1], Is.EqualTo(new RecapClaimed(First, redRow)));
+        Assert.That(((RecapRotated)recap[^2]).Seat, Is.EqualTo(First));
+    }
+
+    [Test]
     public void AReshuffle_BecomesAnItemThatCarriesNoOrder()
     {
         var table = Started(

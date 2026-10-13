@@ -163,6 +163,19 @@ internal sealed class Grid
             new Dictionary<TileCoord, BuriedLayer[]>(_covered));
     }
 
+    // The four visible cells at a tile position with their coordinates, as a rotate just wrote them.
+    public IReadOnlyList<(int X, int Y, Cell Value)> CellsOfTile(int tileX, int tileY)
+    {
+        var cells = new (int X, int Y, Cell Value)[4];
+        for (var i = 0; i < cells.Length; i++)
+        {
+            var (x, y) = ((tileX * 2) + (i % 2), (tileY * 2) + (i / 2));
+            cells[i] = (x, y, At(x, y) ?? throw new InvalidOperationException("A board tile is missing one of its cells."));
+        }
+
+        return cells;
+    }
+
     // A single-layer position disappears entirely. A stacked position peels only its top tile and restores
     // the layer beneath using the cells it had when it was covered. The caller validates a tile is present.
     public (Grid Grid, Tile Removed, TileId? Revealed) Bounce(int tileX, int tileY)
