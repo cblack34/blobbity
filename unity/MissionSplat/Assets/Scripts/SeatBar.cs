@@ -34,7 +34,7 @@ internal sealed class SeatBar
         Ui.Clear(_bar);
         var seats = view.Claims.Count;
         // Before the first layout the bar has no width; the reference width stands in.
-        var entryWidth = (_bar.rect.width > 1f ? _bar.rect.width : 1080f) / seats;
+        var entryWidth = (_bar.rect.width > 1f ? _bar.rect.width : Ui.ReferenceWidthUnits) / seats;
         for (var i = 0; i < seats; i++)
         {
             PaintEntry(i, seats, entryWidth - (2f * EntryInsetUnits), view.Claims[i], view.Claims[i].Seat.Equals(view.CurrentSeat));

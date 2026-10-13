@@ -70,10 +70,10 @@ internal sealed class ClaimsPanel
         rect.offsetMax = new Vector2(0f, PanelHeightUnits / 2f);
     }
 
-    // Four is the ordinary row. One placement can claim both held missions, so a row at three can finish at five and must stay inside the panel.
+    // A row holds the claims needed to win. One placement can claim both held missions, so a row one short of the win count can end one over it and must stay inside the panel.
     private static (Vector2 Min, Vector2 Max) CardAnchors(int index, int missionCount)
     {
-        var slots = Math.Max(4, missionCount);
+        var slots = Math.Max(Seats.ClaimsToWin, missionCount);
         const float margin = 0.04f;
         const float gap = 0.02f;
         var width = (1f - (2f * margin) - ((slots - 1) * gap)) / slots;

@@ -533,6 +533,91 @@ public class TableSessionPlayModeTests
         Assert.That(TileCentreInView("Tilestart", view).y, Is.EqualTo(first.y).Within(1f));
     }
 
+    [Test]
+    public void ANewGameStartsWithItsBoardCentred_NotWhereTheLastOneWasScrolled()
+    {
+        var table = BeginLongRowTable();
+        var scroll = _root.GetComponentInChildren<ScrollRect>(true);
+        var slack = (scroll.content.rect.width - scroll.viewport.rect.width) / 2f;
+        scroll.content.anchoredPosition = new Vector2(-slack, 0f);
+        table.SelectPower(null);
+        Assert.That(scroll.content.anchoredPosition.x, Is.EqualTo(-slack).Within(1f), "the scrolled place is kept within a game");
+
+        _root.GetComponent<TableView>().ShowSetup(TableStart.PassAndPlayDraft());
+        table.Begin(TableStart.PassAndPlayDraft(), SetupFrom(new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray()));
+        table.ConfirmIncomingSeat();
+        for (var i = 0; i < 9; i++)
+        {
+            PlaceRightmost(table);
+        }
+
+        scroll = _root.GetComponentInChildren<ScrollRect>(true);
+        Assert.That(scroll.content.rect.width, Is.GreaterThan(scroll.viewport.rect.width), "the new board overflows too");
+        Assert.That(scroll.content.anchoredPosition.x, Is.EqualTo(0f).Within(1f), "and starts centred");
+    }
+
+    [Test]
+    public void AtTheRightEndOfABoard_TheHandOffRenderKeepsThePlace_InsteadOfClampingIt()
+    {
+        var table = BeginLongRowTable();
+        var scroll = _root.GetComponentInChildren<ScrollRect>(true);
+        var view = scroll.GetComponent<RectTransform>();
+        var rightmost = "Tile" + table.Snapshot.View.Board.Tiles.OrderByDescending(tile => tile.TileX).First().Id.Value;
+        scroll.content.anchoredPosition = new Vector2(-(scroll.content.rect.width - view.rect.width) / 2f, 0f);
+        Canvas.ForceUpdateCanvases();
+        var before = TileCentreInView(rightmost, view);
+
+        // Placing at the left hands the device over: that render has no placement highlights, so the board is a tile narrower at the right.
+        if (table.Snapshot.ConcealVisible)
+        {
+            table.ConfirmIncomingSeat();
+        }
+
+        var left = table.Snapshot.LegalPlacements.OrderBy(slot => slot.TileX).First();
+        table.Tap(left.TileX, left.TileY);
+        Assert.That(table.Snapshot.ConcealVisible, Is.True);
+        Canvas.ForceUpdateCanvases();
+        table.ConfirmIncomingSeat();
+        Canvas.ForceUpdateCanvases();
+
+        Assert.That(TileCentreInView(rightmost, view).x, Is.EqualTo(before.x).Within(1f));
+    }
+
+    [Test]
+    public void APowerChipWithNothingToActOnIsGreyedOutAndNotTappable()
+    {
+        var bounce = Cell.Symbol(OrdinaryCatalog.Bounce);
+        var blank = Cell.Symbol(OrdinaryCatalog.Blank);
+        var table = BeginHumanTable(SetupWith(new Tile(new TileId("twice"), bounce, bounce, blank, blank)));
+        Assert.That(LiveButton("PowerBounce").interactable, Is.True);
+        Assert.That(LiveButton("PowerBounce").GetComponent<Image>().color, Is.EqualTo(SplatPalette.Muted));
+
+        // Bouncing the only tile empties the board; the second bounce cell then has no tile to act on.
+        table.SelectPower(OrdinaryCatalog.Bounce);
+        table.UseAt(0, 0);
+
+        Assert.That(table.Snapshot.View.Board.Tiles, Is.Empty);
+        Assert.That(LiveButton("PowerBounce").interactable, Is.True, "still selected, so it can be put back");
+        LiveButton("PowerBounce").onClick.Invoke();
+        Assert.That(table.Snapshot.SelectedPower, Is.Null);
+        Assert.That(LiveButton("PowerBounce"), Is.Not.Null, "one use is still left");
+        Assert.That(LiveButton("PowerBounce").interactable, Is.False);
+        Assert.That(LiveButton("PowerBounce").GetComponent<Image>().color, Is.EqualTo(SplatPalette.Gray));
+    }
+
+    private TableSession BeginLongRowTable()
+    {
+        var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();
+        var table = BeginHumanTable(SetupFrom(tiles));
+        for (var i = 0; i < 9; i++)
+        {
+            PlaceRightmost(table);
+        }
+
+        Canvas.ForceUpdateCanvases();
+        return table;
+    }
+
     // Driven through the real input module with a virtual mouse: a drag on a highlight scrolls the board and does not place, a tap places.
     [UnityTest]
     public IEnumerator DraggingAHighlightScrollsTheBoard_AndATapStillPlaces()
@@ -544,25 +629,34 @@ public class TableSessionPlayModeTests
             PlaceRightmost(table);
         }
 
-        // A camera gives the canvas a screen of known size, so the pointer can land on it whatever the editor's game view is.
-        var target = new RenderTexture(1080, 2340, 24);
-        var camera = new GameObject("Camera").AddComponent<Camera>();
-        camera.targetTexture = target;
-        camera.orthographic = true;
-        var canvas = _root.GetComponentInChildren<Canvas>(true);
-        canvas.renderMode = RenderMode.ScreenSpaceCamera;
-        canvas.worldCamera = camera;
-        canvas.planeDistance = 1f;
-        canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-        canvas.GetComponent<CanvasScaler>().scaleFactor = 1f;
-        // The test player is not the focused application, so input is told to count anyway; the project's settings come back afterwards.
-        var settings = InputSystem.settings;
-        InputSystem.settings = ScriptableObject.CreateInstance<InputSettings>();
-        InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
-        InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
-        var mouse = InputSystem.AddDevice<Mouse>();
+        RenderTexture target = null;
+        Camera camera = null;
+        InputSettings original = null;
+        InputSettings temporary = null;
+        Mouse mouse = null;
         try
         {
+            // A camera gives the canvas a screen of known size, so the pointer can land on it whatever the editor's game view is.
+            target = new RenderTexture(1080, 2340, 24);
+            camera = new GameObject("Camera").AddComponent<Camera>();
+            camera.targetTexture = target;
+            camera.orthographic = true;
+            var canvas = _root.GetComponentInChildren<Canvas>(true);
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = camera;
+            canvas.planeDistance = 1f;
+            canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            canvas.GetComponent<CanvasScaler>().scaleFactor = 1f;
+
+            // The test player is not the focused application, so input is told to count anyway; the project's settings come back in finally.
+            original = InputSystem.settings;
+            temporary = ScriptableObject.CreateInstance<InputSettings>();
+            temporary.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+            temporary.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+            InputSystem.settings = temporary;
+            mouse = InputSystem.AddDevice<Mouse>();
+
+            // Render once to lay the table out on the new canvas, let a frame pass so layout settles, then render again to draw on the settled sizes.
             table.SelectPower(null);
             yield return null;
             Canvas.ForceUpdateCanvases();
@@ -576,10 +670,10 @@ public class TableSessionPlayModeTests
             Assert.That(scroll.content.rect.width, Is.GreaterThan(scroll.viewport.rect.width));
             var contentBefore = scroll.content.anchoredPosition;
 
-            yield return Press(mouse, start);
+            yield return Hold(mouse, start);
             for (var step = 1; step <= 8; step++)
             {
-                yield return Press(mouse, start + new Vector2(-30f * step, 0f));
+                yield return Hold(mouse, start + new Vector2(-30f * step, 0f));
             }
 
             yield return Release(mouse, start + new Vector2(-240f, 0f));
@@ -589,22 +683,42 @@ public class TableSessionPlayModeTests
 
             placement = LiveButtons("Highlight").First(button => Mathf.Abs(view.InverseTransformPoint(button.transform.position).x) < (view.rect.width / 2f) - 100f);
             var spot = (Vector2)camera.WorldToScreenPoint(placement.transform.position);
-            yield return Press(mouse, spot);
+            yield return Hold(mouse, spot);
             yield return Release(mouse, spot);
 
             Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(before + 1), "a tap places");
         }
         finally
         {
-            InputSystem.RemoveDevice(mouse);
-            Object.DestroyImmediate(InputSystem.settings);
-            InputSystem.settings = settings;
-            Object.DestroyImmediate(camera.gameObject);
-            target.Release();
+            if (mouse != null)
+            {
+                InputSystem.RemoveDevice(mouse);
+            }
+
+            if (original != null)
+            {
+                InputSystem.settings = original;
+            }
+
+            if (temporary != null)
+            {
+                Object.DestroyImmediate(temporary);
+            }
+
+            if (camera != null)
+            {
+                Object.DestroyImmediate(camera.gameObject);
+            }
+
+            if (target != null)
+            {
+                target.Release();
+            }
         }
     }
 
-    private static IEnumerator Press(Mouse mouse, Vector2 position)
+    // The mouse at position with the left button down; held through each call it presses, and moved it drags.
+    private static IEnumerator Hold(Mouse mouse, Vector2 position)
     {
         InputSystem.QueueStateEvent(mouse, new MouseState { position = position }.WithButton(MouseButton.Left));
         yield return null;

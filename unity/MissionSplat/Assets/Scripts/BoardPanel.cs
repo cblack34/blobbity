@@ -13,18 +13,20 @@ using UnityEngine.UI;
 internal sealed class BoardPanel
 {
     // A tile is two cells wide and is what a finger taps, so its minimum is the comfortable tap size: 120 units
-    // on the 1080-wide canvas is about 44 pt on a phone.
+    // on the canvas's 1080-unit reference width is about 44 pt on a phone.
     private const float MinimumTileUnits = 120f;
 
     private readonly RectTransform _viewport;
     private readonly ScrollRect _scroll;
 
-    // Where the content was drawn last, to find which cell sits at the middle of the view.
-    // _focus is that cell, kept until the player scrolls: a render that briefly shrinks the board (the hand-off hides the
-    // placements) clamps the position, and must not lose where the player was looking.
-    private RectTransform _content;
+    // _focus is the board cell at the middle of the view, kept until the player scrolls: a render that briefly shrinks
+    // the board (the hand-off hides the placements) clamps the position, and must not lose where the player was looking.
+    // _placedAt is where the last render left the content, so a different position means the player scrolled.
     private Vector2? _focus;
     private Vector2 _placedAt;
+
+    // The content as last drawn: the lattice's origin cell, its size, and its cell size, to turn a scroll position into a cell.
+    private RectTransform _content;
     private Vector2Int _origin;
     private Vector2 _latticeSize;
     private float _cellSize;
@@ -46,10 +48,19 @@ internal sealed class BoardPanel
         _scroll.inertia = true;
     }
 
-    public event Action<int, int> Tapped;
+    public event Action<int, int> PlacementTapped;
 
     public event Action<int, int> TargetTapped;
 
+    // A new game starts centred, not where the last one was scrolled to.
+    public void ForgetScroll()
+    {
+        _content = null;
+        _focus = null;
+        _placedAt = Vector2.zero;
+    }
+
+    // The caller runs Canvas.ForceUpdateCanvases() first: the viewport's size is read here.
     public void Paint(TableSnapshot snapshot)
     {
         if (_content != null && _content.anchoredPosition != _placedAt)
@@ -129,7 +140,7 @@ internal sealed class BoardPanel
 
         // While a power is selected the snapshot offers no placements, so only its targets are drawn.
         // A rotate target waits for a 1–3 amount; Rules would refuse zero, so the tap is not offered until the row is set.
-        var targetsLive = !(snapshot.SelectedPower is { } selected && selected.Equals(OrdinaryCatalog.Rotate) && snapshot.QuarterTurns == 0);
+        var targetsLive = !RotateAmount.IsPending(snapshot);
         foreach (var target in snapshot.SelectedTargets)
         {
             var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, SplatPalette.TargetHighlight, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
@@ -139,7 +150,7 @@ internal sealed class BoardPanel
         foreach (var highlight in snapshot.LegalPlacements)
         {
             var tint = highlight.Kind == PlacementKind.OnTop ? SplatPalette.StackHighlight : SplatPalette.Highlight;
-            AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, tint, minX, minY, cellSize, () => Tapped?.Invoke(highlight.TileX, highlight.TileY));
+            AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, tint, minX, minY, cellSize, () => PlacementTapped?.Invoke(highlight.TileX, highlight.TileY));
         }
     }
 

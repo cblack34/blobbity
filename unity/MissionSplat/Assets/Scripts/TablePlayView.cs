@@ -15,6 +15,10 @@ internal sealed class TablePlayView
     private const float HeadingUnits = 100f;
     private const float StatusUnits = 110f;
     private const float NoticeUnits = 44f;
+    private const float HeadingTopUnits = SeatBarUnits;
+    private const float StatusTopUnits = HeadingTopUnits + HeadingUnits;
+    private const float NoticeTopUnits = StatusTopUnits + StatusUnits;
+    private const float BoardTopUnits = NoticeTopUnits + NoticeUnits;
 
     private readonly Text _heading;
     private readonly Text _status;
@@ -38,20 +42,20 @@ internal sealed class TablePlayView
 
         _heading = Ui.Label("Heading", play, 76, SplatPalette.Ink, TextAnchor.MiddleCenter);
         _heading.fontStyle = FontStyle.Bold;
-        Band(_heading.rectTransform, SeatBarUnits, HeadingUnits);
+        Band(_heading.rectTransform, HeadingTopUnits, HeadingUnits);
         _status = Ui.Label("Status", play, 34, SplatPalette.Ink, TextAnchor.UpperCenter);
         // Stop rulings are long sentences. Only this label wraps; captions and buttons stay on one line.
         _status.horizontalOverflow = HorizontalWrapMode.Wrap;
-        Band(_status.rectTransform, SeatBarUnits + HeadingUnits, StatusUnits, 40f);
+        Band(_status.rectTransform, StatusTopUnits, StatusUnits, 40f);
         // A one-line fact under the instruction; hidden while there is nothing to say.
         _notice = Ui.Label("Notice", play, 28, SplatPalette.Muted, TextAnchor.MiddleCenter);
-        Band(_notice.rectTransform, SeatBarUnits + HeadingUnits + StatusUnits, NoticeUnits);
+        Band(_notice.rectTransform, NoticeTopUnits, NoticeUnits);
         _notice.gameObject.SetActive(false);
 
         var board = Ui.Rect("Board", play);
-        Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.HeightUnits + 12f), new Vector2(-24f, -(SeatBarUnits + HeadingUnits + StatusUnits + NoticeUnits)));
+        Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.HeightUnits + 12f), new Vector2(-24f, -BoardTopUnits));
         _board = new BoardPanel(board);
-        _board.Tapped += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
+        _board.PlacementTapped += (tileX, tileY) => Tapped?.Invoke(tileX, tileY);
         _board.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);
 
         _tray = new TurnTray(play);
@@ -63,6 +67,9 @@ internal sealed class TablePlayView
         _claimsPanel = new ClaimsPanel(play);
         _seatBar.SeatTapped += _claimsPanel.Show;
     }
+
+    // A new game starts with its board centred.
+    public void ForgetScroll() => _board.ForgetScroll();
 
     public void Render(TableSnapshot snapshot)
     {
@@ -119,7 +126,7 @@ internal sealed class TablePlayView
     {
         if (snapshot.SelectedPower is { } power)
         {
-            return power.Equals(OrdinaryCatalog.Rotate) && snapshot.QuarterTurns == 0
+            return RotateAmount.IsPending(snapshot)
                 ? "Spin to choose the turns, then pick a tile to rotate."
                 : "Pick a tile to " + power.Value + ".";
         }

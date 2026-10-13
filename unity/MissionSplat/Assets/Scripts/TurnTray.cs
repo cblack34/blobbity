@@ -2,6 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
+using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -14,6 +15,9 @@ internal sealed class TurnTray
     public const float HeightUnits = 560f;
 
     private const float EdgeUnits = 6f;
+
+    // The drawn tile's side before the first layout has given its slot a size.
+    private const float FallbackTileUnits = 72f;
     private const float ChipUnits = 100f;
     private const float ChipGapUnits = 20f;
     private const float PlaceInsteadUnits = 300f;
@@ -75,7 +79,7 @@ internal sealed class TurnTray
         }
 
         // Only rotate repurposes the quarter-turns as its amount, so only then does the pending tile not preview them.
-        PaintPending(snapshot.View.PendingMatchTile, snapshot.SelectedPower is { } power && power.Equals(OrdinaryCatalog.Rotate) ? 0 : snapshot.QuarterTurns);
+        PaintPending(snapshot.View.PendingMatchTile, RotateAmount.IsSelected(snapshot) ? 0 : snapshot.QuarterTurns);
         PaintSpin(snapshot);
         PaintPowers(snapshot);
         PaintSecrets(snapshot);
@@ -149,7 +153,7 @@ internal sealed class TurnTray
         button.onClick.AddListener(() => QuarterTurnsSelected?.Invoke(next));
 
         // While rotate is selected the drawn tile does not preview the turns, so one arrow per quarter-turn shows the amount.
-        if (snapshot.SelectedPower is { } power && power.Equals(OrdinaryCatalog.Rotate) && snapshot.QuarterTurns > 0)
+        if (RotateAmount.IsSelected(snapshot) && snapshot.QuarterTurns > 0)
         {
             PaintTurnHint(snapshot.QuarterTurns);
         }
@@ -211,7 +215,9 @@ internal sealed class TurnTray
             }
 
             var selected = snapshot.SelectedPower is { } current && current.Equals(charge.Power);
-            var fill = selected ? SplatPalette.PowerSelected : snapshot.CanAct ? SplatPalette.Muted : SplatPalette.Gray;
+            // A power with nothing to act on cannot be picked, but a selected one can always be put back.
+            var usable = snapshot.CanAct && (selected || HasTargets(snapshot, charge.Power));
+            var fill = selected ? SplatPalette.PowerSelected : usable ? SplatPalette.Muted : SplatPalette.Gray;
             var chip = Ui.Button("Power" + PowerName(charge.Power), _powers, string.Empty, fill, Ui.Circle);
             PlaceFromLeft(chip.GetComponent<RectTransform>(), x, ChipUnits, ChipUnits);
             CellPainter.PaintMark(chip.GetComponent<RectTransform>(), charge.Power, 64);
@@ -220,7 +226,7 @@ internal sealed class TurnTray
                 PaintUseCount(chip.transform, charge.Remaining);
             }
 
-            chip.interactable = snapshot.CanAct;
+            chip.interactable = usable;
             var power = charge.Power;
             chip.onClick.AddListener(() => PowerSelected?.Invoke(selected ? null : power));
             x += ChipUnits + ChipGapUnits;
@@ -255,6 +261,10 @@ internal sealed class TurnTray
         rect.anchoredPosition = new Vector2(x + (width / 2f), 0f);
     }
 
+    private static bool HasTargets(TableSnapshot snapshot, SymbolId power) =>
+        snapshot.LegalTargets.Any(entry => entry.Power.Equals(power) && entry.Targets.Count > 0);
+
+    // The chip's object name ("PowerRotate"), which the play-mode tests look chips up by.
     private static string PowerName(SymbolId power) => char.ToUpperInvariant(power.Value[0]) + power.Value.Substring(1);
 
     private static void PaintTile(RectTransform parent, Tile tile, Vector2 min, Vector2 max, int quarterTurns)
@@ -265,7 +275,7 @@ internal sealed class TurnTray
         var side = Math.Min(slot.rect.width, slot.rect.height);
         if (side <= 1f)
         {
-            side = 72f;
+            side = FallbackTileUnits;
         }
 
         var block = Ui.Rect("Tile", slot);

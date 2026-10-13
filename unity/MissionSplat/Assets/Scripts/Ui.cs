@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 internal static class Ui
 {
+    // The canvas is laid out this many units wide on any screen (it matches width), so sizes in units are the same on every phone.
+    public const float ReferenceWidthUnits = 1080f;
+
     public static Font Font { get; } = LoadFont();
 
     public static Sprite Pixel { get; } = WhitePixel();
