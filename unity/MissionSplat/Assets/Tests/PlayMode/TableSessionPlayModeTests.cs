@@ -547,6 +547,20 @@ public class TableSessionPlayModeTests
     }
 
     [Test]
+    public void NewSetup_AfterAnUnshuffledGame_StartsTheNextGameShuffled()
+    {
+        BeginFinishedGame(new TableStart(2, new[] { false, false }, 0, false));
+        TableStart started = null;
+        _root.GetComponent<TableView>().Started += draft => started ??= draft;
+
+        LiveButton("NewSetup").onClick.Invoke();
+        LiveButton("Start").onClick.Invoke();
+
+        Assert.That(started, Is.Not.Null, "Start hands the draft on");
+        Assert.That(started.Shuffle, Is.True, "setup shuffles the deck even when the finished game did not");
+    }
+
+    [Test]
     public void ARenderClosesTheClaimsPanel()
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
