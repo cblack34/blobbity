@@ -63,7 +63,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     }
 
     [Test]
-    public void StackTile_OffersAnOnTopPlacement_AndTappingItCoversWithoutAddingATile()
+    public void StackTile_OffersAnOnTopPlacement_AndPlacingItCoversWithoutAddingATile()
     {
         var table = NewTable();
         table.Begin(TableStart.PassAndPlayDraft(), StackSetup());
@@ -292,7 +292,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     }
 
     [Test]
-    public void SelectingBounce_RemovesTheTappedTile_ThenAHighlightPlacesTheDrawnTile()
+    public void SelectingBounce_RemovesTheTappedTile_ThenAConfirmedHighlightPlacesTheDrawnTile()
     {
         var table = BeginHumanTable(BounceBoardSetup());
         PlaceAt(LiveButton("Highlight1_0"));
@@ -682,7 +682,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
 
     // Driven through the real input module with a virtual mouse: a drag on a highlight scrolls the board and does not place, a tap places.
     [UnityTest]
-    public IEnumerator DraggingAHighlightScrollsTheBoard_AndATapStillPlaces()
+    public IEnumerator DraggingAHighlightScrollsTheBoard_AndATapStillPreviewsAndPlaceStillPlaces()
     {
         var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();
         var table = BeginHumanTable(SetupFrom(tiles));

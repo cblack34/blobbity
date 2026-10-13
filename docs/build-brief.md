@@ -17,7 +17,7 @@ Intended users are the people at the table, including a child who can follow a s
 - The rules in [`rules.md`](rules.md): setup, orthogonal placement, three mission shapes, claim-on-your-placement, power cells, and a win at the configured claim count, which is four in the ordinary game.
 - A rules library a `dotnet test` run can execute with no Unity editor.
 - An application library with `ISession` and `IPlayer`, a `LocalSession` adapter, an `AiPlayer` adapter that does not see any other seat's secret missions, the turn driver that runs AI seats and hands the device between humans, and the named deck content.
-- A Unity player that collects setup, renders the board, the secret hand, the face-up claim row, and the legal moves the session reports, and submits a tap as an action for 2–4 seats on `LocalSession`; a tap on a legal spot only previews the drawn tile there, and Place submits the placement. It computes no legality and runs no turn loop.
+- A Unity player that collects setup, renders the board, the secret hand, the face-up claim row, and the legal moves the session reports, and submits a human's choices as actions for 2–4 seats on `LocalSession`: a tap on a legal spot only previews the drawn tile there, and Place submits the placement. It computes no legality and runs no turn loop.
 - Pass-and-play on one device, and human versus AI on one device.
 - Schematic diagrams in [`diagrams/`](diagrams/) as the visual reference. Source photographs stay out of the repo.
 
@@ -43,7 +43,7 @@ Canonical rules behavior is [`rules.md`](rules.md). The C4 ownership cut is [`ar
 
 - `Rules` owns two parts with a named seam. A stateless rules engine judges one action against the board, the drawn tile, the acting seat's hand, and the catalog: where the drawn tile may go, which board tiles a power may act on, what a use does, and which missions the placement completed. The match owns seats, hands, decks, claim rows, the current seat, and the turn phase; it accepts one action from a closed, typed set per ruleset — use rotate, use bounce, place — and returns the next match with events. The board a seat renders comes from the match.
 - `App` owns `ISession` and `IPlayer`. `LocalSession` and `AiPlayer` are adapters in `App`. `App` also owns the turn driver (which seats are automated, running them, the hand-off between humans, the render model a GUI draws) and the deck content. `IPlayer` is the action source for an automated seat.
-- The Unity player owns the setup form, the table view, and the composition root. It submits a human's tap as an action and renders what the session reports. It computes no legality, runs no turn loop, holds no deck, and does not reimplement matching.
+- The Unity player owns the setup form, the table view, and the composition root. It submits a human's confirmed choices as actions (a legal-spot tap previews; Place submits) and renders what the session reports. It computes no legality, runs no turn loop, holds no deck, and does not reimplement matching.
 - A later room service would reference the same rules library and accept an action only if that library accepts it. It is not built in this horizon.
 
 ## Research, decisions, and open gates
