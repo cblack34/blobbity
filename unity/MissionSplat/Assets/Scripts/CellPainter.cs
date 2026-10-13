@@ -10,8 +10,8 @@ internal static class CellPainter
     // A power's badge fills this much of the cell, centred.
     private const float BadgeMargin = 0.16f;
 
-    // The splat is drawn turned by angleDegrees, so neighbouring cells do not look stamped.
-    public static void Paint(RectTransform parent, Cell cell, float angleDegrees)
+    // The splat is drawn turned by angleDegrees, so neighbouring cells do not look stamped. A power's badge draws gray once its use is spent.
+    public static void Paint(RectTransform parent, Cell cell, float angleDegrees, bool spent = false)
     {
         if (cell.IsWild)
         {
@@ -31,11 +31,11 @@ internal static class CellPainter
 
         if (cell.TryGetSymbol(out var symbol))
         {
-            PaintSymbol(parent, symbol);
+            PaintSymbol(parent, symbol, spent);
         }
     }
 
-    private static void PaintSymbol(RectTransform parent, SymbolId symbol)
+    private static void PaintSymbol(RectTransform parent, SymbolId symbol, bool spent)
     {
         // A blank cell draws nothing: a pale dot reads as a hole on the white card.
         if (symbol.Value == OrdinaryCatalog.Blank.Value)
@@ -45,7 +45,7 @@ internal static class CellPainter
 
         var badge = Ui.Rect("Badge", parent);
         Ui.Anchored(badge, new Vector2(BadgeMargin, BadgeMargin), new Vector2(1f - BadgeMargin, 1f - BadgeMargin), Vector2.zero, Vector2.zero);
-        PowerBadge.Paint(badge, symbol);
+        PowerBadge.Paint(badge, symbol, spent);
     }
 
     // One splat shown through a mask over a quarter of the cell. Every quarter holds the same full-cell splat, so the four line up into one.

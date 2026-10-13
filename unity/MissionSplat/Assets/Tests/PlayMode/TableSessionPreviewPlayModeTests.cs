@@ -108,22 +108,6 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
     }
 
     [Test]
-    public void SelectingAPower_ClearsThePreview()
-    {
-        var table = BeginHumanTable(RotateSetup());
-        LiveButtons("Highlight").First().onClick.Invoke();
-
-        LiveButton("PowerRotate").onClick.Invoke();
-
-        Assert.That(LiveRect("Preview"), Is.Null);
-        Assert.That(LiveButton("Place"), Is.Null);
-
-        LiveButton("PlaceInstead").onClick.Invoke();
-        Assert.That(LiveRect("Preview"), Is.Null, "the preview does not come back");
-        Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
-    }
-
-    [Test]
     public void ThePreviewDoesNotSurviveTheHandOff_OrANewGame()
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
@@ -217,7 +201,7 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
         var corners = new Vector3[4];
         LiveRect("Preview").GetWorldCorners(corners);
         var previewBottom = corners[0].y;
-        LiveRect("PlacementStrip").GetWorldCorners(corners);
+        LiveRect("PreviewStrip").GetWorldCorners(corners);
         var stripTop = corners[1].y;
         Assert.That(previewBottom, Is.GreaterThanOrEqualTo(stripTop), "the lifted tile ends above the strip");
     }
@@ -244,9 +228,9 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
         // Renders twice across frames, so the board lays out at the phone's size.
         public IEnumerator Settle(TableSession table)
         {
-            table.SelectPower(null);
+            table.SetQuarterTurns(0);
             yield return null;
-            table.SelectPower(null);
+            table.SetQuarterTurns(0);
             yield return null;
         }
 
@@ -293,9 +277,7 @@ public class TableSessionPreviewPlayModeTests : TableSessionFixture
     {
         var view = NewViewOnly();
         var rotated = StartedTable(RotateSetup());
-        rotated.SelectPower(OrdinaryCatalog.Rotate);
-        rotated.SetQuarterTurns(2);
-        rotated.UseAt(0, 0);
+        rotated.Submit(new UseRotate(0, 0, 2));
         view.RenderNewGame(StartedTable(RotateSetup()).Snapshot);
         LiveButton("Highlight1_0").onClick.Invoke();
         Assert.That(LiveRect("Preview"), Is.Not.Null);

@@ -6,7 +6,7 @@ What it fixes as direction:
 
 - Players are splat critters with googly eyes, coloured by seat order (yellow, orange, teal, pink), never one of the four game colours. Each shows its name and four score pips that fill with that player's splat.
 - The current player's critter sits in a highlighted box, and a heading names whose turn it is, with one plain line saying what to do.
-- The board takes the middle of the screen. The turn tray at the bottom holds the drawn tile, one Spin button, the power chips with their remaining uses, and the secret missions.
+- The board takes the middle of the screen. The turn tray at the bottom holds the drawn tile, one Spin button, and the secret missions. The drawn tile's power badges grey out as their uses are spent; a power is used by tapping a ringed board tile.
 - There is no claims row; tapping a player opens their claimed missions.
 - Look: big faint splats and drips in the background, toy-like tiles with thick outlines and hard shadows, dashed "+" squares for legal placements, and a chunky, friendly typeface. The mock-up uses fonts installed on the maintainer's Mac; the shipped player bundles freely licensed fonts in the same spirit.
 
