@@ -15,7 +15,8 @@ public sealed class TableSnapshot
         int quarterTurns,
         TableStatus status,
         SymbolId? selectedPower,
-        TableNotice notice)
+        TableNotice notice,
+        IReadOnlyList<RecapItem>? recap = null)
     {
         View = view ?? throw new ArgumentNullException(nameof(view));
         SecretsVisible = secretsVisible;
@@ -27,6 +28,7 @@ public sealed class TableSnapshot
         Status = status ?? throw new ArgumentNullException(nameof(status));
         SelectedPower = selectedPower;
         Notice = notice;
+        Recap = Copied.Items(recap ?? [], nameof(recap));
         SelectedTargets = TargetsOf(LegalTargets, selectedPower);
     }
 
@@ -54,6 +56,9 @@ public sealed class TableSnapshot
 
     // What happened since the last accepted action that the seat could not have seen; None once a human seat's next action is accepted.
     public TableNotice Notice { get; }
+
+    // What the human holding the device has not yet seen, oldest first; empty when nothing is pending or nobody holds it. AcknowledgeRecap clears it.
+    public IReadOnlyList<RecapItem> Recap { get; }
 
     // The positions to highlight for SelectedPower; empty while the seat is placing.
     public IReadOnlyList<BoardPosition> SelectedTargets { get; }
