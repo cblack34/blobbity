@@ -194,7 +194,7 @@ public class TableSessionPlayModeTests
 
         var target = LiveButton("Target0_0");
         Assert.That(target.GetComponent<Image>().raycastTarget, Is.True, "a ring takes taps inside it too");
-        Assert.That(target.GetComponent<Image>().color, Is.EqualTo(SplatPalette.TargetRing));
+        Assert.That(target.transform.Find("Ring").GetComponent<Image>().color, Is.EqualTo(SplatPalette.TargetRing));
         Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
     }
 
@@ -632,6 +632,7 @@ public class TableSessionPlayModeTests
         var table = BeginHumanTable(SetupWith(new Tile(new TileId("twice"), bounce, bounce, blank, blank)));
         Assert.That(LiveButton("PowerBounce").interactable, Is.True);
         Assert.That(ChipFace("PowerBounce"), Is.EqualTo(SplatPalette.BounceBadge));
+        Assert.That(ChipGrayedOut("PowerBounce"), Is.False);
 
         // Bouncing the only tile empties the board; the second bounce cell then has no tile to act on.
         table.SelectPower(OrdinaryCatalog.Bounce);
@@ -643,11 +644,17 @@ public class TableSessionPlayModeTests
         Assert.That(table.Snapshot.SelectedPower, Is.Null);
         Assert.That(LiveButton("PowerBounce"), Is.Not.Null, "one use is still left");
         Assert.That(LiveButton("PowerBounce").interactable, Is.False);
-        Assert.That(ChipFace("PowerBounce"), Is.EqualTo(SplatPalette.Gray));
+        Assert.That(ChipGrayedOut("PowerBounce"), Is.True);
     }
 
-    // The colour of a chip's face: its power's badge colour while it can be used, gray when it cannot.
-    private Color ChipFace(string chip) => LiveButton(chip).transform.Find("Body/Face").GetComponent<Image>().color;
+    // A chip's face colour, and whether it shows as grayed out: its power's badge colour while it can be used, gray when it cannot.
+    private Color ChipFace(string chip) => Ui.ToyFace(LiveButton(chip)).GetComponent<Image>().color;
+
+    private bool ChipGrayedOut(string chip)
+    {
+        var cover = Ui.ToyFace(LiveButton(chip)).Find("Disabled");
+        return cover != null && cover.gameObject.activeSelf;
+    }
 
     private TableSession BeginLongRowTable()
     {

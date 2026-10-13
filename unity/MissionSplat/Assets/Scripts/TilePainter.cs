@@ -7,8 +7,7 @@ using UnityEngine;
 
 internal static class TilePainter
 {
-    // Fractions of the block's width: the gap between neighbouring cards, and the edge line around the face.
-    private const float CardInset = 0.04f;
+    // The edge line around the face, as a fraction of the block's width.
     private const float CardEdge = 0.035f;
 
     // The card and its cells, drawn the same way on the board and for the drawn tile. block is the tile's 2×2 cells (sizeDelta is its size),
@@ -16,10 +15,10 @@ internal static class TilePainter
     // The card is inset so neighbours show a gap; the block itself stays whole so taps in the gap still reach the highlights drawn over it.
     public static void Paint(RectTransform block, string tileId, Func<int, int, Cell> cellAt, int quarterTurns)
     {
-        CardPainter.Paint(block, Ui.Card, CardInset, CardEdge, block.sizeDelta.x);
+        CardPainter.Paint(block, Ui.Card, CardEdge, block.sizeDelta.x);
 
         // The cells fill the card's face, inside its gap and edge, so nothing a cell draws crosses the outline.
-        var margin = (CardInset * block.sizeDelta.x) + CardPainter.EdgeUnits(CardEdge, block.sizeDelta.x);
+        var margin = CardPainter.InsetUnits(block.sizeDelta.x) + CardPainter.EdgeUnits(CardEdge, block.sizeDelta.x);
         var cells = Ui.Rect("Cells", block);
         Ui.Anchored(cells, Vector2.zero, Vector2.one, new Vector2(margin, margin), new Vector2(-margin, -margin));
         var cell = (block.sizeDelta.x - (2f * margin)) / 2f;

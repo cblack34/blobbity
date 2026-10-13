@@ -143,15 +143,25 @@ internal sealed class BoardPanel
         var targetsLive = !RotateAmount.IsPending(snapshot);
         foreach (var target in snapshot.SelectedTargets)
         {
-            var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, Ui.TileRing, SplatPalette.TargetRing, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
-            button.interactable = targetsLive;
+            var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
+            PaintRing(button, SplatPalette.TargetRing, cellSize);
+            Ui.SetEnabled(button, targetsLive);
         }
 
         foreach (var highlight in snapshot.LegalPlacements)
         {
+            var button = AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, minX, minY, cellSize, () => PlacementTapped?.Invoke(highlight.TileX, highlight.TileY));
             // A stack target is a tile to cover, so it gets a ring around the tile; any other placement is an empty spot to fill.
-            var onTop = highlight.Kind == PlacementKind.OnTop;
-            AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, onTop ? Ui.TileRing : Ui.LegalSpot, onTop ? SplatPalette.StackRing : Color.white, minX, minY, cellSize, () => PlacementTapped?.Invoke(highlight.TileX, highlight.TileY));
+            if (highlight.Kind == PlacementKind.OnTop)
+            {
+                PaintRing(button, SplatPalette.StackRing, cellSize);
+            }
+            else
+            {
+                // The sprite carries its own colours, so it is drawn untinted.
+                var spot = Ui.Image("Spot", button.transform, Color.white, Ui.LegalSpot);
+                Ui.Stretch(spot.rectTransform);
+            }
         }
     }
 
@@ -179,12 +189,21 @@ internal sealed class BoardPanel
         return new Vector2(Mathf.Clamp(wanted.x, -slack.x, slack.x), Mathf.Clamp(wanted.y, -slack.y, slack.y));
     }
 
-    private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, Sprite sprite, Color tint, int minX, int minY, float cellSize, Action onTap)
+    // A tap target over a whole tile's 2 x 2 block, which is where the card's gap lets a tap through too; the caller draws into it.
+    private static Button AddTileButton(RectTransform lattice, string name, int tileX, int tileY, int minX, int minY, float cellSize, Action onTap)
     {
-        var button = Ui.Tappable(Ui.Image(name, lattice, tint, sprite));
+        var button = Ui.Tappable(Ui.Image(name, lattice, Color.clear));
         Ui.PlaceCell(button.GetComponent<RectTransform>(), tileX * 2, tileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
         button.onClick.AddListener(() => onTap());
         return button;
+    }
+
+    // A ring of fixed thickness just outside the tile's card, inside the block, so rings of neighbouring tiles stay apart.
+    private static void PaintRing(Button tile, Color tint, float cellSize)
+    {
+        var margin = Mathf.Max(0f, CardPainter.InsetUnits(2f * cellSize) - Ui.RingUnits);
+        var ring = Ui.Image("Ring", tile.transform, tint, Ui.TileRing);
+        Ui.Anchored(ring.rectTransform, Vector2.zero, Vector2.one, new Vector2(margin, margin), new Vector2(-margin, -margin));
     }
 }
 }

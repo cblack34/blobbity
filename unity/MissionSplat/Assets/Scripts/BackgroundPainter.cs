@@ -26,11 +26,12 @@ internal static class BackgroundPainter
     };
 
     // Drips hang from the top edge: where the centre sits as a fraction of the width, and how long it is in canvas units, rounded end included.
+    // They are short, so they stay above the seat bar's critters and names instead of running behind them.
     private static readonly (float X, float Length, Color Colour)[] Drips =
     {
-        (0.154f, 136f, SplatPalette.Purple),
-        (0.385f, 202f, SplatPalette.Blue),
-        (0.769f, 108f, SplatPalette.Green),
+        (0.154f, 52f, SplatPalette.Purple),
+        (0.385f, 64f, SplatPalette.Blue),
+        (0.769f, 44f, SplatPalette.Green),
     };
 
     // Paints into parent, which should be the whole screen.

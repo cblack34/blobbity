@@ -48,7 +48,7 @@ internal sealed class SeatBar
 
     private void PaintEntry(int index, int seats, float entryWidth, SeatClaims claims, bool isCurrent)
     {
-        var box = Ui.Outlined("Seat" + claims.Seat.Value, _bar, isCurrent ? SplatPalette.Ink : Color.clear, isCurrent ? Color.white : Color.clear, OutlineUnits);
+        var box = Ui.Outlined("Seat" + claims.Seat.Value, _bar, isCurrent ? SplatPalette.Ink : Color.clear, isCurrent ? SplatPalette.Paper : Color.clear, OutlineUnits);
         var button = Ui.Tappable(box);
         var centre = (index + 0.5f) / seats;
         Ui.Anchored(box.rectTransform, new Vector2(centre, 0f), new Vector2(centre, 1f), new Vector2(-entryWidth / 2f, EntryInsetUnits), new Vector2(entryWidth / 2f, -EntryInsetUnits));
@@ -84,13 +84,13 @@ internal sealed class SeatBar
         pip.anchoredPosition = new Vector2(centreX, 0f);
         if (claimed)
         {
-            CellPainter.Splat(pip, SplatPalette.CritterOf(seatIndex), Vector2.zero, Vector2.one, CellPainter.SplatAngle("pip" + position), -0.3f);
+            CellPainter.Splat(pip, SplatPalette.CritterOf(seatIndex), Vector2.zero, Vector2.one, CellPainter.SplatAngle("pip" + position), -0.1f);
             return;
         }
 
         var rim = Ui.Image("Rim", pip, SplatPalette.Ink, Ui.Circle);
         Ui.Stretch(rim.rectTransform);
-        var hollow = Ui.Image("Hollow", rim.transform, Color.white, Ui.Circle);
+        var hollow = Ui.Image("Hollow", rim.transform, SplatPalette.Paper, Ui.Circle);
         Ui.Anchored(hollow.rectTransform, new Vector2(0.14f, 0.14f), new Vector2(0.86f, 0.86f), Vector2.zero, Vector2.zero);
     }
 }

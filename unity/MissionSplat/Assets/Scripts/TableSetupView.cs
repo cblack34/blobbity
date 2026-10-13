@@ -10,12 +10,19 @@ internal sealed class TableSetupView
 {
     private const float PanelOutlineUnits = 8f;
     private const float PanelDropUnits = 14f;
-    private static readonly Vector2 PanelMin = new Vector2(0.05f, 0.2f);
-    private static readonly Vector2 PanelMax = new Vector2(0.95f, 0.8f);
+
+    // The panel's rows, top to bottom, in canvas units, so it is as tall as its seat rows need and sits in the middle of the screen.
+    private const float PaddingUnits = 40f;
+    private const float TitleUnits = 110f;
+    private const float SectionGapUnits = 30f;
+    private const float ChoiceRowUnits = 110f;
+    private const float SeatRowUnits = 120f;
+    private const float SeatRowGapUnits = 14f;
+    private const float FooterUnits = 120f;
 
     // A chosen option is yellow, an unchosen one white; Start is a different colour so it reads as the way forward.
     private static readonly Color Chosen = SplatPalette.Sunny;
-    private static readonly Color Unchosen = Color.white;
+    private static readonly Color Unchosen = SplatPalette.Paper;
 
     private readonly RectTransform _root;
     private TableStart _draft;
@@ -36,53 +43,77 @@ internal sealed class TableSetupView
     private void Rebuild()
     {
         Ui.Clear(_root);
-        // A toy card like the tiles: a hard ink shadow behind a white face in a thick ink edge.
-        var shadow = Ui.Image("PanelShadow", _root, SplatPalette.Ink, Ui.Rounded);
-        Ui.Anchored(shadow.rectTransform, PanelMin, PanelMax, new Vector2(PanelDropUnits, -PanelDropUnits), new Vector2(PanelDropUnits, -PanelDropUnits));
-        var panel = Ui.Outlined("Panel", _root, SplatPalette.Ink, Color.white, PanelOutlineUnits);
-        Ui.Anchored(panel.rectTransform, PanelMin, PanelMax, Vector2.zero, Vector2.zero);
-        var title = Ui.Label("Title", panel.transform, 80, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
-        Ui.Anchored(title.rectTransform, new Vector2(0.05f, 0.86f), new Vector2(0.95f, 0.98f), Vector2.zero, Vector2.zero);
+        var seatRowsUnits = _draft.SeatCount * (SeatRowUnits + SeatRowGapUnits);
+        var height = PaddingUnits + TitleUnits + SectionGapUnits + ChoiceRowUnits + SectionGapUnits + seatRowsUnits + SectionGapUnits + FooterUnits + PaddingUnits + PanelDropUnits;
+        var panel = Ui.Toy("Panel", _root, SplatPalette.Paper, Ui.Rounded, PanelOutlineUnits, PanelDropUnits);
+        Ui.Anchored(panel.rectTransform, new Vector2(0.05f, 0.5f), new Vector2(0.95f, 0.5f), new Vector2(0f, -height / 2f), new Vector2(0f, height / 2f));
+        var face = Ui.ToyFace(panel);
+
+        var top = PaddingUnits;
+        var title = Ui.Label("Title", face, 80, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
+        Band(title.rectTransform, 0.05f, 0.95f, top, TitleUnits);
         title.text = "Mission Splat";
-        var seats = Ui.Label("Seats", panel.transform, 40, SplatPalette.Ink, TextAnchor.MiddleLeft, FontWeight.SemiBold);
-        Ui.Anchored(seats.rectTransform, new Vector2(0.08f, 0.74f), new Vector2(0.40f, 0.84f), Vector2.zero, Vector2.zero);
+        top += TitleUnits + SectionGapUnits;
+        PaintSeatCount(face, top);
+        top += ChoiceRowUnits + SectionGapUnits;
+        for (var i = 0; i < _draft.SeatCount; i++)
+        {
+            PaintSeatRow(face, i, top);
+            top += SeatRowUnits + SeatRowGapUnits;
+        }
+
+        top += SectionGapUnits;
+        PaintFooter(face, top);
+    }
+
+    private void PaintSeatCount(Transform face, float top)
+    {
+        var seats = Ui.Label("Seats", face, 40, SplatPalette.Ink, TextAnchor.MiddleLeft, FontWeight.SemiBold);
+        Band(seats.rectTransform, 0.08f, 0.40f, top, ChoiceRowUnits);
         seats.text = "Seats";
         for (var count = 2; count <= 4; count++)
         {
             var chosen = count;
-            var button = Ui.Button("Seats" + count, panel.transform, count.ToString(), chosen == _draft.SeatCount ? Chosen : Unchosen);
+            var button = Ui.Button("Seats" + count, face, count.ToString(), chosen == _draft.SeatCount ? Chosen : Unchosen);
             var x = 0.42f + ((count - 2) * 0.16f);
-            Ui.Anchored(button.GetComponent<RectTransform>(), new Vector2(x, 0.74f), new Vector2(x + 0.14f, 0.84f), Vector2.zero, Vector2.zero);
+            Band(button.GetComponent<RectTransform>(), x, x + 0.14f, top, ChoiceRowUnits);
             button.onClick.AddListener(() => ReplaceDraft(chosen, ClampFlags(chosen), Mathf.Min(_draft.FirstSeatIndex, chosen - 1), _draft.Shuffle));
         }
+    }
 
-        for (var i = 0; i < _draft.SeatCount; i++)
-        {
-            var index = i;
-            var row = 0.58f - (i * 0.10f);
-            var critter = Ui.Rect("Critter" + i, panel.transform);
-            Ui.Anchored(critter, new Vector2(0.03f, row), new Vector2(0.115f, row + 0.09f), Vector2.zero, Vector2.zero);
-            CritterPainter.PaintFitted(critter, i);
-            var label = Ui.Label("Seat" + i, panel.transform, 36, SplatPalette.Ink, TextAnchor.MiddleLeft, FontWeight.SemiBold);
-            Ui.Anchored(label.rectTransform, new Vector2(0.125f, row), new Vector2(0.29f, row + 0.09f), Vector2.zero, Vector2.zero);
-            label.text = Seats.NameOf(_draft.SeatAt(i));
-            var human = Ui.Button("Human" + i, panel.transform, "Human", _draft.IsAi(i) ? Unchosen : Chosen);
-            Ui.Anchored(human.GetComponent<RectTransform>(), new Vector2(0.31f, row), new Vector2(0.51f, row + 0.09f), Vector2.zero, Vector2.zero);
-            human.onClick.AddListener(() => SetAi(index, false));
-            var ai = Ui.Button("Ai" + i, panel.transform, "AI", _draft.IsAi(i) ? Chosen : Unchosen);
-            Ui.Anchored(ai.GetComponent<RectTransform>(), new Vector2(0.52f, row), new Vector2(0.72f, row + 0.09f), Vector2.zero, Vector2.zero);
-            ai.onClick.AddListener(() => SetAi(index, true));
-            var first = Ui.Button("First" + i, panel.transform, "First", _draft.FirstSeatIndex == i ? Chosen : Unchosen);
-            Ui.Anchored(first.GetComponent<RectTransform>(), new Vector2(0.74f, row), new Vector2(0.92f, row + 0.09f), Vector2.zero, Vector2.zero);
-            first.onClick.AddListener(() => ReplaceDraft(_draft.SeatCount, CopyFlags(), index, _draft.Shuffle));
-        }
+    private void PaintSeatRow(Transform face, int i, float top)
+    {
+        var critter = Ui.Rect("Critter" + i, face);
+        Band(critter, 0.03f, 0.115f, top, SeatRowUnits);
+        CritterPainter.PaintFitted(critter, i);
+        var label = Ui.Label("Seat" + i, face, 36, SplatPalette.Ink, TextAnchor.MiddleLeft, FontWeight.SemiBold);
+        Band(label.rectTransform, 0.125f, 0.29f, top, SeatRowUnits);
+        label.text = Seats.NameOf(_draft.SeatAt(i));
+        var human = Ui.Button("Human" + i, face, "Human", _draft.IsAi(i) ? Unchosen : Chosen);
+        Band(human.GetComponent<RectTransform>(), 0.31f, 0.51f, top, SeatRowUnits);
+        human.onClick.AddListener(() => SetAi(i, false));
+        var ai = Ui.Button("Ai" + i, face, "AI", _draft.IsAi(i) ? Chosen : Unchosen);
+        Band(ai.GetComponent<RectTransform>(), 0.52f, 0.72f, top, SeatRowUnits);
+        ai.onClick.AddListener(() => SetAi(i, true));
+        var first = Ui.Button("First" + i, face, "First", _draft.FirstSeatIndex == i ? Chosen : Unchosen);
+        Band(first.GetComponent<RectTransform>(), 0.74f, 0.92f, top, SeatRowUnits);
+        first.onClick.AddListener(() => ReplaceDraft(_draft.SeatCount, CopyFlags(), i, _draft.Shuffle));
+    }
 
-        var shuffle = Ui.Button("Shuffle", panel.transform, _draft.Shuffle ? "Shuffle on" : "Shuffle off", _draft.Shuffle ? Chosen : Unchosen);
-        Ui.Anchored(shuffle.GetComponent<RectTransform>(), new Vector2(0.08f, 0.08f), new Vector2(0.40f, 0.18f), Vector2.zero, Vector2.zero);
+    private void PaintFooter(Transform face, float top)
+    {
+        var shuffle = Ui.Button("Shuffle", face, _draft.Shuffle ? "Shuffle on" : "Shuffle off", _draft.Shuffle ? Chosen : Unchosen);
+        Band(shuffle.GetComponent<RectTransform>(), 0.08f, 0.40f, top, FooterUnits);
         shuffle.onClick.AddListener(() => ReplaceDraft(_draft.SeatCount, CopyFlags(), _draft.FirstSeatIndex, !_draft.Shuffle));
-        var start = Ui.Button("Start", panel.transform, "Start", SplatPalette.Go);
-        Ui.Anchored(start.GetComponent<RectTransform>(), new Vector2(0.50f, 0.08f), new Vector2(0.92f, 0.18f), Vector2.zero, Vector2.zero);
+        var start = Ui.Button("Start", face, "Start", SplatPalette.Go);
+        Band(start.GetComponent<RectTransform>(), 0.50f, 0.92f, top, FooterUnits);
         start.onClick.AddListener(() => Started?.Invoke(_draft));
+    }
+
+    // A band of the panel's face: between two fractions of its width, height units tall, top units below its top edge.
+    private static void Band(RectTransform rect, float minX, float maxX, float top, float height)
+    {
+        Ui.Anchored(rect, new Vector2(minX, 1f), new Vector2(maxX, 1f), new Vector2(0f, -(top + height)), new Vector2(0f, -top));
     }
 
     private void SetAi(int index, bool ai)

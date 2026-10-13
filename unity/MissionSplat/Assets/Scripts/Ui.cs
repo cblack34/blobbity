@@ -17,11 +17,17 @@ internal static class Ui
     // The canvas is laid out this many units wide on any screen (it matches width), so sizes in units are the same on every phone.
     public const float ReferenceWidthUnits = 1080f;
 
-    // A button's rim thickness and how far its hard shadow reaches down and right, in canvas units.
-    private const float ButtonOutlineUnits = 5f;
-    private const float ButtonDropUnits = 8f;
+    // A toy box's default rim thickness and how far its hard shadow reaches down and right, in canvas units.
+    private const float ToyOutlineUnits = 5f;
+    private const float ToyDropUnits = 8f;
 
-    private static readonly Font[] Fonts = { LoadFont("Baloo2-Regular"), LoadFont("Baloo2-SemiBold"), LoadFont("Baloo2-ExtraBold") };
+    // Where a toy box's face sits under its root, and what a disabled button's cover is called.
+    private const string ToyFacePath = "Body/Face";
+    private const string DisabledName = "Disabled";
+    
+    private static readonly Font RegularFont = LoadFont("Baloo2-Regular");
+    private static readonly Font SemiBoldFont = LoadFont("Baloo2-SemiBold");
+    private static readonly Font ExtraBoldFont = LoadFont("Baloo2-ExtraBold");
 
     public static Sprite Pixel { get; } = WhitePixel();
 
@@ -41,13 +47,26 @@ internal static class Ui
     // A dashed rounded square with a faint plus, its colours baked in: a place the drawn tile may go.
     public static Sprite LegalSpot { get; } = LoadSprite("LegalSpot");
 
-    // A white rounded-square ring that hugs a tile card from outside, tinted by the caller.
+    // A white rounded-square ring that hugs a tile card from outside, tinted by the caller. Nine-sliced, so its line keeps its thickness.
     public static Sprite TileRing { get; } = LoadSprite("TileRing");
+
+    // The thickness of the ring's line in canvas units, which is its art's, because the sprite is nine-sliced at 1 pixel to 1 unit.
+    public const float RingUnits = 8f;
+
+    // The white rotate arrow, tinted by the caller: a power's mark on a badge, and the turn hint under Spin.
+    public static Sprite RotateArrow { get; } = LoadSprite("RotateArrow");
 
     // The tray's wavy top edge, white below an ink line, to stretch across the screen.
     public static Sprite TrayWave { get; } = LoadSprite("TrayWave");
 
-    public static Font FontOf(FontWeight weight) => Fonts[(int)weight];
+    public static Font FontOf(FontWeight weight) =>
+        weight switch
+        {
+            FontWeight.Regular => RegularFont,
+            FontWeight.SemiBold => SemiBoldFont,
+            FontWeight.ExtraBold => ExtraBoldFont,
+            _ => throw new System.ArgumentOutOfRangeException(nameof(weight), weight, "Unknown font weight."),
+        };
 
     public static RectTransform Rect(string name, Transform parent)
     {
@@ -82,21 +101,65 @@ internal static class Ui
         return text;
     }
 
-    // A chunky button: a hard ink shadow, an ink rim, a face in fill, and the caption in ink. Placing the returned button's
-    // RectTransform places all of it, shadow included, and the whole rect takes the tap. sprite shapes it (rounded by default).
-    public static Button Button(string name, Transform parent, string caption, Color fill, Sprite sprite = null, int fontSize = 36)
+    // A toy box: a hard ink shadow, an ink rim, and a face in fill, the same look as the tile cards. The returned root takes no taps
+    // until made tappable, and placing it places all of it, shadow included. Put content on ToyFace(root). sprite shapes it (rounded by default).
+    public static Image Toy(string name, Transform parent, Color fill, Sprite sprite = null, float outlineUnits = ToyOutlineUnits, float dropUnits = ToyDropUnits)
     {
         var shape = sprite != null ? sprite : Rounded;
-        var hit = Image(name, parent, Color.clear);
-        var button = Tappable(hit);
-        var shadow = Image("Shadow", hit.transform, SplatPalette.Ink, shape);
+        var root = Image(name, parent, Color.clear);
+        var shadow = Image("Shadow", root.transform, SplatPalette.Ink, shape);
         Stretch(shadow.rectTransform);
-        var body = Outlined("Body", hit.transform, SplatPalette.Ink, fill, ButtonOutlineUnits, shape);
-        Anchored(body.rectTransform, Vector2.zero, Vector2.one, new Vector2(0f, ButtonDropUnits), new Vector2(-ButtonDropUnits, 0f));
-        var label = Label("Label", body.transform.Find("Face"), fontSize, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
+        var body = Outlined("Body", root.transform, SplatPalette.Ink, fill, outlineUnits, shape);
+        Anchored(body.rectTransform, Vector2.zero, Vector2.one, new Vector2(0f, dropUnits), new Vector2(-dropUnits, 0f));
+        return root;
+    }
+
+    // The face of a toy box, or of a button made by Button: the place to draw its content.
+    public static RectTransform ToyFace(Component toy) => (RectTransform)toy.transform.Find(ToyFacePath);
+
+    // A chunky button: a toy box with the caption in ink on its face, and the whole rect taking the tap.
+    public static Button Button(string name, Transform parent, string caption, Color fill, Sprite sprite = null, int fontSize = 36)
+    {
+        var toy = Toy(name, parent, fill, sprite);
+        var button = Tappable(toy);
+        var label = Label("Label", ToyFace(toy), fontSize, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
         Stretch(label.rectTransform);
         label.text = caption;
         return button;
+    }
+
+    // Turns a button on or off and shows it: a gray cover goes over its look (a toy button's face, or a plain button's first child), opaque
+    // so nothing shows through it. Safe to call again with the other value.
+    public static void SetEnabled(Button button, bool enabled)
+    {
+        button.interactable = enabled;
+        var face = button.transform.Find(ToyFacePath);
+        var host = face != null ? face : button.transform;
+        var cover = host.Find(DisabledName);
+        if (cover != null)
+        {
+            cover.gameObject.SetActive(!enabled);
+            return;
+        }
+
+        if (enabled)
+        {
+            return;
+        }
+
+        if (face != null)
+        {
+            // First, so the caption and marks stay drawn over the gray.
+            var grayed = Image(DisabledName, face, SplatPalette.Gray, face.GetComponent<Image>().sprite);
+            Stretch(grayed.rectTransform);
+            grayed.transform.SetAsFirstSibling();
+        }
+        else if (button.transform.childCount > 0)
+        {
+            var copy = Object.Instantiate(button.transform.GetChild(0).gameObject, button.transform);
+            copy.name = DisabledName;
+            copy.GetComponent<Image>().color = SplatPalette.Gray;
+        }
     }
 
     // Makes an image tappable: it takes raycasts, shows no transition, and is not reachable by keyboard navigation.

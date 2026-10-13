@@ -18,12 +18,17 @@ internal static class CardPainter
     private const float ShadowRightFraction = 0.04f;
     private const float ShadowDownFraction = 0.05f;
 
+    // The gap kept round a card, as a fraction of the block's width: more than the shadow reaches (the larger fraction above),
+    // so the shadow stays inside the block and neighbours never touch it.
+    public const float InsetFraction = 0.06f;
+
     // The shadow, edge and face of a card, shared by tiles and mission cards: a white face in a thick ink edge over a hard ink shadow that
-    // reaches down and right. inset and edge are fractions of the block's width; blockWidth is the width in canvas units that block will have,
+    // reaches down and right. edge is a fraction of the block's width; blockWidth is the width in canvas units that block will have,
     // which sets the edge and shadow thickness in units. The same fraction of the height is as many pixels on a portrait sprite,
-    // so the border stays even whatever the sprite's shape. inset should be at least the shadow's reach, so the shadow stays inside the block.
-    public static void Paint(RectTransform block, Sprite sprite, float inset, float edge, float blockWidth)
+    // so the border stays even whatever the sprite's shape.
+    public static void Paint(RectTransform block, Sprite sprite, float edge, float blockWidth)
     {
+        var inset = InsetFraction;
         var widthPerHeight = sprite.rect.width / sprite.rect.height;
         var edgeUnits = EdgeUnits(edge, blockWidth);
         var reachRight = Mathf.Clamp(ShadowRightFraction * blockWidth, MinimumShadowUnits, MaximumShadowRightUnits);
@@ -35,6 +40,9 @@ internal static class CardPainter
 
     // The edge line's thickness in canvas units: edge is a fraction of the block's width, kept between the minimum and the maximum.
     public static float EdgeUnits(float edge, float blockWidth) => Mathf.Clamp(edge * blockWidth, MinimumEdgeUnits, MaximumEdgeUnits);
+
+    // The gap kept round a card, in canvas units.
+    public static float InsetUnits(float blockWidth) => InsetFraction * blockWidth;
 
     // One layer of the card: the block inset on every side, moved by shift and then shrunk by shrink units on every side.
     private static void PaintLayer(RectTransform block, string name, Color color, Sprite sprite, float inset, float widthPerHeight, Vector2 shift, Vector2 shrink)
