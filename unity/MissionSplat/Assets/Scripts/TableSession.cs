@@ -11,6 +11,7 @@ using UnityEngine;
 public sealed class TableSession : MonoBehaviour
 {
     private Table _table;
+    private TableStart _start;
     private TableView _view;
 
     public bool IsStarted => _table != null && _table.IsStarted;
@@ -31,6 +32,8 @@ public sealed class TableSession : MonoBehaviour
         _view.PowerSelected += SelectPower;
         _view.TargetTapped += UseAt;
         _view.Started += Begin;
+        _view.PlayAgainRequested += PlayAgain;
+        _view.NewSetupRequested += NewSetup;
     }
 
     // The shuffle seed is drawn here, at the edge, so the App table stays deterministic.
@@ -41,10 +44,30 @@ public sealed class TableSession : MonoBehaviour
             throw new ArgumentNullException(nameof(start));
         }
 
-        Begin(new Table(new LocalSession(), start, start.Shuffle ? new System.Random().Next() : (int?)null));
+        Begin(start, new Table(new LocalSession(), start, start.Shuffle ? new System.Random().Next() : (int?)null));
     }
 
-    public void Begin(TableStart start, GameSetup setup) => Begin(new Table(new LocalSession(), start, setup));
+    public void Begin(TableStart start, GameSetup setup) => Begin(start, new Table(new LocalSession(), start, setup));
+
+    // Same seats and choices, the first seat moved on. Every game started from setup is shuffled, so each one is a fresh deal.
+    public void PlayAgain()
+    {
+        if (_start is null)
+        {
+            return;
+        }
+
+        Begin(new TableStart(_start.SeatCount, _start.AiSeats, (_start.FirstSeatIndex + 1) % _start.SeatCount, _start.Shuffle));
+    }
+
+    // Setup comes back filled with the finished game's choices.
+    public void NewSetup()
+    {
+        if (_start is not null)
+        {
+            _view.ShowSetup(_start);
+        }
+    }
 
     public void Tap(int tileX, int tileY) => Forward(() => _table.Place(tileX, tileY));
 
@@ -58,11 +81,12 @@ public sealed class TableSession : MonoBehaviour
 
     public void SetQuarterTurns(int quarterTurns) => Forward(() => _table.SetQuarterTurns(quarterTurns));
 
-    private void Begin(Table table)
+    private void Begin(TableStart start, Table table)
     {
         table.Start();
         _table = table;
-        _view.Render(_table.Snapshot);
+        _start = start;
+        _view.RenderNewGame(_table.Snapshot);
     }
 
     private void Forward(Action act)

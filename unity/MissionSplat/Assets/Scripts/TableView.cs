@@ -30,6 +30,8 @@ public sealed class TableView : MonoBehaviour
     public event Action<SymbolId?> PowerSelected;
     public event Action<int, int> TargetTapped;
     public event Action<TableStart> Started;
+    public event Action PlayAgainRequested;
+    public event Action NewSetupRequested;
 
     private void Awake()
     {
@@ -63,10 +65,16 @@ public sealed class TableView : MonoBehaviour
     public void ShowSetup(TableStart draft)
     {
         _rendered = null;
-        _playView.ForgetScroll();
         _play.gameObject.SetActive(false);
         _setup.gameObject.SetActive(true);
         _setupView.Show(draft);
+    }
+
+    // A new game starts with its board centred, wherever the last one was scrolled.
+    public void RenderNewGame(TableSnapshot snapshot)
+    {
+        _playView.ForgetScroll();
+        Render(snapshot);
     }
 
     public void Render(TableSnapshot snapshot)
@@ -108,6 +116,8 @@ public sealed class TableView : MonoBehaviour
         _playView.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
         _playView.PowerSelected += power => PowerSelected?.Invoke(power);
         _playView.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);
+        _playView.PlayAgainRequested += () => PlayAgainRequested?.Invoke();
+        _playView.NewSetupRequested += () => NewSetupRequested?.Invoke();
         _setupView.Started += draft => Started?.Invoke(draft);
         _play.gameObject.SetActive(false);
     }

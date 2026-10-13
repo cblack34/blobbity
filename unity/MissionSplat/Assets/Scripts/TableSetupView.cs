@@ -36,8 +36,8 @@ internal sealed class TableSetupView
 
     public void Show(TableStart draft)
     {
-        _draft = draft;
-        Rebuild();
+        // The deck is always shuffled for a player, so a draft that was not is shown, and started, as shuffled.
+        ReplaceDraft(draft.SeatCount, CopyFlags(draft), draft.FirstSeatIndex);
     }
 
     private void Rebuild()
@@ -77,7 +77,7 @@ internal sealed class TableSetupView
             var button = Ui.Button("Seats" + count, face, count.ToString(), chosen == _draft.SeatCount ? Chosen : Unchosen);
             var x = 0.42f + ((count - 2) * 0.16f);
             Band(button.GetComponent<RectTransform>(), x, x + 0.14f, top, ChoiceRowUnits);
-            button.onClick.AddListener(() => ReplaceDraft(chosen, ClampFlags(chosen), Mathf.Min(_draft.FirstSeatIndex, chosen - 1), _draft.Shuffle));
+            button.onClick.AddListener(() => ReplaceDraft(chosen, ClampFlags(chosen), Mathf.Min(_draft.FirstSeatIndex, chosen - 1)));
         }
     }
 
@@ -97,16 +97,13 @@ internal sealed class TableSetupView
         ai.onClick.AddListener(() => SetAi(i, true));
         var first = Ui.Button("First" + i, face, "First", _draft.FirstSeatIndex == i ? Chosen : Unchosen);
         Band(first.GetComponent<RectTransform>(), 0.74f, 0.92f, top, SeatRowUnits);
-        first.onClick.AddListener(() => ReplaceDraft(_draft.SeatCount, CopyFlags(), i, _draft.Shuffle));
+        first.onClick.AddListener(() => ReplaceDraft(_draft.SeatCount, CopyFlags(_draft), i));
     }
 
     private void PaintFooter(Transform face, float top)
     {
-        var shuffle = Ui.Button("Shuffle", face, _draft.Shuffle ? "Shuffle on" : "Shuffle off", _draft.Shuffle ? Chosen : Unchosen);
-        Band(shuffle.GetComponent<RectTransform>(), 0.08f, 0.40f, top, FooterUnits);
-        shuffle.onClick.AddListener(() => ReplaceDraft(_draft.SeatCount, CopyFlags(), _draft.FirstSeatIndex, !_draft.Shuffle));
         var start = Ui.Button("Start", face, "Start", SplatPalette.Go);
-        Band(start.GetComponent<RectTransform>(), 0.50f, 0.92f, top, FooterUnits);
+        Band(start.GetComponent<RectTransform>(), 0.08f, 0.92f, top, FooterUnits);
         start.onClick.AddListener(() => Started?.Invoke(_draft));
     }
 
@@ -118,23 +115,23 @@ internal sealed class TableSetupView
 
     private void SetAi(int index, bool ai)
     {
-        var flags = CopyFlags();
+        var flags = CopyFlags(_draft);
         flags[index] = ai;
-        ReplaceDraft(_draft.SeatCount, flags, _draft.FirstSeatIndex, _draft.Shuffle);
+        ReplaceDraft(_draft.SeatCount, flags, _draft.FirstSeatIndex);
     }
 
-    private void ReplaceDraft(int seatCount, bool[] flags, int first, bool shuffle)
+    private void ReplaceDraft(int seatCount, bool[] flags, int first)
     {
-        _draft = new TableStart(seatCount, flags, first, shuffle);
+        _draft = new TableStart(seatCount, flags, first, shuffle: true);
         Rebuild();
     }
 
-    private bool[] CopyFlags()
+    private static bool[] CopyFlags(TableStart draft)
     {
-        var flags = new bool[_draft.SeatCount];
+        var flags = new bool[draft.SeatCount];
         for (var i = 0; i < flags.Length; i++)
         {
-            flags[i] = _draft.IsAi(i);
+            flags[i] = draft.IsAi(i);
         }
 
         return flags;

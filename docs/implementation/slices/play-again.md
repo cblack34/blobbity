@@ -9,7 +9,7 @@
 ## Outcome
 
 When a seat wins, the turn tray shows the winner, a large **Play again** button, and a smaller **New setup** button.
-- **Play again** starts a new game at once with the same seat count and the same human/AI choices. The first player moves on to the next seat, wrapping around. The setup's shuffle choice is kept: with shuffle on the new game is a fresh deal, and with shuffle off it uses the same deck order, as setup asked.
+- **Play again** starts a new game at once with the same seat count and the same human/AI choices. The first player moves on to the next seat, wrapping around. Every game a player starts is shuffled, so it is a fresh deal (see the amendment below).
 - **New setup** returns to the setup screen, pre-filled with the finished game's choices.
 - The board's scroll position resets for the new game.
 
@@ -82,7 +82,7 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 
 ## Amendments
 
-None.
+- **2026-10-13, by the maintainer:** the setup screen loses its Shuffle toggle, and every game a player starts is shuffled. Play again is therefore always a fresh deal. The App's `TableStart` keeps its shuffle option, because tests and seeded captures rely on fixed deck orders.
 
 ## Delivery record
 

@@ -33,6 +33,8 @@ internal sealed class TablePlayView
     public event Action<int> QuarterTurnsSelected;
     public event Action<SymbolId?> PowerSelected;
     public event Action<int, int> TargetTapped;
+    public event Action PlayAgainRequested;
+    public event Action NewSetupRequested;
 
     public TablePlayView(RectTransform play)
     {
@@ -61,6 +63,8 @@ internal sealed class TablePlayView
         _tray.Confirmed += () => Confirmed?.Invoke();
         _tray.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
         _tray.PowerSelected += power => PowerSelected?.Invoke(power);
+        _tray.PlayAgainRequested += () => PlayAgainRequested?.Invoke();
+        _tray.NewSetupRequested += () => NewSetupRequested?.Invoke();
 
         // Last, so it draws over everything else.
         _claimsPanel = new ClaimsPanel(play);
