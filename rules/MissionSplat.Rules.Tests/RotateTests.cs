@@ -481,6 +481,38 @@ public class RotateTests
         Assert.That(afterSecond.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
     }
 
+    // The maintainer's ruling: a turn of 1 to 3 quarters writes all four cells, even when no colour moves.
+    [Test]
+    public void ARotateOfASingleColourTile_WritesItsFourCellsUnchanged_AndStillClaimsTheLine()
+    {
+        var game = RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            RedRowThenSpares(),
+            [
+                Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
+                Cards.BlankTile("pad"),
+                Cards.Solid("east", Cards.Red),
+                Cards.Tile("spinner", Rotate, Cards.Blank, Cards.Blank, Cards.Blank),
+            ]);
+        var afterPad = See.Game(RepresentativeDeck.Play(game, 0, -1));
+        var ready = See.Game(RepresentativeDeck.Play(afterPad, 1, 0));
+        Assert.That(ready.Claims(Cards.Seat("a")), Is.Empty, "the row is on the board, but another seat wrote it");
+        var cells = new[] { ready.CellAt(2, 0), ready.CellAt(3, 0), ready.CellAt(2, 1), ready.CellAt(3, 1) };
+
+        var rotated = RepresentativeDeck.Rotate(ready, 1, 0, 1);
+        var next = See.Game(rotated);
+
+        Assert.That(
+            new[] { next.CellAt(2, 0), next.CellAt(3, 0), next.CellAt(2, 1), next.CellAt(3, 1) },
+            Is.EqualTo(cells),
+            "no colour moved");
+        Assert.That(
+            rotated.Events.OfType<MissionClaimed>().Select(e => e.Mission.Value),
+            Is.EqualTo(new[] { "red-row" }));
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
+    }
+
     [Test]
     public void ARotateThatCompletesAnotherSeatsMission_DoesNotClaimItForThem()
     {
