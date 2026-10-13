@@ -381,6 +381,7 @@ public class RotateTests
             }));
         Assert.That(won.HasEnded, Is.True);
         Assert.That(won.PendingMatchTile, Is.Null);
+        Assert.That(won.CurrentSeat, Is.EqualTo(Cards.Seat("a")), "a rotate win leaves the turn with the acting seat");
         Expect.Rejected(won, RepresentativeDeck.Try(won, new Place(1, 1, 0)), RejectionReason.GameOver);
         Expect.Rejected(won, RepresentativeDeck.Try(won, new UseRotate(0, 0, 1)), RejectionReason.GameOver);
         Assert.That(won.TileCount, Is.EqualTo(3), "the drawn tile was never placed");
@@ -403,6 +404,81 @@ public class RotateTests
 
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row-1" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row-2", "repl" }));
+    }
+
+    [Test]
+    public void ARotateThatWouldClaimWithNoReplacementLeft_Throws_AndLeavesTheMatchAndTheChargeUntouched()
+    {
+        var game = ReadyToRotateEast(
+        [
+            Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Purple("a2"),
+            Cards.Purple("b1"),
+            Cards.Purple("b2"),
+        ]);
+        Assert.That(game.MissionDeckRemaining, Is.EqualTo(0));
+        var cells = new[] { game.CellAt(2, 0), game.CellAt(3, 0), game.CellAt(2, 1), game.CellAt(3, 1) };
+
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            Assert.That(
+                () => { RepresentativeDeck.Try(game, new UseRotate(1, 0, 1)); },
+                Throws.TypeOf<UnresolvedRulingException>());
+        }
+
+        Assert.That(
+            new[] { game.CellAt(2, 0), game.CellAt(3, 0), game.CellAt(2, 1), game.CellAt(3, 1) },
+            Is.EqualTo(cells));
+        Assert.That(See.Ids(game.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "a2" }));
+        Assert.That(See.Ids(game.Hand(Cards.Seat("b"))), Is.EqualTo(new[] { "b1", "b2" }));
+        Assert.That(game.Claims(Cards.Seat("a")), Is.Empty);
+        Assert.That(game.Claims(Cards.Seat("b")), Is.Empty);
+        Assert.That(game.MissionDeckRemaining, Is.EqualTo(0));
+        Assert.That(game.MatchDeckRemaining, Is.EqualTo(1));
+        Assert.That(game.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+        Assert.That(game.RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(1), "the charge is still unspent");
+    }
+
+    // Wild cells let one set of four serve a red row and a blue row alike, so two rotates of the same tile each
+    // complete the identical set; each resolution is judged alone, so each claims one of the two missions.
+    [Test]
+    public void TheSameFourCells_CompleteOneMissionOnARotate_AndAnotherOnALaterRotateThatTurn()
+    {
+        var game = RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            [
+                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("blue-row", MissionPattern.Row, OrdinaryCatalog.Blue),
+                Cards.Purple("b1"),
+                Cards.Purple("b2"),
+                Cards.Purple("repl-1"),
+                Cards.Purple("repl-2"),
+                Cards.Purple("spare"),
+            ],
+            [
+                Cards.Solid("start", Cards.Wild),
+                Cards.BlankTile("pad"),
+                Cards.Tile("east", Cards.Wild, Cards.Wild, Cards.Blank, Cards.Wild),
+                Cards.Tile("spinner", Rotate, Rotate, Cards.Blank, Cards.Blank),
+            ]);
+        var afterPad = See.Game(RepresentativeDeck.Play(game, 0, -1));
+        var ready = See.Game(RepresentativeDeck.Play(afterPad, 1, 0));
+        Assert.That(ready.Claims(Cards.Seat("a")), Is.Empty);
+
+        var first = RepresentativeDeck.Rotate(ready, 1, 0, 1);
+        var afterFirst = See.Game(first);
+        var second = RepresentativeDeck.Rotate(afterFirst, 1, 0, 3);
+        var afterSecond = See.Game(second);
+
+        Assert.That(
+            first.Events.OfType<MissionClaimed>().Select(e => e.Mission.Value),
+            Is.EqualTo(new[] { "red-row" }));
+        Assert.That(
+            second.Events.OfType<MissionClaimed>().Select(e => e.Mission.Value),
+            Is.EqualTo(new[] { "blue-row" }));
+        Assert.That(See.Ids(afterSecond.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
+        Assert.That(afterSecond.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
     }
 
     [Test]

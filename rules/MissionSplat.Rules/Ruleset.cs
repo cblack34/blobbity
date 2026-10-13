@@ -189,19 +189,6 @@ internal sealed class Ruleset
     public Grid Rotate(Grid grid, UseRotate use) =>
         grid.TurnClockwise(use.TileX, use.TileY, use.QuarterTurnsClockwise);
 
-    // The four cells a tile shows at its position, as a rotate wrote them.
-    public IReadOnlyList<(int X, int Y, Cell Value)> CellsOf(Grid grid, int tileX, int tileY)
-    {
-        var cells = new (int X, int Y, Cell Value)[4];
-        for (var i = 0; i < cells.Length; i++)
-        {
-            var (x, y) = ((tileX * 2) + (i % 2), (tileY * 2) + (i / 2));
-            cells[i] = (x, y, grid.At(x, y) ?? throw new InvalidOperationException("A board tile is missing one of its cells."));
-        }
-
-        return cells;
-    }
-
     private Rejection? BounceRefusal(Grid grid, Tile drawn, SpentUses spent, int tileX, int tileY)
     {
         if (Remaining(drawn, OrdinaryCatalog.Bounce, spent) == 0)

@@ -2,7 +2,7 @@
 
 This file is the behavioral contract for Mission Splat. Schematic drawings in [`diagrams/`](diagrams/) illustrate it. They are not a second source of truth. Source photographs of the physical game are intentionally absent.
 
-Names below are original. They describe the same structure as the photographed instructions: secret mission cards, square match tiles, orthogonal placement, and a claim that only the placing seat may take.
+Names below are original. They describe the same structure as the photographed instructions: secret mission cards, square match tiles, orthogonal placement, and a claim that only the seat that wrote the completing cells, by placing or rotating, may take.
 
 ## Pieces
 
@@ -27,9 +27,9 @@ A game has two, three, or four seats. Who is first: the physical rule is the you
 ## Turn
 
 1. The current seat draws the top match tile. It stays in hand until step 3 places it.
-2. If the drawn tile shows rotate or bounce, the seat may use each such cell once, before placing, under the power rules below. A tile showing two different powers is an open question, listed below, that this step does not decide. A use acts on a tile already on the board; the drawn tile is in hand and is never a target. Uses are chosen one at a time, and each is applied before the next is chosen.
+2. If the drawn tile shows rotate or bounce, the seat may use each such cell once, before placing, under the power rules below. A tile showing two different powers is an open question, listed below, that this step does not decide. A use acts on a tile already on the board; the drawn tile is in hand and is never a target. Uses are chosen one at a time, and each is applied before the next is chosen. A rotate resolves claims at once, as under Claim.
 3. The seat places the drawn tile, choosing a quarter-turn orientation as it is set down. Quarter-turns are clockwise. That choice is part of placement, not the rotate power. Ordinary placement must share at least one full side with a tile already on the board. Corner-only contact is illegal. See [`diagrams/placement.svg`](diagrams/placement.svg). If the drawn tile shows stack, the seat may instead place it on top of a tile already on the board. Stack is this placement, not a separate step. If the board is empty, the drawn tile is placed at the origin.
-4. Resolve claims. Then the next seat plays.
+4. Resolve the placement's claims. Then the next seat plays. A rotate win ends the game with the turn still on the acting seat.
 
 When a placement leaves the draw deck empty and the game is not won (or setup supplies no tile beyond the start tile), the board is reshuffled before the next seat draws. Every tile on the board, buried ones included, is gathered and shuffled into a new draw deck. The top tile is placed at the origin as a new start tile: that is not a placement, and it claims nothing. Claims, hands, the mission deck, and turn order are unchanged, and the next seat draws as usual, except that when the board and draw deck together hold only one tile (a one-tile game), a reshuffle cannot produce a tile to draw and play cannot continue. Until the reshuffle is played the match accepts nothing else. The library does not shuffle: it takes the new order from outside, as it takes the decks at setup.
 

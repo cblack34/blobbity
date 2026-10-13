@@ -189,6 +189,7 @@ public sealed class Game
         IReadOnlyList<(int X, int Y, Cell Value)> located,
         TileId? covered)
     {
+        var resolution = ResolveClaims(nextGrid, located);
         var events = new List<GameEvent>
         {
             new TilePlaced(
@@ -199,31 +200,23 @@ public sealed class Game
                 place.QuarterTurnsClockwise,
                 covered),
         };
-        var (seat, missionDeck, won) = ResolveClaims(nextGrid, located, events);
+        AddClaimEvents(events, resolution);
 
-        var seats = (SeatSnapshot[])_seats.Clone();
-        seats[_currentIndex] = seat;
-        var next = new Game(
-            seats,
-            (_currentIndex + 1) % seats.Length,
-            missionDeck,
+        var next = Next(
+            resolution.ActingSeat,
+            (_currentIndex + 1) % _seats.Length,
+            resolution.MissionDeck,
             _matchDeck[1..],
             nextGrid,
-            _ruleset,
-            ClaimsRequiredToWin,
             default,
-            won);
-
+            resolution.Won);
         return CommandResult.Accept(next, events);
     }
 
     // The one claim pass, shared by a placement and a rotate: the acting seat claims each mission its hand completes
-    // through the cells just written, draws a replacement per claim, and wins on reaching the claim count. It appends
-    // MissionClaimed (and GameWon) to the events and returns the seat and mission deck after the pass.
-    private (SeatSnapshot Seat, Mission[] MissionDeck, bool Won) ResolveClaims(
-        Grid grid,
-        IReadOnlyList<(int X, int Y, Cell Value)> written,
-        List<GameEvent> events)
+    // through the cells just written, draws a replacement per claim, and wins on reaching the claim count. It changes
+    // nothing itself; the caller applies the resolution and appends its events.
+    private ClaimResolution ResolveClaims(Grid grid, IReadOnlyList<(int X, int Y, Cell Value)> written)
     {
         var acting = _seats[_currentIndex];
         var completed = _ruleset.CompletedMissions(grid, written, acting.Hand);
@@ -243,16 +236,50 @@ public sealed class Game
             missionDeck.RemoveAt(0);
             hand.Add(replacement);
             claims.Add(mission);
-            events.Add(new MissionClaimed(acting.Id, mission.Id));
         }
 
-        var won = claims.Count >= ClaimsRequiredToWin;
-        if (won)
+        return new ClaimResolution(
+            completed,
+            new SeatSnapshot(acting.Id, hand.ToArray(), claims.ToArray()),
+            missionDeck.ToArray(),
+            claims.Count >= ClaimsRequiredToWin);
+    }
+
+    private static void AddClaimEvents(List<GameEvent> events, ClaimResolution resolution)
+    {
+        foreach (var mission in resolution.Claimed)
         {
-            events.Add(new GameWon(acting.Id, claims.Count));
+            events.Add(new MissionClaimed(resolution.ActingSeat.Id, mission.Id));
         }
 
-        return (new SeatSnapshot(acting.Id, hand.ToArray(), claims.ToArray()), missionDeck.ToArray(), won);
+        if (resolution.Won)
+        {
+            events.Add(new GameWon(resolution.ActingSeat.Id, resolution.ActingSeat.Claims.Length));
+        }
+    }
+
+    // The next match: the acting seat replaced, every other seat shared, the board and decks as given.
+    private Game Next(
+        SeatSnapshot actingSeat,
+        int currentIndex,
+        Mission[] missionDeck,
+        Tile[] matchDeck,
+        Grid grid,
+        SpentUses spent,
+        bool hasEnded)
+    {
+        var seats = (SeatSnapshot[])_seats.Clone();
+        seats[_currentIndex] = actingSeat;
+        return new Game(
+            seats,
+            currentIndex,
+            missionDeck,
+            matchDeck,
+            grid,
+            _ruleset,
+            ClaimsRequiredToWin,
+            spent,
+            hasEnded);
     }
 
     private CommandResult ApplyRotate(UseRotate rotate)
@@ -279,24 +306,21 @@ public sealed class Game
 
         // A rotate writes its tile's four cells, so they can claim at once. It does not end the turn: the seat and
         // the drawn tile stay, and a win ends the game before that tile is placed.
+        var resolution = ResolveClaims(grid, grid.CellsOfTile(rotate.TileX, rotate.TileY));
         var events = new List<GameEvent>
         {
             new TileRotated(CurrentSeat, rotate.TileX, rotate.TileY, rotate.QuarterTurnsClockwise),
         };
-        var (seat, missionDeck, won) = ResolveClaims(grid, _ruleset.CellsOf(grid, rotate.TileX, rotate.TileY), events);
+        AddClaimEvents(events, resolution);
 
-        var seats = (SeatSnapshot[])_seats.Clone();
-        seats[_currentIndex] = seat;
-        var next = new Game(
-            seats,
+        var next = Next(
+            resolution.ActingSeat,
             _currentIndex,
-            missionDeck,
+            resolution.MissionDeck,
             _matchDeck,
             grid,
-            _ruleset,
-            ClaimsRequiredToWin,
             _spent.WithUse(OrdinaryCatalog.Rotate),
-            won);
+            resolution.Won);
         return CommandResult.Accept(next, events);
     }
 
@@ -321,7 +345,7 @@ public sealed class Game
         Array.Copy(_matchDeck, matchDeck, _matchDeck.Length);
         matchDeck[^1] = removed;
 
-        var next = AfterPower(grid, matchDeck, _spent.WithUse(OrdinaryCatalog.Bounce));
+        var next = Next(_seats[_currentIndex], _currentIndex, _missionDeck, matchDeck, grid, _spent.WithUse(OrdinaryCatalog.Bounce), _hasEnded);
         return CommandResult.Accept(
             next,
             [new TileBounced(CurrentSeat, bounce.TileX, bounce.TileY, removed.Id, revealed)]);
@@ -419,19 +443,6 @@ public sealed class Game
         return ids;
     }
 
-    // A power use keeps the same seat and the same drawn tile; only the board, the charge, and a bounced tile move.
-    private Game AfterPower(Grid grid, Tile[] matchDeck, SpentUses spent) =>
-        new(
-            _seats,
-            _currentIndex,
-            _missionDeck,
-            matchDeck,
-            grid,
-            _ruleset,
-            ClaimsRequiredToWin,
-            spent,
-            _hasEnded);
-
     private CommandResult Reject(RejectionReason reason, string message) =>
         CommandResult.Reject(this, new Rejection(reason, message));
 
@@ -508,6 +519,12 @@ public sealed class Game
 
         throw new InvalidOperationException("The first seat was validated and then not found.");
     }
+
+    private sealed record ClaimResolution(
+        IReadOnlyList<Mission> Claimed,
+        SeatSnapshot ActingSeat,
+        Mission[] MissionDeck,
+        bool Won);
 
     private sealed class SeatSnapshot
     {
