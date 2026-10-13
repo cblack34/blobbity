@@ -12,6 +12,9 @@ internal sealed class RecapStep
         Apply = apply;
     }
 
+    // Nothing drawn, for the time an item would take.
+    public static RecapStep Idle(float seconds) => new RecapStep(seconds, _ => { });
+
     public float Seconds { get; }
 
     public Action<float> Apply { get; }

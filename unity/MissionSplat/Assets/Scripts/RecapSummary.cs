@@ -8,6 +8,18 @@ using MissionSplat.Rules;
 // The one line that stays after a recap: what it showed, in plain words, one sentence per run of items by the same seat.
 internal static class RecapSummary
 {
+    // What an item shows, for the heading while it plays.
+    public static string Caption(RecapItem item) => item switch
+    {
+        RecapPlaced => Seats.NameOf(item.Seat) + " places a tile",
+        RecapRotated => Seats.NameOf(item.Seat) + " rotates a tile",
+        RecapBounced => Seats.NameOf(item.Seat) + " bounces a tile",
+        RecapClaimed => Seats.NameOf(item.Seat) + " claims!",
+        RecapWon => Seats.NameOf(item.Seat) + " wins!",
+        RecapReshuffled => "Board reshuffled",
+        _ => throw new System.ArgumentException("Unknown recap item " + item.GetType().Name + ".", nameof(item)),
+    };
+
     // Null when there was nothing to show.
     public static string Of(IReadOnlyList<RecapItem> items)
     {
@@ -17,33 +29,52 @@ internal static class RecapSummary
         }
 
         var sentences = new List<string>();
-        var i = 0;
-        while (i < items.Count)
+        var run = new List<RecapItem>();
+        foreach (var item in items)
         {
-            var seat = items[i].Seat;
-            var deeds = new List<string>();
-            while (i < items.Count && items[i].Seat.Equals(seat))
+            if (run.Count > 0 && !run[0].Seat.Equals(item.Seat))
             {
-                deeds.Add(items[i] is RecapClaimed ? ClaimRun(items, seat, ref i) : Deed(items[i++]));
+                sentences.Add(Sentence(run));
+                run.Clear();
             }
 
-            sentences.Add(Seats.NameOf(seat) + " " + Joined(deeds) + ".");
+            run.Add(item);
         }
 
+        sentences.Add(Sentence(run));
         return string.Join(" ", sentences);
     }
 
-    // A run of claims by one seat reads as one deed: "claimed a row and an L". Moves i past the run.
-    private static string ClaimRun(IReadOnlyList<RecapItem> items, SeatId seat, ref int i)
+    private static string Sentence(List<RecapItem> run) => Seats.NameOf(run[0].Seat) + " " + Joined(DeedsOf(run)) + ".";
+
+    // A run of claims reads as one deed: "claimed a row and an L".
+    private static List<string> DeedsOf(List<RecapItem> run)
     {
+        var deeds = new List<string>();
         var shapes = new List<string>();
-        while (i < items.Count && items[i].Seat.Equals(seat) && items[i] is RecapClaimed claimed)
+        foreach (var item in run)
         {
-            shapes.Add(Shape(claimed.Mission.Pattern));
-            i++;
+            if (item is RecapClaimed claimed)
+            {
+                shapes.Add(Shape(claimed.Mission.Pattern));
+                continue;
+            }
+
+            AddClaims(deeds, shapes);
+            deeds.Add(Deed(item));
         }
 
-        return "claimed " + Joined(shapes);
+        AddClaims(deeds, shapes);
+        return deeds;
+    }
+
+    private static void AddClaims(List<string> deeds, List<string> shapes)
+    {
+        if (shapes.Count > 0)
+        {
+            deeds.Add("claimed " + Joined(shapes));
+            shapes.Clear();
+        }
     }
 
     // Claims are folded into their run, so only the other kinds come here.
@@ -65,10 +96,17 @@ internal static class RecapSummary
         _ => throw new System.ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown mission pattern."),
     };
 
-    // "a", "a and b", "a, b and c".
-    private static string Joined(List<string> deeds) =>
-        deeds.Count == 1
-            ? deeds[0]
-            : string.Join(", ", deeds.GetRange(0, deeds.Count - 1)) + " and " + deeds[deeds.Count - 1];
+    // "a", "a and b", "a, b and c"; commas only when a part already holds an "and", so no sentence says "and" twice.
+    private static string Joined(List<string> parts)
+    {
+        if (parts.Count == 1)
+        {
+            return parts[0];
+        }
+
+        var last = parts[parts.Count - 1];
+        var glue = parts.Exists(part => part.Contains(" and ")) ? ", " : " and ";
+        return string.Join(", ", parts.GetRange(0, parts.Count - 1)) + glue + last;
+    }
 }
 }

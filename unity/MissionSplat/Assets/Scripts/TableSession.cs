@@ -98,10 +98,16 @@ public sealed class TableSession : MonoBehaviour
         _view.RenderNewGame(_table.Snapshot);
     }
 
+    private bool IsBlocked => !IsStarted || _view.Recap.IsPlaying;
+
     // The recap's line stays until the next thing the player does that moves the game on; choosing a power or a turn amount keeps it.
     private void Commit(Action act)
     {
-        _summary = null;
+        if (!IsBlocked)
+        {
+            _summary = null;
+        }
+
         Forward(act);
     }
 
@@ -112,9 +118,10 @@ public sealed class TableSession : MonoBehaviour
         Forward(() => _table.AcknowledgeRecap());
     }
 
+    // Input while a recap plays is dropped here too, not only by the view's skip layer, so the table cannot move under the recap.
     private void Forward(Action act)
     {
-        if (!IsStarted)
+        if (IsBlocked)
         {
             return;
         }

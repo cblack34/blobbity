@@ -2,8 +2,6 @@ namespace MissionSplat.Player
 {
 
 using System;
-using System.Collections.Generic;
-using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
 using UnityEngine.UI;
@@ -62,47 +60,27 @@ internal sealed class RecapStage
     }
 
     // A block one tile wide on the board layer, centred on where the board draws the tile at (tileX, tileY); null when the board draws nothing.
+    // The board scrolls first if the tile is out of view, so the animation is seen.
     public RectTransform TileBlock(string name, int tileX, int tileY)
     {
+        Canvas.ForceUpdateCanvases();
+        _board.RevealTile(tileX, tileY);
         Canvas.ForceUpdateCanvases();
         if (_board.TileSlot(tileX, tileY) is not { } slot)
         {
             return null;
         }
 
-        var block = Ui.Rect(name, _boardLayer);
-        block.anchorMin = new Vector2(0.5f, 0.5f);
-        block.anchorMax = new Vector2(0.5f, 0.5f);
-        block.pivot = new Vector2(0.5f, 0.5f);
-        block.sizeDelta = new Vector2(slot.Side, slot.Side);
+        var block = Ui.Centered(name, _boardLayer, new Vector2(slot.Side, slot.Side));
         block.position = slot.Centre;
         return block;
     }
 
-    // The tile the cells make, drawn as the board draws it. Rotate and bounce carry no tile id, so the caller's stand-in only seeds the splat angles.
-    public static void PaintTile(RectTransform block, string tileId, IReadOnlyList<OccupiedCell> cells, int tileX, int tileY)
+    // Where a claimed mission lands: its seat-bar pip, in the screen layer's space; null when the bar does not draw it.
+    public Vector2? PipPosition(SeatId seat, MissionId mission)
     {
-        TilePainter.Paint(block, tileId, (x, y) => CellAt(cells, (tileX * 2) + x, (tileY * 2) + y), 0);
-    }
-
-    // Where a seat's claim lands: its seat-bar pip, in the screen layer's space; null when the bar does not draw it.
-    public Vector2? PipPosition(SeatId seat, int ordinal)
-    {
-        var pip = _seatBar.PipOf(seat, ordinal);
+        var pip = _seatBar.PipOf(seat, mission);
         return pip == null ? null : (Vector2)_screenLayer.InverseTransformPoint(pip.position);
-    }
-
-    private static Cell CellAt(IReadOnlyList<OccupiedCell> cells, int cellX, int cellY)
-    {
-        foreach (var cell in cells)
-        {
-            if (cell.CellX == cellX && cell.CellY == cellY)
-            {
-                return cell.Value;
-            }
-        }
-
-        return Cell.Symbol(OrdinaryCatalog.Blank);
     }
 }
 }

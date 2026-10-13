@@ -82,6 +82,8 @@ internal sealed class TablePlayView
         // After the claims panel, so it draws over everything and takes every tap while a recap plays.
         _recap = new RecapPlayer(new RecapStage(play, board, _board, _seatBar));
         _recap.Finished += shown => RecapFinished?.Invoke(shown);
+        // The heading says what is playing until the recap ends.
+        _recap.ItemStarted += item => _heading.text = RecapSummary.Caption(item);
     }
 
     internal RecapPlayer Recap => _recap;
@@ -100,9 +102,11 @@ internal sealed class TablePlayView
     public void Render(TableSnapshot snapshot, string summary = null)
     {
         Canvas.ForceUpdateCanvases();
-        var heading = HeadingText(snapshot);
-        _heading.text = heading;
-        _status.text = InstructionText(snapshot);
+        // What happens next waits for the recap that led to it: the heading names the item playing, and the instruction is blank.
+        var recapPending = snapshot.Recap.Count > 0;
+        var heading = recapPending ? string.Empty : HeadingText(snapshot);
+        _heading.text = _recap.IsPlaying ? RecapSummary.Caption(_recap.Current) : heading;
+        _status.text = recapPending ? string.Empty : InstructionText(snapshot);
         _notice.text = summary ?? NoticeText(snapshot.Notice);
         _notice.gameObject.SetActive(_notice.text.Length > 0);
         _seatBar.Paint(snapshot.View, HighlightedSeat(snapshot));

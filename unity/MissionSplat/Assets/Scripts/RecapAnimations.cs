@@ -25,8 +25,6 @@ internal sealed class RecapAnimations
     private const float ClaimCardWidthUnits = 460f;
     private const float ClaimCardHeightUnits = ClaimCardWidthUnits * 7f / 5f;
     private const float ClaimRestHeightUnits = 60f;
-    // Below the card, because the card flies up and to a pip and would cross a label above it.
-    private const float ClaimLabelHeightUnits = -450f;
     private const float DimAlpha = 0.6f;
     private const float BannerWidthUnits = 880f;
     private const float BannerHeightUnits = 200f;
@@ -47,7 +45,7 @@ internal sealed class RecapAnimations
             RecapPlaced placed => Placed(placed, snapshot),
             RecapRotated rotated => Rotated(rotated, snapshot),
             RecapBounced bounced => Bounced(bounced),
-            RecapClaimed claimed => Claimed(claimed, snapshot, index),
+            RecapClaimed claimed => Claimed(claimed),
             RecapWon won => Banner(Seats.NameOf(won.Seat) + " wins!", BeatSeconds),
             RecapReshuffled => Banner("Board reshuffled", QuickSeconds),
             _ => throw new ArgumentException("Unknown recap item " + item.GetType().Name + ".", nameof(snapshot)),
@@ -60,10 +58,10 @@ internal sealed class RecapAnimations
         var block = _stage.TileBlock("RecapPlaced", item.TileX, item.TileY);
         if (block == null)
         {
-            return Idle(QuickSeconds);
+            return RecapStep.Idle(QuickSeconds);
         }
 
-        RecapStage.PaintTile(block, item.Tile.Value, item.Cells, item.TileX, item.TileY);
+        PaintTile(block, item.Tile.Value, item.Cells, item.TileX, item.TileY);
         var group = block.gameObject.AddComponent<CanvasGroup>();
         var ring = PaintRing(block, SplatPalette.CritterOf(Seats.IndexOf(snapshot.View, item.Seat)));
         var rest = block.anchoredPosition;
@@ -87,10 +85,10 @@ internal sealed class RecapAnimations
         var block = _stage.TileBlock("RecapRotated", item.TileX, item.TileY);
         if (block == null)
         {
-            return Idle(QuickSeconds);
+            return RecapStep.Idle(QuickSeconds);
         }
 
-        RecapStage.PaintTile(block, TileIdAt(snapshot, item.TileX, item.TileY), item.Cells, item.TileX, item.TileY);
+        PaintTile(block, TileIdAt(snapshot, item.TileX, item.TileY), item.Cells, item.TileX, item.TileY);
         var degrees = item.QuarterTurnsClockwise * 90f;
         return new RecapStep(QuickSeconds, progress =>
         {
@@ -107,17 +105,17 @@ internal sealed class RecapAnimations
             var revealed = _stage.TileBlock("RecapRevealed", item.TileX, item.TileY);
             if (revealed != null)
             {
-                RecapStage.PaintTile(revealed, string.Empty, item.RevealedCells, item.TileX, item.TileY);
+                PaintTile(revealed, string.Empty, item.RevealedCells, item.TileX, item.TileY);
             }
         }
 
         var block = _stage.TileBlock("RecapBounced", item.TileX, item.TileY);
         if (block == null)
         {
-            return Idle(QuickSeconds);
+            return RecapStep.Idle(QuickSeconds);
         }
 
-        RecapStage.PaintTile(block, string.Empty, item.RemovedCells, item.TileX, item.TileY);
+        PaintTile(block, string.Empty, item.RemovedCells, item.TileX, item.TileY);
         var group = block.gameObject.AddComponent<CanvasGroup>();
         var rest = block.anchoredPosition;
         var side = block.sizeDelta.x;
@@ -131,25 +129,17 @@ internal sealed class RecapAnimations
     }
 
     // The mission pops up large at the middle of the table, then shrinks and flies into the claiming seat's score pip.
-    private RecapStep Claimed(RecapClaimed item, TableSnapshot snapshot, int index)
+    private RecapStep Claimed(RecapClaimed item)
     {
         var screen = _stage.ScreenLayer;
         var dim = Ui.Image("RecapDim", screen, SplatPalette.Overlay);
         Ui.Stretch(dim.rectTransform);
-        var card = CenteredBox("RecapClaim", screen, new Vector2(ClaimCardWidthUnits, ClaimCardHeightUnits));
+        var card = Ui.Centered("RecapClaim", screen, new Vector2(ClaimCardWidthUnits, ClaimCardHeightUnits));
         var cardGroup = card.gameObject.AddComponent<CanvasGroup>();
         MissionCardPainter.Paint(card, item.Mission);
-        var label = Ui.Label("RecapClaimLabel", screen, 84, SplatPalette.Paper, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
-        label.rectTransform.anchoredPosition = new Vector2(0f, ClaimLabelHeightUnits);
-        label.text = Seats.NameOf(item.Seat) + " claims!";
-        // White on the dimmed table reads weakly, so the label gets the ink outline the rest of the art has.
-        var outline = label.gameObject.AddComponent<Outline>();
-        outline.effectColor = SplatPalette.Ink;
-        outline.effectDistance = new Vector2(5f, -5f);
-        var labelGroup = label.gameObject.AddComponent<CanvasGroup>();
 
         var rest = new Vector2(0f, ClaimRestHeightUnits);
-        var target = _stage.PipPosition(item.Seat, PipOrdinal(item, snapshot, index)) ?? rest;
+        var target = _stage.PipPosition(item.Seat, item.Mission.Id) ?? rest;
         return new RecapStep(BeatSeconds, progress =>
         {
             var pop = Mathf.Clamp01(progress / PopShare);
@@ -157,7 +147,6 @@ internal sealed class RecapAnimations
             card.anchoredPosition = Vector2.Lerp(rest, target, fly);
             card.localScale = Vector3.one * Mathf.Lerp(Mathf.Lerp(0.4f, 1f, OutBack(pop)), 0.06f, fly);
             cardGroup.alpha = Mathf.Clamp01(pop * 4f);
-            labelGroup.alpha = Mathf.Clamp01(pop * 4f) * (1f - Mathf.Clamp01(fly * 1.3f));
             dim.color = WithAlpha(dim.color, DimAlpha * pop * (1f - fly));
         });
     }
@@ -167,9 +156,7 @@ internal sealed class RecapAnimations
     {
         var box = Ui.Toy("RecapBanner", _stage.ScreenLayer, SplatPalette.Sunny);
         var rect = box.rectTransform;
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = new Vector2(BannerWidthUnits, BannerHeightUnits);
+        Ui.Center(rect, new Vector2(BannerWidthUnits, BannerHeightUnits));
         var group = box.gameObject.AddComponent<CanvasGroup>();
         var label = Ui.Label("Message", Ui.ToyFace(box), 72, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
         Ui.Stretch(label.rectTransform);
@@ -181,15 +168,23 @@ internal sealed class RecapAnimations
         });
     }
 
-    private static RecapStep Idle(float seconds) => new RecapStep(seconds, _ => { });
-
-    private static RectTransform CenteredBox(string name, RectTransform parent, Vector2 size)
+    // The tile the cells make, drawn as the board draws it. Rotate and bounce carry no tile id, so the caller's stand-in only seeds the splat angles.
+    private static void PaintTile(RectTransform block, string tileId, IReadOnlyList<OccupiedCell> cells, int tileX, int tileY)
     {
-        var box = Ui.Rect(name, parent);
-        box.anchorMin = new Vector2(0.5f, 0.5f);
-        box.anchorMax = new Vector2(0.5f, 0.5f);
-        box.sizeDelta = size;
-        return box;
+        TilePainter.Paint(block, tileId, (x, y) => CellAt(cells, (tileX * 2) + x, (tileY * 2) + y), 0);
+    }
+
+    private static Cell CellAt(IReadOnlyList<OccupiedCell> cells, int cellX, int cellY)
+    {
+        foreach (var cell in cells)
+        {
+            if (cell.CellX == cellX && cell.CellY == cellY)
+            {
+                return cell.Value;
+            }
+        }
+
+        return Cell.Symbol(OrdinaryCatalog.Blank);
     }
 
     private static Image PaintRing(RectTransform block, Color color)
@@ -197,21 +192,6 @@ internal sealed class RecapAnimations
         var ring = Ui.Image("RecapPulse", block, WithAlpha(color, 0f), Ui.TileRing);
         Ui.Stretch(ring.rectTransform);
         return ring;
-    }
-
-    // Which of the seat's pips this claim fills: the snapshot holds every claim made, so count back past the seat's later claims in this recap.
-    private static int PipOrdinal(RecapClaimed item, TableSnapshot snapshot, int index)
-    {
-        var later = 0;
-        for (var i = index + 1; i < snapshot.Recap.Count; i++)
-        {
-            if (snapshot.Recap[i] is RecapClaimed other && other.Seat.Equals(item.Seat))
-            {
-                later++;
-            }
-        }
-
-        return Math.Max(0, snapshot.View.Claims[Seats.IndexOf(snapshot.View, item.Seat)].Missions.Count - 1 - later);
     }
 
     // A rotate item has no tile id, so the board's own tile there (if still there) lends its id, which only seeds the splat angles.

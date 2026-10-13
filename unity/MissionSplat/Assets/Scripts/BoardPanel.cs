@@ -182,6 +182,26 @@ internal sealed class BoardPanel
         return (_lattice.TransformPoint(local), 2f * _cellSize);
     }
 
+    // Scrolls the board so the tile at (tileX, tileY) is wholly in view, if it is not. The scroll stays where it ends: the next render keeps
+    // whatever is then at the middle of the view, as for any scroll by the player.
+    public void RevealTile(int tileX, int tileY)
+    {
+        if (TileSlot(tileX, tileY) is not { } slot)
+        {
+            return;
+        }
+
+        var local = (Vector2)_viewport.InverseTransformPoint(slot.Centre);
+        var reach = (_viewport.rect.size / 2f) - new Vector2(slot.Side / 2f, slot.Side / 2f);
+        if (Mathf.Abs(local.x) <= reach.x && Mathf.Abs(local.y) <= reach.y)
+        {
+            return;
+        }
+
+        _content.anchoredPosition = ScrolledTo(new Vector2((tileX * 2) + 1, (tileY * 2) + 1), _content.sizeDelta, _viewport.rect.size);
+        _scroll.velocity = Vector2.zero;
+    }
+
     // The board cell at the middle of the view as last drawn and scrolled.
     private Vector2 CellAtViewCentre()
     {
