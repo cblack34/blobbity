@@ -103,3 +103,27 @@ None.
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** A rotate now claims the missions its four written cells complete, at the moment of the rotation, through the same claim pass a placement uses.
+  - **Claim pass:** `Game.ResolveClaims(grid, writtenCells)` returns a result without changing anything. Placement and rotate both call it, and `Grid.CellsOfTile` supplies a rotated tile's cells.
+  - **Turn:** a rotate claim draws replacements and keeps the turn and the drawn tile. Reaching the win count ends the game at once, on the acting seat.
+  - **Bounce:** it never claims.
+  - **Unchanged colours:** by a later ruling, any rotate of 1–3 quarter turns writes all four cells, even if their colours come out unchanged.
+  - **Contract wording:** non-negotiable 2, `rules.md` (intro, Turn, Claim, Powers), `acceptance.md` (the rotate and bounce criteria are split), `build-brief.md`, and `architecture.md` now state the rule as cells the acting seat writes, by placing or rotating.
+- **Verification:** On `eb01636`, `dotnet test` passed Rules 241 and App 86, and `unity test unity/MissionSplat --mode PlayMode` passed 57 of 57. Unity ran in a scratch copy because the maintainer's editor was open. The Rules tests cover:
+  - a rotate claim at once, with the turn and the drawn tile kept;
+  - a replacement claimed later by the placement;
+  - a rotate win, which leaves the turn on the acting seat and rejects any later action;
+  - a bounce that exposes a pattern without claiming;
+  - distinct cells within one rotate, and per resolution across two rotates;
+  - another seat's mission not claimed;
+  - a rotate whose claims the mission deck cannot replace, which leaves the match and the charge unchanged;
+  - a single-colour tile whose rotate leaves its cells unchanged but still claims.
+
+  An App test shows the recap as rotated, then claimed.
+- **Deviations:**
+  - The unchanged-colour case was ruled mid-slice, after review.
+  - The cross-resolution test uses two rotates, because a tile cannot show both rotate and stack (an open ruling).
+- **Unresolved gates or risks:** none. A stricter whole-turn distinct-cells rule would add one input to the pass.
+- **Refactor and handoff receipt:** In the PR body and on issue #72.
+- **Final PR:** see the PR linked from issue #72.
