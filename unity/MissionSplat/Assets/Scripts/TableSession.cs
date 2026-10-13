@@ -6,11 +6,13 @@ using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
 
-// Forwards the view's input to the App table and draws its snapshot; it decides nothing about the game.
+// Forwards the view's input to the App table and draws its snapshot. It starts games, and builds the next game's start from the last
+// (same seats, the first seat moved on); it never decides a move.
 [DefaultExecutionOrder(-100)]
 public sealed class TableSession : MonoBehaviour
 {
     private Table _table;
+    private TableStart _start;
     private TableView _view;
 
     public bool IsStarted => _table != null && _table.IsStarted;
@@ -31,6 +33,8 @@ public sealed class TableSession : MonoBehaviour
         _view.PowerSelected += SelectPower;
         _view.TargetTapped += UseAt;
         _view.Started += Begin;
+        _view.PlayAgainRequested += PlayAgain;
+        _view.NewSetupRequested += NewSetup;
     }
 
     // The shuffle seed is drawn here, at the edge, so the App table stays deterministic.
@@ -41,10 +45,34 @@ public sealed class TableSession : MonoBehaviour
             throw new ArgumentNullException(nameof(start));
         }
 
-        Begin(new Table(new LocalSession(), start, start.Shuffle ? new System.Random().Next() : (int?)null));
+        Adopt(start, new Table(new LocalSession(), start, start.Shuffle ? new System.Random().Next() : (int?)null));
     }
 
-    public void Begin(TableStart start, GameSetup setup) => Begin(new Table(new LocalSession(), start, setup));
+    public void Begin(TableStart start, GameSetup setup) => Adopt(start, new Table(new LocalSession(), start, setup));
+
+    // The start the current game began from; New setup pre-fills from it.
+    internal TableStart CurrentStart => _start;
+
+    // Same seats and choices, the first seat moved on, and always shuffled so each game is a fresh deal,
+    // even after a game that began unshuffled.
+    public void PlayAgain()
+    {
+        if (_start is null)
+        {
+            return;
+        }
+
+        Begin(new TableStart(_start.SeatCount, _start.AiSeats, (_start.FirstSeatIndex + 1) % _start.SeatCount, shuffle: true));
+    }
+
+    // Setup comes back filled with the finished game's choices.
+    public void NewSetup()
+    {
+        if (_start is not null)
+        {
+            _view.ShowSetup(_start);
+        }
+    }
 
     public void Tap(int tileX, int tileY) => Forward(() => _table.Place(tileX, tileY));
 
@@ -58,11 +86,12 @@ public sealed class TableSession : MonoBehaviour
 
     public void SetQuarterTurns(int quarterTurns) => Forward(() => _table.SetQuarterTurns(quarterTurns));
 
-    private void Begin(Table table)
+    private void Adopt(TableStart start, Table table)
     {
         table.Start();
         _table = table;
-        _view.Render(_table.Snapshot);
+        _start = start;
+        _view.RenderNewGame(_table.Snapshot);
     }
 
     private void Forward(Action act)

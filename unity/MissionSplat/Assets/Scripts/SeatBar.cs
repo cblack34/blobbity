@@ -3,10 +3,11 @@ namespace MissionSplat.Player
 
 using System;
 using MissionSplat.App;
+using MissionSplat.Rules;
 using UnityEngine;
 using UnityEngine.UI;
 
-// One entry per seat across the top: critter, name, and a score pip per claim needed to win. The current seat sits in a highlighted box.
+// One entry per seat across the top: critter, name, and a score pip per claim needed to win. One seat sits in a highlighted box: the current seat, or the winner once the game is won.
 // Each entry is only as wide as its content and sits at the middle of an equal share of the bar, so two and three seats are spaced out evenly.
 internal sealed class SeatBar
 {
@@ -33,7 +34,8 @@ internal sealed class SeatBar
     // Raised with the seat's position in turn order and its claims when its entry is tapped.
     public event Action<int, SeatClaims> SeatTapped;
 
-    public void Paint(SeatView view)
+    // highlighted is null when no seat is, as when the game ended without a winner.
+    public void Paint(SeatView view, SeatId? highlighted)
     {
         Ui.Clear(_bar);
         var seats = view.Claims.Count;
@@ -42,7 +44,7 @@ internal sealed class SeatBar
         var entryWidth = Math.Min(MaxEntryUnits, share - (2f * EntryInsetUnits));
         for (var i = 0; i < seats; i++)
         {
-            PaintEntry(i, seats, entryWidth, view.Claims[i], view.Claims[i].Seat.Equals(view.CurrentSeat));
+            PaintEntry(i, seats, entryWidth, view.Claims[i], view.Claims[i].Seat.Equals(highlighted));
         }
     }
 

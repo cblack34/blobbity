@@ -33,6 +33,8 @@ internal sealed class TablePlayView
     public event Action<int> QuarterTurnsSelected;
     public event Action<SymbolId?> PowerSelected;
     public event Action<int, int> TargetTapped;
+    public event Action PlayAgainRequested;
+    public event Action NewSetupRequested;
 
     public TablePlayView(RectTransform play)
     {
@@ -61,6 +63,8 @@ internal sealed class TablePlayView
         _tray.Confirmed += () => Confirmed?.Invoke();
         _tray.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
         _tray.PowerSelected += power => PowerSelected?.Invoke(power);
+        _tray.PlayAgainRequested += () => PlayAgainRequested?.Invoke();
+        _tray.NewSetupRequested += () => NewSetupRequested?.Invoke();
 
         // Last, so it draws over everything else.
         _claimsPanel = new ClaimsPanel(play);
@@ -78,7 +82,7 @@ internal sealed class TablePlayView
         _status.text = InstructionText(snapshot);
         _notice.text = NoticeText(snapshot.Notice);
         _notice.gameObject.SetActive(snapshot.Notice != TableNotice.None);
-        _seatBar.Paint(snapshot.View);
+        _seatBar.Paint(snapshot.View, HighlightedSeat(snapshot));
         // What the panel shows may be out of date after any action, so a render closes it.
         _claimsPanel.Hide();
         _tray.Paint(snapshot, heading);
@@ -90,6 +94,14 @@ internal sealed class TablePlayView
     {
         Ui.Anchored(rect, new Vector2(0f, 1f), Vector2.one, new Vector2(inset, -(top + height)), new Vector2(-inset, -top));
     }
+
+    // The seat to play, or the winner once the game is won; nobody when it ended without one.
+    private static SeatId? HighlightedSeat(TableSnapshot snapshot) => snapshot.Status.Kind switch
+    {
+        TableStatusKind.Won => snapshot.Status.Seat,
+        TableStatusKind.Ended => null,
+        _ => snapshot.View.CurrentSeat,
+    };
 
     private static string HeadingText(TableSnapshot snapshot)
     {

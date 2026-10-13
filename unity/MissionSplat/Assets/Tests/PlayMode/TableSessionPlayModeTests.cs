@@ -498,29 +498,67 @@ public class TableSessionPlayModeTests
     }
 
     [Test]
-    public void WhenTheGameEnds_TheTrayNamesTheWinner()
+    public void WhenTheGameEnds_TheTrayNamesTheWinner_AndOffersPlayAgainAndNewSetup()
     {
-        var purple = Cell.Color(OrdinaryCatalog.Purple);
-        var seats = TableStart.PassAndPlayDraft().SeatsInTurnOrder();
-        var setup = new GameSetup(
-            seats,
-            seats[0],
-            OrdinaryCatalog.Colors,
-            OrdinaryCatalog.NonScoringSymbols,
-            OrdinaryCatalog.Patterns,
-            1,
-            new[] { "a1", "a2", "b1", "b2", "r1", "r2" }.Select(id => new Mission(new MissionId(id), MissionPattern.Row, OrdinaryCatalog.Purple)).ToArray(),
-            new[] { new Tile(new TileId("start"), purple, purple, purple, purple), new Tile(new TileId("next"), purple, purple, purple, purple), BlankTile("pad") });
-        var table = BeginHumanTable(setup);
-
-        table.Tap(1, 0);
+        var table = BeginFinishedGame(TableStart.PassAndPlayDraft());
 
         Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.Won), table.Snapshot.Status.Message);
         Assert.That(FindText("Heading").text, Is.EqualTo("Seat 1 wins!"));
         Assert.That(FindRect("Winner").gameObject.activeInHierarchy, Is.True);
         Assert.That(FindRect("Turn").gameObject.activeInHierarchy, Is.False);
         Assert.That(LiveButton("Spin"), Is.Null);
+        Assert.That(LiveButton("PlayAgain"), Is.Not.Null);
+        Assert.That(LiveButton("NewSetup"), Is.Not.Null);
+        Assert.That(HighlightedSeats(), Is.EqualTo(new[] { "Seat1" }), "the winner is highlighted, not the seat that would be next");
         Assert.That(_root.GetComponentsInChildren<Text>(false).Any(text => text.text == "Pending tile" || text.text == "Missions hidden"), Is.False);
+    }
+
+    [Test]
+    public void PlayAgain_StartsAFreshGame_WithTheSameSeatsAndTheFirstSeatMovedOn()
+    {
+        var finished = new TableStart(3, new[] { false, false, true }, 0, false);
+        var table = BeginFinishedGame(finished);
+        LiveButton("Seat1").onClick.Invoke();
+        Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.True);
+
+        LiveButton("PlayAgain").onClick.Invoke();
+
+        Assert.That(table.Snapshot.Status.Kind, Is.Not.EqualTo(TableStatusKind.Won));
+        Assert.That(table.Snapshot.View.Claims.Count, Is.EqualTo(3));
+        Assert.That(table.Snapshot.View.Claims.All(claims => claims.Missions.Count == 0), Is.True);
+        Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
+        Assert.That(table.CurrentStart.Shuffle, Is.True, "Play again deals fresh even after an unshuffled game");
+        Assert.That(FindRect("Winner").gameObject.activeInHierarchy, Is.False);
+        Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.False, "the claims panel does not carry over into the new game");
+
+        table.NewSetup();
+        AssertSetupShows(seats: 3, ai: new[] { false, false, true }, firstSeat: 1);
+    }
+
+    [Test]
+    public void NewSetup_AfterAWin_ShowsSetupFilledWithTheFinishedGamesChoices()
+    {
+        BeginFinishedGame(new TableStart(4, new[] { false, true, false, true }, 0, true));
+
+        LiveButton("NewSetup").onClick.Invoke();
+
+        AssertSetupShows(seats: 4, ai: new[] { false, true, false, true }, firstSeat: 0);
+        Assert.That(FindRect("Play").gameObject.activeSelf, Is.False);
+        Assert.That(FindButton("Shuffle"), Is.Null, "the deck is always shuffled, so setup offers no choice");
+    }
+
+    [Test]
+    public void NewSetup_AfterAnUnshuffledGame_StartsTheNextGameShuffled()
+    {
+        BeginFinishedGame(new TableStart(2, new[] { false, false }, 0, false));
+        TableStart started = null;
+        _root.GetComponent<TableView>().Started += draft => started ??= draft;
+
+        LiveButton("NewSetup").onClick.Invoke();
+        LiveButton("Start").onClick.Invoke();
+
+        Assert.That(started, Is.Not.Null, "Start hands the draft on");
+        Assert.That(started.Shuffle, Is.True, "setup shuffles the deck even when the finished game did not");
     }
 
     [Test]
@@ -844,6 +882,46 @@ public class TableSessionPlayModeTests
             var splats = card.GetComponentsInChildren<Image>(false).Where(image => image.name == "Splat").ToArray();
             Assert.That(splats.Length, Is.EqualTo(4), slot.name + " splats");
         }
+    }
+
+    private void AssertSetupShows(int seats, bool[] ai, int firstSeat)
+    {
+        Assert.That(LiveButton("Start"), Is.Not.Null, "setup is on screen");
+        Assert.That(ButtonFace("Seats" + seats), Is.EqualTo(SplatPalette.Sunny));
+        Assert.That(LiveButtons("Human").Length, Is.EqualTo(seats));
+        for (var i = 0; i < seats; i++)
+        {
+            Assert.That(ButtonFace((ai[i] ? "Ai" : "Human") + i), Is.EqualTo(SplatPalette.Sunny), "seat " + i);
+            Assert.That(ButtonFace("First" + i), Is.EqualTo(i == firstSeat ? SplatPalette.Sunny : SplatPalette.Paper), "first " + i);
+        }
+    }
+
+    private string[] HighlightedSeats() =>
+        LiveButtons("Seat").Where(button => button.GetComponent<Image>().color.a > 0f).Select(button => button.name).ToArray();
+
+    private Color ButtonFace(string name) => Ui.ToyFace(LiveButton(name)).GetComponent<Image>().color;
+
+    // Seat 1 is first, human, and places a tile that finishes its only claim needed to win.
+    private TableSession BeginFinishedGame(TableStart start)
+    {
+        var purple = Cell.Color(OrdinaryCatalog.Purple);
+        var seats = start.SeatsInTurnOrder();
+        var setup = new GameSetup(
+            seats,
+            seats[0],
+            OrdinaryCatalog.Colors,
+            OrdinaryCatalog.NonScoringSymbols,
+            OrdinaryCatalog.Patterns,
+            1,
+            Enumerable.Range(0, 16).Select(id => new Mission(new MissionId("m" + id), MissionPattern.Row, OrdinaryCatalog.Purple)).ToArray(),
+            new[] { new Tile(new TileId("start"), purple, purple, purple, purple), new Tile(new TileId("next"), purple, purple, purple, purple), BlankTile("pad") });
+        _root = new GameObject("Table");
+        var table = _root.AddComponent<TableSession>();
+        table.Begin(start, setup);
+        table.ConfirmIncomingSeat();
+        table.Tap(1, 0);
+        Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.Won), table.Snapshot.Status.Message);
+        return table;
     }
 
     private TableSession BeginHumanTable(GameSetup setup)

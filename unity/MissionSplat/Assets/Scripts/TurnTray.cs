@@ -30,6 +30,14 @@ internal sealed class TurnTray
     private const float SecretsMaxX = 0.97f;
     private const float SecretsMaxY = 0.74f;
 
+    // The game-end tray's rows, as fractions of the winner area (about 515 units tall): each button is at least the
+    // 120-unit tap size (see BoardPanel), and the result sits above them.
+    private const float NewSetupTop = 0.24f;
+    private const float PlayAgainBottom = 0.26f;
+    private const float PlayAgainTop = 0.50f;
+    private const float ResultBottom = 0.52f;
+    private const float ResultSplit = 0.76f;
+
     private readonly RectTransform _turn;
     private readonly PowerChips _chips;
     private readonly RectTransform _pending;
@@ -76,6 +84,10 @@ internal sealed class TurnTray
 
     public event Action<SymbolId?> PowerSelected;
 
+    public event Action PlayAgainRequested;
+
+    public event Action NewSetupRequested;
+
     // heading names the winner when the game is over.
     public void Paint(TableSnapshot snapshot, string heading)
     {
@@ -114,24 +126,35 @@ internal sealed class TurnTray
     private void PaintWinner(TableSnapshot snapshot, string heading)
     {
         Ui.Clear(_winner);
-        var seat = snapshot.Status.Seat;
-        if (seat is not { } winner)
+        PaintResult(snapshot, heading);
+        var again = Ui.Button("PlayAgain", _winner, "Play again", SplatPalette.Go, Ui.Rounded, 60);
+        Ui.Anchored(again.GetComponent<RectTransform>(), new Vector2(0f, PlayAgainBottom), new Vector2(1f, PlayAgainTop), Vector2.zero, Vector2.zero);
+        again.onClick.AddListener(() => PlayAgainRequested?.Invoke());
+        var setup = Ui.Button("NewSetup", _winner, "New setup", SplatPalette.Paper, Ui.Rounded, 32);
+        Ui.Anchored(setup.GetComponent<RectTransform>(), new Vector2(0.25f, 0f), new Vector2(0.75f, NewSetupTop), Vector2.zero, Vector2.zero);
+        setup.onClick.AddListener(() => NewSetupRequested?.Invoke());
+    }
+
+    // The top of the game-end tray: who won and with how many claims, above the two buttons.
+    private void PaintResult(TableSnapshot snapshot, string heading)
+    {
+        if (snapshot.Status.Seat is not { } winner)
         {
             var over = Ui.Label("Message", _winner, 64, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
-            Ui.Stretch(over.rectTransform);
+            Ui.Anchored(over.rectTransform, new Vector2(0f, ResultBottom), Vector2.one, Vector2.zero, Vector2.zero);
             over.text = heading;
             return;
         }
 
         var index = Seats.IndexOf(snapshot.View, winner);
         var critterSlot = Ui.Rect("CritterSlot", _winner);
-        Ui.Anchored(critterSlot, new Vector2(0f, 0.05f), new Vector2(0.36f, 0.95f), Vector2.zero, Vector2.zero);
+        Ui.Anchored(critterSlot, new Vector2(0f, ResultBottom), new Vector2(0.30f, 1f), Vector2.zero, Vector2.zero);
         CritterPainter.PaintFitted(critterSlot, index);
         var title = Ui.Label("Message", _winner, 72, SplatPalette.Ink, TextAnchor.LowerLeft, FontWeight.ExtraBold);
-        Ui.Anchored(title.rectTransform, new Vector2(0.40f, 0.5f), new Vector2(1f, 0.9f), Vector2.zero, Vector2.zero);
+        Ui.Anchored(title.rectTransform, new Vector2(0.34f, ResultSplit), Vector2.one, Vector2.zero, Vector2.zero);
         title.text = heading;
         var count = Ui.Label("Claims", _winner, 40, SplatPalette.Muted, TextAnchor.UpperLeft);
-        Ui.Anchored(count.rectTransform, new Vector2(0.40f, 0.2f), new Vector2(1f, 0.5f), Vector2.zero, Vector2.zero);
+        Ui.Anchored(count.rectTransform, new Vector2(0.34f, ResultBottom), new Vector2(1f, ResultSplit), Vector2.zero, Vector2.zero);
         var total = snapshot.View.Claims[index].Missions.Count;
         count.text = total + (total == 1 ? " claim" : " claims");
     }
