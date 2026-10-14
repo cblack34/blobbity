@@ -50,7 +50,7 @@ Agent-run Unity CLI evidence is recorded in the completing PR: `unity test unity
 - WHEN the turn passes between human seats on one device, the secret missions are hidden until the incoming seat confirms. _Human evidence:_ observed in the 3-seat pass-and-play game.
 - Legal orthogonal neighbors highlight before a placement. Corner-only slots do not. _Human evidence:_ the same play-mode capture.
 - Claimed missions render in a row that is not part of the board lattice. _Human evidence:_ the same play-mode capture.
-- WHEN the drawn tile shows rotate or bounce, the table shows each power with its remaining uses; selecting one highlights only that power's legal targets, tapping a target applies the use and the board updates with the drawn tile still pending, and placing ends the power window. _Human evidence:_ a play-mode capture of the power panel with targets highlighted and one of the board after a bounce, plus the device games.
+- WHEN the drawn tile shows rotate or bounce, the board rings only that power's legal targets and the drawn tile's power badges show the remaining uses (a spent use greys out). Tapping a ringed target selects it without changing the game. For rotate, each turn press previews the target turning on the board, and Confirm applies that many quarter turns (Confirm is unavailable at zero); for bounce, Bounce removes the target. Cancel deselects. After a use the board updates with the drawn tile still pending, and placing ends the power window. _Human evidence:_ play-mode captures of a rotate preview with targets ringed, a bounce selection, and the board after a bounce, plus the device games.
 
 ## Trade dress
 
