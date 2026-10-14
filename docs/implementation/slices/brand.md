@@ -7,7 +7,7 @@
   - "Mission Splat" is a working title. Trademark concerns mean it must change.
   - The game is **Blobbity**, and so are the secret target cards ("a blobbity"). The game is named for what you collect.
   - The player critters are **Blobkins**.
-  - Colour-blind support: give each game colour its own splat silhouette, keeping the four recognisably one family, and re-tune the hues. A colour-blind mode in options is the fallback.
+  - Colour-blind support: every colour keeps today's splat, with a symbol upright in the middle of the splat body. The symbols are red triangle, blue circle, green square, purple star, and a wild four-point sparkle. A–D are outlines with no fill, drawn in a deeper shade of the splat's own colour (OKLCH lightness −0.16, chroma kept, so the shade reads as colour, not black). The wild's sparkle is filled, and each quarter is deepened from its own colour. These were chosen on 2026-10-14 from rendered sheets, after per-colour splat silhouettes were rejected as losing the splat's feel. A colour-blind mode in options stays the fallback.
   - The app icon is a Blobkin.
   - The guide is the source of truth. A human-readable board and the player's code are checked against it.
   - The type system uses two or three fonts: Baloo 2 for display, plus Atkinson Hyperlegible Next for text, chosen from rendered samples on 2026-10-14.
@@ -30,7 +30,7 @@ The game has an identity a contracted designer can pick up without asking:
   - originality rules;
   - the art pipeline;
 - a visual board, rendered from the repo's own art and fonts, that shows the guide applied;
-- colours a colour-blind player can tell apart, with a shape cue for each colour;
+- colours a colour-blind player can tell apart, with a symbol for each colour;
 - a mascot sheet, a wordmark and logo package, and app icons for iOS and Android.
 
 ## Why this slice is next
@@ -44,7 +44,7 @@ The table looks right, but the game has no name it can keep, no icon, no logo, a
 - Renaming the secret cards to blobbity in the player and the docs (#68).
 - Adopting Blobbity and Blobkins in player-facing text, the product name, and the pack's product description. This includes a deeper screen covering exact spellings, sound-alikes, and direct store search.
 - The brand guide and its board, the fonts (closes #67), and the guide-to-board-to-code drift check.
-- Per-colour splat silhouettes and a hue re-tune, with retaken captures.
+- Symbols in every colour cell and on blobbity cards, with retaken captures. Hues are re-tuned only if a simulation shows the symbols are not enough.
 - The Blobkin mascot sheet, the wordmark and logo package, app icons wired into the Unity player, and a real `companyName`.
 
 ### Out of scope
@@ -102,7 +102,7 @@ The table looks right, but the game has no name it can keep, no icon, no logo, a
 ## Risks and stop conditions
 
 - Stop if the name screen finds a confusingly similar mark in software, games, or toys.
-- Stop if the per-colour silhouettes stop reading as one family. A colour-blind mode is then the fallback, and that is a scope decision.
+- Stop if the symbols are unreadable at board size on the device. A colour-blind mode is then the fallback, and that is a scope decision.
 - Stop if a style needs a shader or a new package.
 
 ## Execution issues
