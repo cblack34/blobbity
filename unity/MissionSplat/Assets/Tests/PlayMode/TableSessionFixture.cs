@@ -58,15 +58,6 @@ public abstract class TableSessionFixture
     }
 
 
-    // A chip's face colour, and whether it shows as grayed out: its power's badge colour while it can be used, gray when it cannot.
-    protected Color ChipFace(string chip) => Ui.ToyFace(LiveButton(chip)).GetComponent<Image>().color;
-
-    protected bool ChipGrayedOut(string chip)
-    {
-        var cover = Ui.ToyFace(LiveButton(chip)).Find("Disabled");
-        return cover != null && cover.gameObject.activeSelf;
-    }
-
     protected TableSession BeginLongRowTable()
     {
         var tiles = new[] { BlankTile("start") }.Concat(Enumerable.Range(0, 14).Select(i => BlankTile("t" + i))).ToArray();

@@ -29,8 +29,7 @@ public sealed class TableView : MonoBehaviour
     public event Action<int, int> PlaceRequested;
     public event Action Confirmed;
     public event Action<int> QuarterTurnsSelected;
-    public event Action<SymbolId?> PowerSelected;
-    public event Action<int, int> TargetTapped;
+    public event Action<GameAction> PowerRequested;
     public event Action<TableStart> Started;
     public event Action PlayAgainRequested;
     public event Action NewSetupRequested;
@@ -128,8 +127,7 @@ public sealed class TableView : MonoBehaviour
         _playView.PlaceRequested += (tileX, tileY) => PlaceRequested?.Invoke(tileX, tileY);
         _playView.Confirmed += () => Confirmed?.Invoke();
         _playView.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
-        _playView.PowerSelected += power => PowerSelected?.Invoke(power);
-        _playView.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);
+        _playView.PowerRequested += action => PowerRequested?.Invoke(action);
         _playView.PlayAgainRequested += () => PlayAgainRequested?.Invoke();
         _playView.NewSetupRequested += () => NewSetupRequested?.Invoke();
         _playView.RecapFinished += shown => RecapFinished?.Invoke(shown);

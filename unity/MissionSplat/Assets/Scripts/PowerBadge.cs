@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using MissionSplat.Rules;
 using UnityEngine;
 
-// A power's badge, on a tile cell and on a tray chip: a coloured disc with an ink rim and the power's mark in ink
+// A power's badge, on a tile cell: a coloured disc with an ink rim and the power's mark in ink
 // (rotate yellow with its arrow, stack blue with +, bounce pink with -).
 internal static class PowerBadge
 {
@@ -50,20 +50,20 @@ internal static class PowerBadge
     private const float BarLength = 0.56f;
     private const float BarThickness = 0.13f;
 
-    public static Color FillOf(SymbolId power) => LookOf(power).Fill;
+    private static Color FillOf(SymbolId power) => LookOf(power).Fill;
 
-    // Draws the whole badge filling parent, which should be square.
-    public static void Paint(RectTransform parent, SymbolId power)
+    // Draws the whole badge filling parent, which should be square. A spent one has a gray face.
+    public static void Paint(RectTransform parent, SymbolId power, bool spent = false)
     {
         var rim = Ui.Image("Rim", parent, SplatPalette.Ink, Ui.Circle);
         Ui.Stretch(rim.rectTransform);
-        var face = Ui.Image("Face", rim.transform, FillOf(power), Ui.Circle);
+        var face = Ui.Image("Face", rim.transform, spent ? SplatPalette.Gray : FillOf(power), Ui.Circle);
         Ui.Anchored(face.rectTransform, new Vector2(RimFraction, RimFraction), new Vector2(1f - RimFraction, 1f - RimFraction), Vector2.zero, Vector2.zero);
         PaintMark(face.rectTransform, power);
     }
 
     // The power's mark on its own, in ink, centred in face: the rotate arrow, or a plus or minus drawn as bars
-    // (the glyphs of a font would sit off-centre in a disc). A chip draws it on the face of its own button.
+    // (the glyphs of a font would sit off-centre in a disc). The preview strip's turn button draws the rotate arrow with it.
     public static void PaintMark(RectTransform face, SymbolId power)
     {
         switch (LookOf(power).Mark)

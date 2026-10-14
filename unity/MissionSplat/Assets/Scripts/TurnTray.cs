@@ -2,16 +2,18 @@ namespace MissionSplat.Player
 {
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
 using UnityEngine.UI;
 
-// The bottom of the table: the drawn tile, Spin, the power chips, and the seat's secret missions, with the hand-off cover over the missions.
+// The bottom of the table: the drawn tile (its power badges grayed as their uses are spent), Spin, and the seat's secret missions, with the hand-off cover over the missions.
 // When the game is over it shows the winner instead.
 internal sealed class TurnTray
 {
-    public const float HeightUnits = 560f;
+    public const float HeightUnits = 450f;
 
     // The wavy top edge rises above the tray's white body, so the board stops this far above the tray to keep clear of it.
     public const float WaveUnits = 56f;
@@ -23,23 +25,23 @@ internal sealed class TurnTray
 
     // The drawn tile's side before the first layout has given its slot a size.
     private const float FallbackTileUnits = 72f;
-    private const float TurnArrowUnits = 70f;
+
+    // The turn tray's rows, as fractions of its height: the drawn tile, Spin, and the secret missions fill the tray from the bottom margin to the top.
+    private const float ContentBottom = 0.03f;
+    private const float ContentTop = 0.97f;
 
     private const float SecretsMinX = 0.58f;
-    private const float SecretsMinY = 0.03f;
     private const float SecretsMaxX = 0.97f;
-    private const float SecretsMaxY = 0.74f;
 
-    // The game-end tray's rows, as fractions of the winner area (about 515 units tall): each button is at least the
+    // The game-end tray's rows, as fractions of the winner area (about 415 units tall): each button is at least the
     // 120-unit tap size (see BoardPanel), and the result sits above them.
-    private const float NewSetupTop = 0.24f;
-    private const float PlayAgainBottom = 0.26f;
-    private const float PlayAgainTop = 0.50f;
-    private const float ResultBottom = 0.52f;
-    private const float ResultSplit = 0.76f;
+    private const float NewSetupTop = 0.30f;
+    private const float PlayAgainBottom = 0.32f;
+    private const float PlayAgainTop = 0.62f;
+    private const float ResultBottom = 0.64f;
+    private const float ResultSplit = 0.78f;
 
     private readonly RectTransform _turn;
-    private readonly PowerChips _chips;
     private readonly RectTransform _pending;
     private readonly RectTransform _spin;
     private readonly RectTransform _secrets;
@@ -56,14 +58,12 @@ internal sealed class TurnTray
         Ui.Anchored(wave.rectTransform, new Vector2(0f, 1f), Vector2.one, Vector2.zero, new Vector2(0f, WaveUnits));
         _turn = Ui.Rect("Turn", tray.transform);
         Ui.Stretch(_turn);
-        _chips = new PowerChips(Area("Powers", _turn, 0.03f, 0.76f, 0.97f, 0.97f));
-        _chips.PowerSelected += power => PowerSelected?.Invoke(power);
-        _pending = Area("Pending", _turn, 0.03f, 0.03f, 0.37f, 0.74f);
-        _spin = Area("Spin", _turn, 0.38f, 0.03f, 0.56f, 0.74f);
+        _pending = Area("Pending", _turn, 0.03f, ContentBottom, 0.37f, ContentTop);
+        _spin = Area("Spin", _turn, 0.38f, ContentBottom, 0.56f, ContentTop);
         _secrets = SecretsArea("Secrets", _turn);
         _winner = Area("Winner", tray.transform, 0.03f, 0.04f, 0.97f, 0.96f);
 
-        // Over the secret missions only; the tile, Spin, and powers beside it stay in view.
+        // Over the secret missions only; the tile and Spin beside it stay in view.
         _conceal = SecretsArea("Conceal", _turn);
         var cover = Ui.Toy("Cover", _conceal, SplatPalette.Paper);
         Ui.Stretch(cover.rectTransform);
@@ -82,8 +82,6 @@ internal sealed class TurnTray
 
     public event Action<int> QuarterTurnsSelected;
 
-    public event Action<SymbolId?> PowerSelected;
-
     public event Action PlayAgainRequested;
 
     public event Action NewSetupRequested;
@@ -101,10 +99,8 @@ internal sealed class TurnTray
             return;
         }
 
-        // Only rotate repurposes the quarter-turns as its amount, so only then does the pending tile not preview them.
-        PaintPending(snapshot.View.PendingMatchTile, RotateAmount.IsSelected(snapshot) ? 0 : snapshot.QuarterTurns);
+        PaintPending(snapshot);
         PaintSpin(snapshot);
-        _chips.Paint(snapshot);
         PaintSecrets(snapshot);
         var covered = CoverUp(snapshot);
         _conceal.gameObject.SetActive(covered);
@@ -126,7 +122,7 @@ internal sealed class TurnTray
 
     // The secret missions' area, which the hand-off cover sits exactly over.
     private static RectTransform SecretsArea(string name, Transform parent) =>
-        Area(name, parent, SecretsMinX, SecretsMinY, SecretsMaxX, SecretsMaxY);
+        Area(name, parent, SecretsMinX, ContentBottom, SecretsMaxX, ContentTop);
 
     private void PaintWinner(TableSnapshot snapshot, string heading)
     {
@@ -164,18 +160,44 @@ internal sealed class TurnTray
         count.text = total + (total == 1 ? " claim" : " claims");
     }
 
-    private void PaintPending(Tile pending, int quarterTurns)
+    private void PaintPending(TableSnapshot snapshot)
     {
         Ui.Clear(_pending);
-        if (pending is null)
+        if (snapshot.View.PendingMatchTile is not { } pending)
         {
             return;
         }
 
-        PaintTile(_pending, pending, Vector2.zero, Vector2.one, quarterTurns);
+        var spent = SpentBadges(snapshot.View, pending);
+        PaintTile(_pending, pending, Vector2.zero, Vector2.one, snapshot.QuarterTurns, (x, y) => spent.Contains((x, y)));
     }
 
-    // Each Spin tap turns the drawn tile (or sets rotate's amount) one more clockwise quarter-turn, then wraps from 3 back to 0.
+    // The local cells of the drawn tile whose power badge is used up. A power's uses are a count, not tied to a cell,
+    // so as many of its badges as are spent, in cell order, show gray.
+    private static HashSet<(int X, int Y)> SpentBadges(SeatView view, Tile tile)
+    {
+        var spent = new HashSet<(int X, int Y)>();
+        foreach (var charge in view.RemainingUses)
+        {
+            var badges = new List<(int X, int Y)>();
+            for (var y = 0; y < 2; y++)
+            {
+                for (var x = 0; x < 2; x++)
+                {
+                    if (tile.Local(x, y).TryGetSymbol(out var symbol) && symbol.Equals(charge.Power))
+                    {
+                        badges.Add((x, y));
+                    }
+                }
+            }
+
+            spent.UnionWith(badges.Take(Math.Max(0, badges.Count - charge.Remaining)));
+        }
+
+        return spent;
+    }
+
+    // Each Spin tap turns the drawn tile one more clockwise quarter-turn, then wraps from 3 back to 0.
     private void PaintSpin(TableSnapshot snapshot)
     {
         Ui.Clear(_spin);
@@ -190,27 +212,6 @@ internal sealed class TurnTray
         Ui.SetEnabled(button, snapshot.CanAct);
         var next = (snapshot.QuarterTurns + 1) % 4;
         button.onClick.AddListener(() => QuarterTurnsSelected?.Invoke(next));
-
-        // While rotate is selected the drawn tile does not preview the turns, so one arrow per quarter-turn shows the amount.
-        if (RotateAmount.IsSelected(snapshot) && snapshot.QuarterTurns > 0)
-        {
-            PaintTurnHint(snapshot.QuarterTurns);
-        }
-    }
-
-    private void PaintTurnHint(int quarterTurns)
-    {
-        var hint = Ui.Rect("TurnHint", _spin);
-        hint.anchorMin = new Vector2(0.5f, 0.04f);
-        hint.anchorMax = new Vector2(0.5f, 0.24f);
-        hint.sizeDelta = new Vector2(quarterTurns * TurnArrowUnits, 0f);
-        hint.anchoredPosition = Vector2.zero;
-        for (var i = 0; i < quarterTurns; i++)
-        {
-            var arrow = Ui.Image("Quarter" + i, hint, SplatPalette.Ink, Ui.RotateArrow);
-            arrow.preserveAspect = true;
-            Ui.Anchored(arrow.rectTransform, new Vector2(i / (float)quarterTurns, 0f), new Vector2((i + 1) / (float)quarterTurns, 1f), Vector2.zero, Vector2.zero);
-        }
     }
 
     private void PaintSecrets(TableSnapshot snapshot)
@@ -242,7 +243,7 @@ internal sealed class TurnTray
         }
     }
 
-    private static void PaintTile(RectTransform parent, Tile tile, Vector2 min, Vector2 max, int quarterTurns)
+    private static void PaintTile(RectTransform parent, Tile tile, Vector2 min, Vector2 max, int quarterTurns, Func<int, int, bool> spentAt)
     {
         var slot = Ui.Rect("Slot", parent);
         Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
@@ -254,7 +255,7 @@ internal sealed class TurnTray
         }
 
         var block = Ui.Centered("Tile", slot, new Vector2(side, side));
-        TilePainter.Paint(block, tile.Id.Value, tile.Local, quarterTurns);
+        TilePainter.Paint(block, tile.Id.Value, tile.Local, quarterTurns, spentAt);
     }
 }
 }

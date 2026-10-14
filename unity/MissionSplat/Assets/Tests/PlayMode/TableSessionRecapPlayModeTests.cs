@@ -153,7 +153,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         LiveButton("RecapSkip").onClick.Invoke();
         Assert.That(FindText("Notice").text, Is.EqualTo("Seat 1 placed a tile."));
 
-        table.SelectPower(null);
+        table.SetQuarterTurns(0);
         Assert.That(FindText("Notice").text, Is.EqualTo("Seat 1 placed a tile."), "picking a power is not the next action");
 
         PlaceAt(LiveButtons("Highlight").First());
@@ -162,21 +162,143 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Assert.That(FindText("Notice").text, Is.EqualTo("Seat 2 placed a tile."), "the new action's own recap replaces it");
     }
 
+    // The seat holds a drawn rotate and a row of red that its own turn of the tile just east of the start would finish: a row it did not write.
+    [Test]
+    public void AConfirmedRotateThatCompletesAMission_ClaimsAtOnce_AndTheRecapShowsIt()
+    {
+        var red = Cell.Color(OrdinaryCatalog.Red);
+        var blank = Cell.Symbol(OrdinaryCatalog.Blank);
+        var seats = TableStart.PassAndPlayDraft().SeatsInTurnOrder();
+        var setup = new GameSetup(
+            seats,
+            seats[0],
+            OrdinaryCatalog.Colors,
+            OrdinaryCatalog.NonScoringSymbols,
+            OrdinaryCatalog.Patterns,
+            OrdinaryCatalog.ClaimsRequiredToWin,
+            new[]
+            {
+                new Mission(new MissionId("red-row"), MissionPattern.Row, OrdinaryCatalog.Red),
+                new Mission(new MissionId("a2"), MissionPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(new MissionId("b1"), MissionPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(new MissionId("b2"), MissionPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(new MissionId("spare"), MissionPattern.Row, OrdinaryCatalog.Purple),
+            },
+            new[]
+            {
+                new Tile(new TileId("start"), red, red, blank, blank),
+                new Tile(new TileId("east"), blank, red, blank, red),
+                BlankTile("pad"),
+                new Tile(new TileId("spinner"), Cell.Symbol(OrdinaryCatalog.Rotate), blank, blank, blank),
+            });
+        var table = BeginHumanTable(setup);
+        table.Place(1, 0);
+        SkipTheWholeRecap();
+        table.ConfirmIncomingSeat();
+        SkipTheWholeRecap();
+        table.Place(0, 1);
+        SkipTheWholeRecap();
+        table.ConfirmIncomingSeat();
+        SkipTheWholeRecap();
+        Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
+        Assert.That(table.Snapshot.View.Claims.Single(claims => claims.Seat.Value == "1").Missions, Is.Empty);
+
+        LiveButton("Target1_0").onClick.Invoke();
+        LiveButton("Turn").onClick.Invoke();
+        LiveButton("RotateConfirm").onClick.Invoke();
+
+        var recap = table.Snapshot.Recap;
+        Assert.That(recap.TakeLast(2).Select(item => item.GetType()), Is.EqualTo(new[] { typeof(RecapRotated), typeof(RecapClaimed) }));
+        Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("1"), "a rotate claim does not end the turn");
+        Assert.That(table.Snapshot.View.PendingMatchTile.Id.Value, Is.EqualTo("spinner"));
+        SkipTheWholeRecap();
+        Assert.That(FindText("Notice").text, Does.Contain("claimed"));
+        Assert.That(table.Snapshot.View.Claims.Single(claims => claims.Seat.Value == "1").Missions.Single().Id.Value, Is.EqualTo("red-row"));
+    }
+
+    // A tap, Turn, Confirm, or Bounce pressed while a recap plays does nothing. The buttons are kept from before the recap, as a late press would reach them.
+    [Test]
+    public void APowerTap_Turn_Confirm_AndBounce_DuringAPlayingRecap_DoNothing()
+    {
+        var rotate = Cell.Symbol(OrdinaryCatalog.Rotate);
+        var bounce = Cell.Symbol(OrdinaryCatalog.Bounce);
+        var blank = Cell.Symbol(OrdinaryCatalog.Blank);
+        var table = BeginHumanTable(SetupFrom(
+            BlankTile("start"),
+            BlankTile("side"),
+            new Tile(new TileId("both-ways"), rotate, rotate, blank, blank),
+            new Tile(new TileId("twice"), bounce, bounce, blank, blank),
+            BlankTile("pad")));
+        table.Place(1, 0);
+        SkipTheWholeRecap();
+        table.ConfirmIncomingSeat();
+        SkipTheWholeRecap();
+
+        LiveButton("Target0_0").onClick.Invoke();
+        LiveButton("Turn").onClick.Invoke();
+        var turn = LiveButton("Turn");
+        var confirm = LiveButton("RotateConfirm");
+        confirm.onClick.Invoke();
+        var recap = _root.GetComponent<TableView>().Recap;
+        Assert.That(recap.IsPlaying, Is.True);
+        var board = CellsOf(table.Snapshot.View);
+        var items = table.Snapshot.Recap.Count;
+        var left = table.Snapshot.View.RemainingUses.Single(charge => charge.Power.Equals(OrdinaryCatalog.Rotate)).Remaining;
+        Assert.That(left, Is.EqualTo(1), "a use is still there to be taken by a stray press");
+
+        foreach (var name in new[] { "Target0_0", "Target1_0", "Highlight0_1" })
+        {
+            LiveButton(name)?.onClick.Invoke();
+        }
+
+        turn.onClick.Invoke();
+        confirm.onClick.Invoke();
+
+        Assert.That(LiveRect("Preview"), Is.Null);
+        Assert.That(LiveButton("RotateConfirm"), Is.Null);
+        Assert.That(CellsOf(table.Snapshot.View), Is.EqualTo(board));
+        Assert.That(table.Snapshot.Recap.Count, Is.EqualTo(items));
+        Assert.That(table.Snapshot.View.RemainingUses.Single(charge => charge.Power.Equals(OrdinaryCatalog.Rotate)).Remaining, Is.EqualTo(left));
+        SkipTheWholeRecap();
+        Assert.That(LiveRect("Preview"), Is.Null);
+    }
+
+    [Test]
+    public void ABouncePressedDuringAPlayingRecap_DoesNothing()
+    {
+        var bounce = Cell.Symbol(OrdinaryCatalog.Bounce);
+        var blank = Cell.Symbol(OrdinaryCatalog.Blank);
+        var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("side"), new Tile(new TileId("twice"), bounce, bounce, blank, blank), BlankTile("pad")));
+        table.Place(1, 0);
+        SkipTheWholeRecap();
+        table.ConfirmIncomingSeat();
+        SkipTheWholeRecap();
+        LiveButton("Target1_0").onClick.Invoke();
+        var press = LiveButton("Bounce");
+        press.onClick.Invoke();
+        Assert.That(_root.GetComponent<TableView>().Recap.IsPlaying, Is.True);
+        Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
+
+        press.onClick.Invoke();
+        LiveButton("Target0_0")?.onClick.Invoke();
+        LiveButton("Bounce")?.onClick.Invoke();
+
+        Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(1), "the second bounce was not taken");
+        Assert.That(table.Snapshot.View.RemainingUses.Single(charge => charge.Power.Equals(OrdinaryCatalog.Bounce)).Remaining, Is.EqualTo(1));
+    }
+
     [Test]
     public void EachKindOfItemHasItsOwnPicture_AndTheEndOfTheGameIsAnnounced()
     {
         var rotate = BeginHumanTable(RotateSetup());
-        rotate.SelectPower(OrdinaryCatalog.Rotate);
-        rotate.SetQuarterTurns(2);
-        rotate.UseAt(0, 0);
+        rotate.Submit(new UseRotate(0, 0, 2));
         Assert.That(rotate.Snapshot.Recap.Single(), Is.InstanceOf<RecapRotated>());
         Assert.That(LiveRect("RecapRotated"), Is.Not.Null);
         Assert.That(FindText("Heading").text, Is.EqualTo("Seat 1 rotates a tile"));
         Object.DestroyImmediate(_root);
 
         var bounce = BeginHumanTable(BounceSetup());
-        bounce.SelectPower(OrdinaryCatalog.Bounce);
-        bounce.UseAt(0, 0);
+        bounce.Submit(new UseBounce(0, 0));
         Assert.That(bounce.Snapshot.Recap.Single(), Is.InstanceOf<RecapBounced>());
         Assert.That(LiveRect("RecapBounced"), Is.Not.Null);
         Assert.That(FindText("Heading").text, Is.EqualTo("Seat 1 bounces a tile"));

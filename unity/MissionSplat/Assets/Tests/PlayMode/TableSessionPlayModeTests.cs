@@ -171,17 +171,13 @@ public class TableSessionPlayModeTests : TableSessionFixture
     [Test]
     public void StackAndTargetOutlines_AndLegalSpots_StillTakeTheTap()
     {
-        var table = BeginHumanTable(RotateSetup());
+        BeginHumanTable(RotateSetup());
         Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
         Assert.That(LiveButtons("Highlight").All(button => button.GetComponent<Image>().raycastTarget), Is.True, "a legal spot takes taps over its whole block");
-
-        LiveButton("PowerRotate").onClick.Invoke();
-        LiveButton("Spin").onClick.Invoke();
 
         var target = LiveButton("Target0_0");
         Assert.That(target.GetComponent<Image>().raycastTarget, Is.True, "a ring takes taps inside it too");
         Assert.That(target.transform.Find("Ring").GetComponent<Image>().color, Is.EqualTo(SplatPalette.TargetRing));
-        Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
     }
 
     [TestCase(2)]
@@ -257,111 +253,6 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(lattice.GetComponentsInChildren<Button>(true).Any(button => button.name.StartsWith("Highlight")), Is.False);
         Assert.That(FindButton("Spin"), Is.Not.Null);
         Assert.That(FindButton("Spin").interactable, Is.False);
-    }
-
-    [Test]
-    public void SelectingRotate_TurnsTheTappedTile_AndKeepsTheDrawnTileToPlace()
-    {
-        var table = BeginHumanTable(RotateSetup());
-        var before = CellsOf(table.Snapshot.View);
-        Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
-
-        LiveButton("PowerRotate").onClick.Invoke();
-
-        Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
-        Assert.That(LiveButtons("Highlight"), Is.Empty);
-        Assert.That(LiveButton("Target0_0"), Is.Not.Null);
-        Assert.That(LiveButton("Target0_0").interactable, Is.False, "a rotate target waits for a 1–3 amount");
-        Assert.That(LiveButton("Spin").interactable, Is.True);
-        Assert.That(FindText("Status").text, Does.Contain("rotate"));
-
-        LiveButton("Spin").onClick.Invoke();
-        LiveButton("Spin").onClick.Invoke();
-        Assert.That(table.Snapshot.QuarterTurns, Is.EqualTo(2));
-        Assert.That(LiveButton("Target0_0").interactable, Is.True);
-        LiveButton("Target0_0").onClick.Invoke();
-
-        var snapshot = table.Snapshot;
-        Assert.That(CellsOf(snapshot.View), Is.Not.EqualTo(before));
-        Assert.That(snapshot.View.PendingMatchTile, Is.Not.Null);
-        Assert.That(snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
-        Assert.That(snapshot.SelectedPower, Is.Null);
-        Assert.That(LiveButton("PowerRotate"), Is.Null, "a power with no use left has no chip");
-        Assert.That(LiveButtons("Target"), Is.Empty);
-        Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
-    }
-
-    [Test]
-    public void SelectingBounce_RemovesTheTappedTile_ThenAConfirmedHighlightPlacesTheDrawnTile()
-    {
-        var table = BeginHumanTable(BounceBoardSetup());
-        PlaceAt(LiveButton("Highlight1_0"));
-        table.ConfirmIncomingSeat();
-        Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
-        Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
-
-        LiveButton("PowerBounce").onClick.Invoke();
-
-        Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Bounce));
-        Assert.That(LiveButton("Spin").interactable, Is.True);
-        Assert.That(FindText("Status").text, Does.Contain("bounce"));
-
-        // The lifter's bounce cell is local (0, 0); a quarter-turn moves it up the pending tile's lattice, so bounce still previews the turn.
-        Assert.That(PendingCellPosition("C00"), Is.EqualTo(Vector2.zero));
-        LiveButton("Spin").onClick.Invoke();
-        Assert.That(PendingCellPosition("C00").x, Is.EqualTo(0f));
-        Assert.That(PendingCellPosition("C00").y, Is.GreaterThan(0f));
-        for (var i = 0; i < 3; i++)
-        {
-            LiveButton("Spin").onClick.Invoke();
-        }
-
-        Assert.That(PendingCellPosition("C00"), Is.EqualTo(Vector2.zero));
-
-        LiveButton("Target1_0").onClick.Invoke();
-
-        var snapshot = table.Snapshot;
-        Assert.That(snapshot.View.Board.Tiles.Count, Is.EqualTo(1));
-        Assert.That(snapshot.View.PendingMatchTile, Is.Not.Null);
-        Assert.That(snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
-        Assert.That(snapshot.SelectedPower, Is.Null);
-        Assert.That(LiveButton("PowerBounce"), Is.Null);
-
-        PlaceAt(LiveButtons("Highlight").First());
-
-        Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
-        Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
-    }
-
-    [Test]
-    public void PlaceInstead_AfterSelectingAPower_ReturnsThePlacementHighlights()
-    {
-        var table = BeginHumanTable(RotateSetup());
-        Assert.That(LiveButton("PlaceInstead"), Is.Null);
-
-        LiveButton("PowerRotate").onClick.Invoke();
-        Assert.That(LiveButtons("Highlight"), Is.Empty);
-
-        LiveButton("PlaceInstead").onClick.Invoke();
-
-        Assert.That(table.Snapshot.SelectedPower, Is.Null);
-        Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
-        Assert.That(LiveButtons("Target"), Is.Empty);
-        Assert.That(LiveButton("PlaceInstead"), Is.Null);
-        Assert.That(LiveButton("PowerRotate"), Is.Not.Null);
-        Assert.That(LiveButton("PowerRotate").transform.Find("Count"), Is.Null, "one use left shows no count");
-    }
-
-    [Test]
-    public void TappingTheSelectedPowerAgain_Deselects()
-    {
-        var table = BeginHumanTable(RotateSetup());
-
-        LiveButton("PowerRotate").onClick.Invoke();
-        LiveButton("PowerRotate").onClick.Invoke();
-
-        Assert.That(table.Snapshot.SelectedPower, Is.Null);
-        Assert.That(LiveButtons("Highlight"), Is.Not.Empty);
     }
 
     [Test]
@@ -550,32 +441,9 @@ public class TableSessionPlayModeTests : TableSessionFixture
         LiveButton("Seat1").onClick.Invoke();
         Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.True);
 
-        table.SelectPower(null);
+        table.SetQuarterTurns(0);
 
         Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.False);
-    }
-
-    [Test]
-    public void PowerChips_ShowOnlyPowersTheDrawnTileStillHas_AsIconsWithACountAboveOne()
-    {
-        var rotate = Cell.Symbol(OrdinaryCatalog.Rotate);
-        var table = BeginHumanTable(SetupFrom(
-            BlankTile("start"),
-            new Tile(new TileId("double"), rotate, rotate, Cell.Color(OrdinaryCatalog.Red), Cell.Color(OrdinaryCatalog.Red)),
-            BlankTile("pad")));
-
-        Assert.That(LiveButton("PowerRotate"), Is.Not.Null);
-        Assert.That(LiveButton("PowerBounce"), Is.Null, "the drawn tile has no bounce");
-        Assert.That(LiveButton("PowerRotate").GetComponentInChildren<Text>().text, Is.Empty, "a chip is an icon, not words");
-        Assert.That(LiveButton("PowerRotate").transform.Find("Count").GetComponentInChildren<Text>().text, Does.Contain("2"));
-
-        LiveButton("PowerRotate").onClick.Invoke();
-        Assert.That(table.Snapshot.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate));
-        Assert.That(_root.GetComponentsInChildren<RectTransform>(false).Any(rect => rect.name == "TurnHint"), Is.False, "no turns chosen yet");
-        LiveButton("Spin").onClick.Invoke();
-        LiveButton("Spin").onClick.Invoke();
-        var hint = _root.GetComponentsInChildren<RectTransform>(false).Single(rect => rect.name == "TurnHint");
-        Assert.That(hint.childCount, Is.EqualTo(2), "one arrow per quarter-turn");
     }
 
     [Test]
@@ -614,7 +482,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         var scroll = _root.GetComponentInChildren<ScrollRect>(true);
         var slack = (scroll.content.rect.width - scroll.viewport.rect.width) / 2f;
         scroll.content.anchoredPosition = new Vector2(-slack, 0f);
-        table.SelectPower(null);
+        table.SetQuarterTurns(0);
         Assert.That(scroll.content.anchoredPosition.x, Is.EqualTo(-slack).Within(1f), "the scrolled place is kept within a game");
 
         _root.GetComponent<TableView>().ShowSetup(TableStart.PassAndPlayDraft());
@@ -657,29 +525,6 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(TileCentreInView(rightmost, view).x, Is.EqualTo(before.x).Within(1f));
     }
 
-    [Test]
-    public void APowerChipWithNothingToActOnIsGreyedOutAndNotTappable()
-    {
-        var bounce = Cell.Symbol(OrdinaryCatalog.Bounce);
-        var blank = Cell.Symbol(OrdinaryCatalog.Blank);
-        var table = BeginHumanTable(SetupWith(new Tile(new TileId("twice"), bounce, bounce, blank, blank)));
-        Assert.That(LiveButton("PowerBounce").interactable, Is.True);
-        Assert.That(ChipFace("PowerBounce"), Is.EqualTo(SplatPalette.BounceBadge));
-        Assert.That(ChipGrayedOut("PowerBounce"), Is.False);
-
-        // Bouncing the only tile empties the board; the second bounce cell then has no tile to act on.
-        table.SelectPower(OrdinaryCatalog.Bounce);
-        table.UseAt(0, 0);
-
-        Assert.That(table.Snapshot.View.Board.Tiles, Is.Empty);
-        Assert.That(LiveButton("PowerBounce").interactable, Is.True, "still selected, so it can be put back");
-        LiveButton("PowerBounce").onClick.Invoke();
-        Assert.That(table.Snapshot.SelectedPower, Is.Null);
-        Assert.That(LiveButton("PowerBounce"), Is.Not.Null, "one use is still left");
-        Assert.That(LiveButton("PowerBounce").interactable, Is.False);
-        Assert.That(ChipGrayedOut("PowerBounce"), Is.True);
-    }
-
     // Driven through the real input module with a virtual mouse: a drag on a highlight scrolls the board and does not place, a tap places.
     [UnityTest]
     public IEnumerator DraggingAHighlightScrollsTheBoard_AndATapStillPreviewsAndPlaceStillPlaces()
@@ -719,10 +564,10 @@ public class TableSessionPlayModeTests : TableSessionFixture
             mouse = InputSystem.AddDevice<Mouse>();
 
             // Render once to lay the table out on the new canvas, let a frame pass so layout settles, then render again to draw on the settled sizes.
-            table.SelectPower(null);
+            table.SetQuarterTurns(0);
             yield return null;
             Canvas.ForceUpdateCanvases();
-            table.SelectPower(null);
+            table.SetQuarterTurns(0);
             yield return null;
             var scroll = _root.GetComponentInChildren<ScrollRect>(true);
             var before = table.Snapshot.View.Board.Tiles.Count;

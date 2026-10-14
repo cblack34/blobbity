@@ -157,7 +157,7 @@ public class TableTests
         Assert.That(after.SecretsVisible, Is.True);
         Assert.That(after.View.CurrentSeat, Is.EqualTo(First));
         Assert.That(after.Status.Kind, Is.EqualTo(TableStatusKind.ToAct));
-        Assert.That(after.QuarterTurns, Is.EqualTo(0));
+        Assert.That(after.QuarterTurns, Is.EqualTo(2), "a rotate carries its own amount and leaves the drawn tile's placement turn");
         Assert.That(after.View.RemainingUses.Single(charge => charge.Power.Equals(OrdinaryCatalog.Rotate)).Remaining, Is.EqualTo(0));
         Assert.That(after.LegalTargets.Single(targets => targets.Power.Equals(OrdinaryCatalog.Rotate)).Targets, Is.Empty);
 
@@ -585,15 +585,20 @@ public class TableTests
     }
 
     [Test]
-    public void AnAcceptedRotate_DoesNotLeakItsAmountIntoThePlacementOrientation()
+    public void AnAcceptedRotate_LeavesTheDrawnTilesPlacementTurnAlone_UntilThePlacementUsesIt()
     {
         var table = RotateTable();
-        table.SelectPower(OrdinaryCatalog.Rotate);
         table.SetQuarterTurns(2);
 
-        var rotated = table.UseAt(0, 0);
+        var rotated = table.Submit(new UseRotate(0, 0, 1));
 
         Assert.That(rotated.IsAccepted, Is.True, rotated.Rejection?.Message);
+        Assert.That(table.Snapshot.QuarterTurns, Is.EqualTo(2));
+
+        var slot = table.Snapshot.LegalPlacements[0];
+        var placed = table.Place(slot.TileX, slot.TileY);
+
+        Assert.That(placed.Events.OfType<TilePlaced>().Single().QuarterTurnsClockwise, Is.EqualTo(2));
         Assert.That(table.Snapshot.QuarterTurns, Is.EqualTo(0));
     }
 
@@ -748,7 +753,7 @@ public class TableTests
         var turnedOnce = CellsOf(between.View);
         Assert.That(turnedOnce, Is.Not.EqualTo(original));
         Assert.That(between.SelectedPower, Is.EqualTo(OrdinaryCatalog.Rotate), "a use remains, so the selection stays");
-        Assert.That(between.QuarterTurns, Is.EqualTo(0), "the amount a use spent is not carried to the next");
+        Assert.That(between.QuarterTurns, Is.EqualTo(1), "a rotate does not spend the amount; only a placement does");
         Assert.That(between.View.RemainingUses.Single(charge => charge.Power.Equals(OrdinaryCatalog.Rotate)).Remaining, Is.EqualTo(1));
         Assert.That(between.LegalPlacements, Is.Empty);
 
@@ -760,7 +765,7 @@ public class TableTests
         var after = table.Snapshot;
         Assert.That(CellsOf(after.View), Is.EqualTo(original), "one and three quarter-turns make a full turn");
         Assert.That(after.SelectedPower, Is.Null, "the last use is spent");
-        Assert.That(after.QuarterTurns, Is.EqualTo(0));
+        Assert.That(after.QuarterTurns, Is.EqualTo(3));
         Assert.That(after.LegalPlacements, Is.Not.Empty);
     }
 

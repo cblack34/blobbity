@@ -29,21 +29,22 @@ internal sealed class TablePlayView
     private readonly BoardPanel _board;
     private readonly TurnTray _tray;
     private readonly RecapPlayer _recap;
-    private readonly PlacementStrip _strip;
+    private readonly PreviewStrip _strip;
 
     // What was last rendered, to redraw the board when the preview changes without a new snapshot.
     private TableSnapshot _snapshot;
 
-    // The spot the drawn tile is being tried at, and which tile that is, so a preview never outlives its turn. View state only: the table
-    // learns of a placement when Place is pressed, and says which spots are legal.
-    private (int TileX, int TileY, string Tile)? _preview;
+    // What the player is trying on the board: the drawn tile at a spot, or a board tile selected for a rotate or bounce. View state only: the table
+    // learns of it when the strip's Place, Confirm, or Bounce is pressed, and says which spots and targets are legal.
+    private TilePreview _preview;
 
     // The player pressed Place on the previewed spot.
     public event Action<int, int> PlaceRequested;
+
+    // The player confirmed a rotate or a bounce of the selected tile.
+    public event Action<GameAction> PowerRequested;
     public event Action Confirmed;
     public event Action<int> QuarterTurnsSelected;
-    public event Action<SymbolId?> PowerSelected;
-    public event Action<int, int> TargetTapped;
     public event Action PlayAgainRequested;
     public event Action NewSetupRequested;
 
@@ -74,18 +75,18 @@ internal sealed class TablePlayView
         var board = Ui.Rect("Board", play);
         Ui.Anchored(board, Vector2.zero, Vector2.one, new Vector2(24f, TurnTray.ReachUnits), new Vector2(-24f, -BoardTopUnits));
         _board = new BoardPanel(board);
-        _board.PlacementTapped += Preview;
-        _board.TargetTapped += (tileX, tileY) => TargetTapped?.Invoke(tileX, tileY);
+        _board.TileTapped += OnTileTapped;
 
         _tray = new TurnTray(play);
         _tray.Confirmed += () => Confirmed?.Invoke();
         _tray.QuarterTurnsSelected += turns => QuarterTurnsSelected?.Invoke(turns);
-        _tray.PowerSelected += power => PowerSelected?.Invoke(power);
         _tray.PlayAgainRequested += () => PlayAgainRequested?.Invoke();
         _tray.NewSetupRequested += () => NewSetupRequested?.Invoke();
 
-        _strip = new PlacementStrip(play);
+        _strip = new PreviewStrip(play);
         _strip.Placed += Place;
+        _strip.Turned += Turn;
+        _strip.PowerConfirmed += UsePower;
         _strip.Cancelled += ClearPreview;
 
         // Last, so it draws over everything else.
@@ -120,7 +121,7 @@ internal sealed class TablePlayView
     {
         Canvas.ForceUpdateCanvases();
         _snapshot = snapshot;
-        if (!StillPreviewable(snapshot))
+        if (_preview?.Holds(snapshot) == false)
         {
             _preview = null;
         }
@@ -129,7 +130,7 @@ internal sealed class TablePlayView
         var recapPending = snapshot.Recap.Count > 0;
         var heading = recapPending ? string.Empty : HeadingText(snapshot);
         _heading.text = _recap.IsPlaying ? RecapSummary.Caption(_recap.Current) : heading;
-        _status.text = recapPending ? string.Empty : InstructionText(snapshot);
+        PaintStatus();
         _notice.text = summary ?? NoticeText(snapshot.Notice);
         _notice.gameObject.SetActive(_notice.text.Length > 0);
         _seatBar.Paint(snapshot.View, HighlightedSeat(snapshot));
@@ -139,48 +140,59 @@ internal sealed class TablePlayView
         PaintBoard();
     }
 
-    // The preview holds only while its spot is still offered for the same drawn tile at the current Spin turn, with no recap in the way.
-    private bool StillPreviewable(TableSnapshot snapshot) =>
-        _preview is { } preview
-        && snapshot.Recap.Count == 0
-        && snapshot.View.PendingMatchTile?.Id.Value == preview.Tile
-        && snapshot.LegalPlacements.Any(spot => spot.TileX == preview.TileX && spot.TileY == preview.TileY);
+    // The instruction waits for the recap that led to it, and follows what is being tried.
+    private void PaintStatus() => _status.text = _snapshot.Recap.Count > 0 ? string.Empty : InstructionText(_snapshot, _preview);
 
     private void PaintBoard()
     {
         // The strip covers the board's bottom edge while it shows, so the board leaves room to scroll clear of it.
-        _board.Paint(_snapshot, _preview is { } preview ? (preview.TileX, preview.TileY) : null, _preview != null ? PlacementStrip.HeightUnits : 0f);
-        _strip.Show(_preview != null);
-        // Every paint can move the spot: a tap, a Spin, or a new viewport size. It may sit behind the strip, or off the view.
-        if (_preview is { } shown)
+        _board.Paint(_snapshot, _preview, _preview != null ? PreviewStrip.HeightUnits : 0f);
+        _strip.Show(_preview);
+        // Every paint can move the tile: a tap, a Spin, or a new viewport size. It may sit behind the strip, or off the view.
+        if (_preview != null)
         {
-            _board.RevealTile(shown.TileX, shown.TileY, PlacementStrip.HeightUnits);
+            _board.RevealTile(_preview.TileX, _preview.TileY, PreviewStrip.HeightUnits);
         }
     }
 
-    // A tap on a legal spot only tries the tile there.
-    private void Preview(int tileX, int tileY)
+    // What the player tried changed without a new snapshot: repaint the instruction and the board to match.
+    private void Repaint()
     {
-        if (_recap.IsPlaying || _snapshot?.View.PendingMatchTile is not { } drawn)
+        PaintStatus();
+        Canvas.ForceUpdateCanvases();
+        PaintBoard();
+    }
+
+    // A tap on a legal spot only tries the drawn tile there; a tap on a power target only selects that tile. Nothing starts while a recap is pending.
+    private void OnTileTapped(int tileX, int tileY)
+    {
+        if (_snapshot == null || TilePreview.Tapped(_snapshot, tileX, tileY) is not { } tried)
         {
             return;
         }
 
-        _preview = (tileX, tileY, drawn.Id.Value);
-        Canvas.ForceUpdateCanvases();
-        PaintBoard();
+        _preview = tried;
+        Repaint();
+    }
+
+    private void Turn()
+    {
+        if (_preview is { Kind: PreviewKind.Rotate } rotate)
+        {
+            _preview = rotate.Turned();
+            Repaint();
+        }
     }
 
     private void ClearPreview()
     {
         _preview = null;
-        Canvas.ForceUpdateCanvases();
-        PaintBoard();
+        Repaint();
     }
 
     private void Place()
     {
-        if (_preview is not { } preview)
+        if (_preview is not { Kind: PreviewKind.Placement } preview)
         {
             return;
         }
@@ -188,6 +200,18 @@ internal sealed class TablePlayView
         // Redrawn first, so nothing lingers if the session drops the action; a render that follows draws the new state.
         ClearPreview();
         PlaceRequested?.Invoke(preview.TileX, preview.TileY);
+    }
+
+    // Confirm on a rotate, or Bounce, on the selected tile.
+    private void UsePower()
+    {
+        if (_preview?.ToAction() is not { } action)
+        {
+            return;
+        }
+
+        ClearPreview();
+        PowerRequested?.Invoke(action);
     }
 
     // A band across the screen: top units from the top edge, height units tall, inset on both sides.
@@ -216,7 +240,7 @@ internal sealed class TablePlayView
         };
     }
 
-    private static string InstructionText(TableSnapshot snapshot)
+    private static string InstructionText(TableSnapshot snapshot, TilePreview preview)
     {
         var status = snapshot.Status;
         switch (status.Kind)
@@ -224,7 +248,7 @@ internal sealed class TablePlayView
             case TableStatusKind.ToConfirm:
                 return "Hand the device to " + Seats.NameOf(status.Seat.Value) + ", then confirm.";
             case TableStatusKind.ToAct:
-                return ActInstruction(snapshot);
+                return ActInstruction(snapshot, preview);
             case TableStatusKind.Won:
                 return Seats.ClaimsToWin + " claims wins the game.";
             case TableStatusKind.Ended:
@@ -234,18 +258,22 @@ internal sealed class TablePlayView
         }
     }
 
-    private static string ActInstruction(TableSnapshot snapshot)
+    private static string ActInstruction(TableSnapshot snapshot, TilePreview preview)
     {
-        if (snapshot.SelectedPower is { } power)
+        switch (preview?.Kind)
         {
-            return RotateAmount.IsPending(snapshot)
-                ? "Spin to choose the turns, then pick a tile to rotate."
-                : "Pick a tile to " + power.Value + ".";
+            case PreviewKind.Rotate:
+                return "Turn the tile, then confirm.";
+            case PreviewKind.Bounce:
+                return "Bounce this tile?";
+            case null:
+            case PreviewKind.Placement:
+                return TilePreview.PowerTargets(snapshot).Any()
+                    ? "Place your tile, or tap a ringed tile to use a power."
+                    : "Place your tile.";
+            default:
+                throw new ArgumentOutOfRangeException(nameof(preview), preview.Kind, "Unknown kind of preview.");
         }
-
-        return snapshot.View.RemainingUses.Any(charge => charge.Remaining > 0)
-            ? "Place your tile, or use a power first."
-            : "Place your tile.";
     }
 
     private static string NoticeText(TableNotice notice) =>

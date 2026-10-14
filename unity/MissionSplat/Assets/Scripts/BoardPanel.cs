@@ -3,6 +3,7 @@ namespace MissionSplat.Player
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Rules;
 using UnityEngine;
@@ -16,7 +17,7 @@ internal sealed class BoardPanel
     // on the canvas's 1080-unit reference width is about 44 pt on a phone.
     private const float MinimumTileUnits = 120f;
 
-    // The previewed tile is drawn 1.1 times as big as the spot it is tried at, and raised 0.18 of a cell.
+    // The previewed or selected tile is drawn 1.1 times as big as the spot it is tried at, and raised 0.18 of a cell.
     private const float PreviewScale = 1.1f;
     private const float PreviewLift = 0.18f;
 
@@ -53,9 +54,8 @@ internal sealed class BoardPanel
         _scroll.inertia = true;
     }
 
-    public event Action<int, int> PlacementTapped;
-
-    public event Action<int, int> TargetTapped;
+    // A tap on a legal spot or on a power target; the owner decides what it starts.
+    public event Action<int, int> TileTapped;
 
     // A new game starts centred, not where the last one was scrolled to.
     public void ForgetScroll()
@@ -67,10 +67,11 @@ internal sealed class BoardPanel
     }
 
     // The caller runs Canvas.ForceUpdateCanvases() first: the viewport's size is read here.
-    // preview is the tile spot the drawn tile is being tried at, if any; it is drawn there, lifted, instead of that spot's tap target.
+    // preview is what is being tried, if anything: the drawn tile at a spot, or a board tile selected for a power. It is drawn there, lifted, with a ring,
+    // instead of that tile's or spot's tap target.
     // bottomInset is the height of what covers the board's bottom edge: the content gets that much slack below (and above, to stay centred),
     // so the player can scroll the bottom row clear of it.
-    public void Paint(TableSnapshot snapshot, (int TileX, int TileY)? preview = null, float bottomInset = 0f)
+    public void Paint(TableSnapshot snapshot, TilePreview preview = null, float bottomInset = 0f)
     {
         if (_content != null && _content.anchoredPosition != _placedAt)
         {
@@ -144,13 +145,18 @@ internal sealed class BoardPanel
             cells[(occupied.CellX, occupied.CellY)] = occupied.Value;
         }
 
+        // A tile selected for a power is drawn lifted, by PaintPreview, instead.
         foreach (var tile in view.Board.Tiles)
         {
+            if (preview?.SelectsBoardTile(tile.TileX, tile.TileY) == true)
+            {
+                continue;
+            }
+
             var block = Ui.Rect("Tile" + tile.Id.Value, lattice);
             Ui.PlaceCell(block, tile.TileX * 2, tile.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
-            TilePainter.Paint(block, tile.Id.Value, (x, y) => cells[((tile.TileX * 2) + x, (tile.TileY * 2) + y)], 0);
+            TilePainter.Paint(block, tile.Id.Value, CellsOf(cells, tile.TileX, tile.TileY), 0);
         }
-
         _content = content;
         _lattice = lattice;
         _origin = new Vector2Int(minX, minY);
@@ -161,29 +167,34 @@ internal sealed class BoardPanel
         content.anchoredPosition = ScrolledTo(_focus, content.sizeDelta, area.size);
         _placedAt = content.anchoredPosition;
 
-        if (snapshot.ConcealVisible)
+        if (!snapshot.ConcealVisible)
         {
-            return;
+            PaintTapTargets(lattice, snapshot, preview, minX, minY, cellSize);
         }
 
-        // While a power is selected the snapshot offers no placements, so only its targets are drawn.
-        // A rotate target waits for a 1–3 amount; Rules would refuse zero, so the tap is not offered until the row is set.
-        var targetsLive = !RotateAmount.IsPending(snapshot);
-        foreach (var target in snapshot.SelectedTargets)
+        // Last, so no neighbour's tap target or spot draws over the lifted tile.
+        PaintPreview(lattice, snapshot, preview, cells, minX, minY, cellSize);
+    }
+
+    // The cell at local (x, y) of the tile at (tileX, tileY), as the board holds it.
+    private static Func<int, int, Cell> CellsOf(Dictionary<(int X, int Y), Cell> cells, int tileX, int tileY) =>
+        (x, y) => cells[((tileX * 2) + x, (tileY * 2) + y)];
+
+    // A ring and a tap on each tile the drawn tile's power can act on, so the player can see what is worth a tap, and a tap target on each legal spot.
+    // What is being previewed shows the tile itself instead.
+    private void PaintTapTargets(RectTransform lattice, TableSnapshot snapshot, TilePreview preview, int minX, int minY, float cellSize)
+    {
+        var targets = TilePreview.PowerTargets(snapshot).ToHashSet();
+        foreach (var target in targets.Where(target => preview?.IsAt(target.TileX, target.TileY) != true))
         {
-            var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, minX, minY, cellSize, () => TargetTapped?.Invoke(target.TileX, target.TileY));
+            var button = AddTileButton(lattice, "Target" + target.TileX + "_" + target.TileY, target.TileX, target.TileY, minX, minY, cellSize, () => TileTapped?.Invoke(target.TileX, target.TileY));
             PaintRing(button.transform, SplatPalette.TargetRing, cellSize);
-            Ui.SetEnabled(button, targetsLive);
         }
 
-        foreach (var highlight in snapshot.LegalPlacements)
+        // A power target is already tappable above; a tap there selects the power.
+        foreach (var highlight in snapshot.LegalPlacements.Where(spot => preview?.IsAt(spot.TileX, spot.TileY) != true && !targets.Contains(new BoardPosition(spot.TileX, spot.TileY))))
         {
-            if (preview is { } shown && shown.TileX == highlight.TileX && shown.TileY == highlight.TileY)
-            {
-                continue;
-            }
-
-            var button = AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, minX, minY, cellSize, () => PlacementTapped?.Invoke(highlight.TileX, highlight.TileY));
+            var button = AddTileButton(lattice, "Highlight" + highlight.TileX + "_" + highlight.TileY, highlight.TileX, highlight.TileY, minX, minY, cellSize, () => TileTapped?.Invoke(highlight.TileX, highlight.TileY));
             // A stack target is a tile to cover, so it gets a ring around the tile; any other placement is an empty spot to fill.
             if (highlight.Kind == PlacementKind.OnTop)
             {
@@ -196,11 +207,32 @@ internal sealed class BoardPanel
                 Ui.Stretch(spot.rectTransform);
             }
         }
+    }
 
-        // Last, so no neighbour's tap target or spot draws over the lifted tile.
-        if (preview is { } tried && view.PendingMatchTile is { } drawn)
+    // The previewed tile, lifted: the drawn tile at its spot as Spin has it, or the selected board tile as the player has turned it.
+    private static void PaintPreview(RectTransform lattice, TableSnapshot snapshot, TilePreview preview, Dictionary<(int X, int Y), Cell> cells, int minX, int minY, float cellSize)
+    {
+        switch (preview?.Kind)
         {
-            PaintPreview(lattice, drawn, snapshot.QuarterTurns, tried, minX, minY, cellSize);
+            case null:
+                return;
+            case PreviewKind.Placement:
+                if (snapshot.View.PendingMatchTile is { } drawn)
+                {
+                    PaintLifted(lattice, drawn.Id.Value, drawn.Local, snapshot.QuarterTurns, preview, minX, minY, cellSize);
+                }
+
+                return;
+            case PreviewKind.Rotate:
+            case PreviewKind.Bounce:
+                foreach (var tile in snapshot.View.Board.Tiles.Where(tile => preview.SelectsBoardTile(tile.TileX, tile.TileY)))
+                {
+                    PaintLifted(lattice, tile.Id.Value, CellsOf(cells, tile.TileX, tile.TileY), preview.Turns, preview, minX, minY, cellSize);
+                }
+
+                return;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(preview), preview.Kind, "Unknown kind of preview.");
         }
     }
 
@@ -262,16 +294,16 @@ internal sealed class BoardPanel
         return new Vector2(Mathf.Clamp(wanted.x, -slack.x, slack.x), Mathf.Clamp(wanted.y, -slack.y, slack.y));
     }
 
-    // The drawn tile at the spot it is being tried at, turned as Spin has it: bigger and raised, with a soft ring, and over a tile it would stack on.
-    // It takes no taps; the Place and Cancel strip decides.
-    private static void PaintPreview(RectTransform lattice, Tile drawn, int quarterTurns, (int TileX, int TileY) spot, int minX, int minY, float cellSize)
+    // A tile at the spot it is being tried at or selected at, turned as given: bigger and raised, with a soft green ring, and over a tile it would stack on.
+    // It takes no taps; the strip decides.
+    private static void PaintLifted(RectTransform lattice, string tileId, Func<int, int, Cell> cellAt, int quarterTurns, TilePreview spot, int minX, int minY, float cellSize)
     {
         var block = Ui.Rect("Preview", lattice);
         Ui.PlaceCell(block, spot.TileX * 2, spot.TileY * 2, 2, 2, minX, minY, cellSize, 0f, 0f);
         block.pivot = new Vector2(0.5f, 0.5f);
         block.anchoredPosition += new Vector2(cellSize, cellSize + (PreviewLift * cellSize));
         block.localScale = new Vector3(PreviewScale, PreviewScale, 1f);
-        TilePainter.Paint(block, drawn.Id.Value, drawn.Local, quarterTurns);
+        TilePainter.Paint(block, tileId, cellAt, quarterTurns);
         // After the tile, so its hard shadow does not hide the ring's lower and right sides.
         PaintRing(block, SplatPalette.Go, cellSize);
     }

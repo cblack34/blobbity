@@ -25,10 +25,9 @@ public static class SplatPalette
     // Outlines drawn around a tile: a stack target (a tile the drawn tile would cover) and a power target.
     public static readonly Color StackRing = Hex("2f9bd8");
     public static readonly Color TargetRing = Hex("fb8500");
-    public static readonly Color PowerSelected = TargetRing;
     public static readonly Color Overlay = new Color(0.11f, 0.11f, 0.11f, 0.78f);
 
-    // Buttons and badges: the power badges on tiles and tray chips, and Start, the way forward.
+    // Buttons and badges: the power badges on tiles, the strip's Bounce, and Start, the way forward.
     public static readonly Color Sunny = Hex("ffd166");
     public static readonly Color Go = Hex("8fe3a0");
     public static readonly Color RotateBadge = Sunny;

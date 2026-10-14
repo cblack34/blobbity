@@ -239,8 +239,8 @@ public sealed class Table
 
         Record(seat, result, before);
 
-        // The amount a rotate used is spent with it, so it never becomes the next placement's orientation.
-        if (action is Place || action is UseRotate)
+        // A placement uses up the turn Spin chose. A rotate carries its own amount, so the drawn tile keeps its placement turn.
+        if (action is Place)
         {
             _quarterTurns = 0;
         }
