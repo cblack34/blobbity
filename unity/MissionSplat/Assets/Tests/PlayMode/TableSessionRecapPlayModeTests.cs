@@ -291,6 +291,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
     public void EachKindOfItemHasItsOwnPicture_AndTheEndOfTheGameIsAnnounced()
     {
         var rotate = BeginHumanTable(RotateSetup());
+        SkipTheWholeRecap();
         rotate.Submit(new UseRotate(0, 0, 2));
         Assert.That(rotate.Snapshot.Recap.Single(), Is.InstanceOf<RecapRotated>());
         Assert.That(LiveRect("RecapRotated"), Is.Not.Null);
@@ -298,6 +299,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Object.DestroyImmediate(_root);
 
         var bounce = BeginHumanTable(BounceSetup());
+        SkipTheWholeRecap();
         bounce.Submit(new UseBounce(0, 0));
         Assert.That(bounce.Snapshot.Recap.Single(), Is.InstanceOf<RecapBounced>());
         Assert.That(LiveRect("RecapBounced"), Is.Not.Null);

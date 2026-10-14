@@ -82,5 +82,13 @@ internal sealed class RecapStage
         var pip = _seatBar.PipOf(seat, mission);
         return pip == null ? null : (Vector2)_screenLayer.InverseTransformPoint(pip.position);
     }
+
+    // Where a rect given by its world corners sits in the screen layer's space: its centre, and its width.
+    public (Vector2 Centre, float Size) ScreenSpan(Vector3 min, Vector3 max)
+    {
+        Vector2 low = _screenLayer.InverseTransformPoint(min);
+        Vector2 high = _screenLayer.InverseTransformPoint(max);
+        return ((low + high) / 2f, Mathf.Abs(high.x - low.x));
+    }
 }
 }

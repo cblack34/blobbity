@@ -50,6 +50,9 @@ internal static class PowerBadge
     private const float BarLength = 0.56f;
     private const float BarThickness = 0.13f;
 
+    // True for the symbols that have a badge of their own: rotate, stack, and bounce.
+    public static bool IsPower(SymbolId symbol) => Looks.ContainsKey(symbol.Value);
+
     private static Color FillOf(SymbolId power) => LookOf(power).Fill;
 
     // Draws the whole badge filling parent, which should be square. A spent one has a gray face.
