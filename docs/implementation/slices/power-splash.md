@@ -85,8 +85,36 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 
 ## Amendments
 
-None.
+- **2026-10-13, after the design review:** a drawn tile is marked as announced when its splash is *queued*, not when the splash finishes or is skipped. A cancelled, failed, or instant splash therefore never loops. The approach above said "when its splash queue finishes or is skipped".
 
 ## Delivery record
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
+
+- **Outcome:** When the human holding the device can act with a drawn tile that shows a power, one splash per power kind plays after any recap for that human:
+  - the power's badge zooms out from its cell on the tray tile, spins, grows to about 3.5 times its size towards the middle of the table, and shrinks back, in about one second;
+  - a soft dim sits behind it;
+  - the heading reads "You got a rotate!", "You got a bounce!", or "You got a stack!", and the instruction line is blank;
+  - a tap skips the current splash, and input is blocked while it plays.
+
+  `RecapPlayer` runs a recap or a splash queue through one `Reel`, so the recap's acknowledgement still fires once. A drawn tile is announced once: re-renders, Spin, and previews don't replay it, and a new game resets it. There is no splash for AI seats, or behind the hand-off cover.
+- **Verification:** On `0472728`, Rules 241, App 86, and `unity test unity/MissionSplat --mode PlayMode` 84 of 84, run by the implementation lead. The 14 splash tests cover:
+  - a power tile splashes and a plain tile does not;
+  - one splash per kind;
+  - a tap skips exactly one;
+  - the recap plays first and is acknowledged before the splash;
+  - no replay on a re-render or Spin, and a returning tile splashes again;
+  - no splash for AI seats or behind the cover;
+  - input blocked during a splash;
+  - a stack tile;
+  - the start position equals the tray badge;
+  - a throwing splash still ends;
+  - the instruction line is blank during a splash.
+
+  `power-splash.png` was added.
+- **Deviations:** the amendment above.
+- **Unresolved gates or risks:**
+  - #76: the player infers "is a power" from the badge art; the App should expose the powers in play.
+  - A layout change mid-splash returns the badge to its earlier position for under a second.
+- **Refactor and handoff receipt:** In the PR body and on issue #60.
+- **Final PR:** see the PR linked from issue #60.
