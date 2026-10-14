@@ -10,7 +10,7 @@
   - Colour-blind support: give each game colour its own splat silhouette, keeping the four recognisably one family, and re-tune the hues. A colour-blind mode in options is the fallback.
   - The app icon is a Blobkin.
   - The guide is the source of truth. A human-readable board and the player's code are checked against it.
-  - The type system uses two or three fonts: Baloo 2 for display, plus a text face the maintainer picks from rendered samples.
+  - The type system uses two or three fonts: Baloo 2 for display, plus Atkinson Hyperlegible Next for text, chosen from rendered samples on 2026-10-14.
   - Package scope: brand guide, board, style tile, mascot sheet, logo package, and app icons now; the rest later.
 - **Final acceptance advanced:** None directly. The presentation criteria in [`docs/acceptance.md`](../../acceptance.md) must stay green. Non-negotiable 4 (no copied trade dress) becomes concrete in the guide.
 
@@ -68,7 +68,6 @@ The table looks right, but the game has no name it can keep, no icon, no logo, a
 ### Hard gates
 
 - The wordmark and logo wait on the name screen. If the screen finds a conflict, stop and return to the maintainer.
-- The fonts are fixed only after the maintainer picks from rendered samples.
 
 ### Sequencing recommendations
 
