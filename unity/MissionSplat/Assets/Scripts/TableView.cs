@@ -87,7 +87,7 @@ public sealed class TableView : MonoBehaviour
         Render(snapshot);
     }
 
-    // summary is what the last recap showed, in a line, or null. Any recap the snapshot carries starts last: it may end at once, and its end renders again.
+    // summary is what the last recap showed, in a line, or null. What the snapshot has pending (its recap, or the powers of its drawn tile) starts last: it may end at once, and a recap's end renders again.
     public void Render(TableSnapshot snapshot, string summary = null)
     {
         _rendered = snapshot;
@@ -95,7 +95,7 @@ public sealed class TableView : MonoBehaviour
         _setup.gameObject.SetActive(false);
         _play.gameObject.SetActive(true);
         _playView.Render(snapshot, summary);
-        _playView.PlayRecap(snapshot);
+        _playView.PlayPending(snapshot);
     }
 
     private void BuildCanvas()

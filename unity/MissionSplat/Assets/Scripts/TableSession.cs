@@ -93,6 +93,7 @@ public sealed class TableSession : MonoBehaviour
         _view.RenderNewGame(_table.Snapshot);
     }
 
+    // A recap or a power splash playing blocks input, since the player reports both as playing.
     private bool IsBlocked => !IsStarted || _view.Recap.IsPlaying;
 
     // The recap's line stays until the next thing the player does that moves the game on; Spin keeps it.

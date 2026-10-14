@@ -172,6 +172,57 @@ internal sealed class TurnTray
         PaintTile(_pending, pending, Vector2.zero, Vector2.one, snapshot.QuarterTurns, (x, y) => spent.Contains((x, y)));
     }
 
+    // Where each kind of power on the drawn tile has its badge, one per kind, in cell order.
+    public IReadOnlyList<PowerSpot> PowerSpots(SeatView view)
+    {
+        var spots = new List<PowerSpot>();
+        if (view.PendingMatchTile is not { } tile)
+        {
+            return spots;
+        }
+
+        Canvas.ForceUpdateCanvases();
+        var corners = new Vector3[4];
+        for (var y = 0; y < 2; y++)
+        {
+            for (var x = 0; x < 2; x++)
+            {
+                // A symbol that has a badge look is taken to be a power. A follow-up (#76) has the App say which powers are in play.
+                if (!tile.Local(x, y).TryGetSymbol(out var power) || !PowerBadge.IsPower(power) || spots.Exists(spot => spot.Power.Equals(power)))
+                {
+                    continue;
+                }
+
+                var cell = LiveChild(_pending, TilePainter.CellName(x, y));
+                if (cell != null && LiveChild(cell, CellPainter.BadgeName) is { } badge)
+                {
+                    badge.GetWorldCorners(corners);
+                    spots.Add(new PowerSpot(power, corners[0], corners[2]));
+                }
+                else
+                {
+                    Debug.LogWarning("The drawn tile's " + power.Value + " at cell " + x + "," + y + " has no badge on the tray to splash from.");
+                }
+            }
+        }
+
+        return spots;
+    }
+
+    // The still-showing descendant named name; a re-render leaves the replaced ones inactive until the frame ends.
+    private static RectTransform LiveChild(RectTransform parent, string name)
+    {
+        foreach (var rect in parent.GetComponentsInChildren<RectTransform>(false))
+        {
+            if (rect.name == name)
+            {
+                return rect;
+            }
+        }
+
+        return null;
+    }
+
     // The local cells of the drawn tile whose power badge is used up. A power's uses are a count, not tied to a cell,
     // so as many of its badges as are spent, in cell order, show gray.
     private static HashSet<(int X, int Y)> SpentBadges(SeatView view, Tile tile)

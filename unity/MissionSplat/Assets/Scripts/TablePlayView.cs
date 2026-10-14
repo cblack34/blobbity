@@ -38,6 +38,11 @@ internal sealed class TablePlayView
     // learns of it when the strip's Place, Confirm, or Bounce is pressed, and says which spots and targets are legal.
     private TilePreview _preview;
 
+    // The drawn tile the holder was last looking at, when they could act, power or not: a power tile is announced when it differs from this, so
+    // a re-render, a Spin, or a preview does not announce it again, but one that comes back after another tile does. It is marked when the splash
+    // is queued, not when it ends, so a cancelled, failed, or instant splash never loops.
+    private (SeatId Seat, TileId Tile)? _lastSeen;
+
     // The player pressed Place on the previewed spot.
     public event Action<int, int> PlaceRequested;
 
@@ -97,13 +102,48 @@ internal sealed class TablePlayView
         _recap = new RecapPlayer(new RecapStage(play, board, _board, _seatBar));
         _recap.Finished += shown => RecapFinished?.Invoke(shown);
         // The heading says what is playing until the recap ends.
-        _recap.ItemStarted += item => _heading.text = RecapSummary.Caption(item);
+        _recap.ItemStarted += caption => _heading.text = caption;
+        // The heading goes back to the turn once the splashes are over; a recap's end renders instead.
+        _recap.SplashesFinished += () =>
+        {
+            _heading.text = HeadingText(_snapshot);
+            PaintStatus();
+        };
     }
 
     internal RecapPlayer Recap => _recap;
 
-    // Starts the snapshot's recap, if it has one and none is playing; the caller has rendered the snapshot first.
-    public void PlayRecap(TableSnapshot snapshot) => _recap.Play(snapshot);
+    // Starts what the snapshot has pending, if nothing is playing: its recap, or else the splashes for the drawn tile the holder has not yet been
+    // told about. The caller has rendered the snapshot first.
+    public void PlayPending(TableSnapshot snapshot)
+    {
+        if (snapshot.Recap.Count > 0)
+        {
+            _recap.Play(snapshot);
+            return;
+        }
+
+        AnnouncePowers(snapshot);
+    }
+
+    // Only the human who can act on it hears of a drawn tile's powers, once, and never behind the hand-off cover.
+    private void AnnouncePowers(TableSnapshot snapshot)
+    {
+        if (_recap.IsPlaying || !snapshot.CanAct || snapshot.ConcealVisible || snapshot.View.PendingMatchTile is not { } tile)
+        {
+            return;
+        }
+
+        var drawn = (snapshot.View.Seat, tile.Id);
+        if (_lastSeen == drawn)
+        {
+            return;
+        }
+
+        _lastSeen = drawn;
+        _recap.PlaySplashes(_tray.PowerSpots(snapshot.View));
+        PaintStatus();
+    }
 
     public void Tick(float unscaledSeconds) => _recap.Tick(unscaledSeconds);
 
@@ -113,6 +153,7 @@ internal sealed class TablePlayView
     public void NewGame()
     {
         _preview = null;
+        _lastSeen = null;
         _board.ForgetScroll();
     }
 
@@ -129,7 +170,7 @@ internal sealed class TablePlayView
         // What happens next waits for the recap that led to it: the heading names the item playing, and the instruction is blank.
         var recapPending = snapshot.Recap.Count > 0;
         var heading = recapPending ? string.Empty : HeadingText(snapshot);
-        _heading.text = _recap.IsPlaying ? RecapSummary.Caption(_recap.Current) : heading;
+        _heading.text = _recap.IsPlaying ? _recap.Caption : heading;
         PaintStatus();
         _notice.text = summary ?? NoticeText(snapshot.Notice);
         _notice.gameObject.SetActive(_notice.text.Length > 0);
@@ -140,8 +181,8 @@ internal sealed class TablePlayView
         PaintBoard();
     }
 
-    // The instruction waits for the recap that led to it, and follows what is being tried.
-    private void PaintStatus() => _status.text = _snapshot.Recap.Count > 0 ? string.Empty : InstructionText(_snapshot, _preview);
+    // The instruction waits for the recap or splash that leads to it, and follows what is being tried.
+    private void PaintStatus() => _status.text = _snapshot.Recap.Count > 0 || _recap.IsPlaying ? string.Empty : InstructionText(_snapshot, _preview);
 
     private void PaintBoard()
     {
