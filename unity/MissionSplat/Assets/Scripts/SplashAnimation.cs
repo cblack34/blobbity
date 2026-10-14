@@ -11,7 +11,7 @@ internal sealed class SplashAnimation
     private const float Seconds = 1f;
 
     // How much bigger than its cell the badge grows, and how far it turns on the way (a whole number of turns, so it ends upright).
-    private const float PeakScale = 3.5f;
+    internal const float PeakScale = 3.5f;
     private const float SpinDegrees = 360f;
     private const float DimAlpha = 0.35f;
 

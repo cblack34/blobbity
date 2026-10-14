@@ -38,8 +38,10 @@ internal sealed class TablePlayView
     // learns of it when the strip's Place, Confirm, or Bounce is pressed, and says which spots and targets are legal.
     private TilePreview _preview;
 
-    // The drawn tile whose powers have been announced, and to whom, so a re-render, a Spin, or a preview does not announce it again.
-    private (SeatId Seat, TileId Tile)? _announced;
+    // The drawn tile the holder was last looking at, when they could act, power or not: a power tile is announced when it differs from this, so
+    // a re-render, a Spin, or a preview does not announce it again, but one that comes back after another tile does. It is marked when the splash
+    // is queued, not when it ends, so a cancelled, failed, or instant splash never loops.
+    private (SeatId Seat, TileId Tile)? _lastSeen;
 
     // The player pressed Place on the previewed spot.
     public event Action<int, int> PlaceRequested;
@@ -102,7 +104,11 @@ internal sealed class TablePlayView
         // The heading says what is playing until the recap ends.
         _recap.ItemStarted += caption => _heading.text = caption;
         // The heading goes back to the turn once the splashes are over; a recap's end renders instead.
-        _recap.SplashesFinished += () => _heading.text = HeadingText(_snapshot);
+        _recap.SplashesFinished += () =>
+        {
+            _heading.text = HeadingText(_snapshot);
+            PaintStatus();
+        };
     }
 
     internal RecapPlayer Recap => _recap;
@@ -129,13 +135,14 @@ internal sealed class TablePlayView
         }
 
         var drawn = (snapshot.View.Seat, tile.Id);
-        if (_announced == drawn)
+        if (_lastSeen == drawn)
         {
             return;
         }
 
-        _announced = drawn;
+        _lastSeen = drawn;
         _recap.PlaySplashes(_tray.PowerSpots(snapshot.View));
+        PaintStatus();
     }
 
     public void Tick(float unscaledSeconds) => _recap.Tick(unscaledSeconds);
@@ -146,7 +153,7 @@ internal sealed class TablePlayView
     public void NewGame()
     {
         _preview = null;
-        _announced = null;
+        _lastSeen = null;
         _board.ForgetScroll();
     }
 
@@ -174,8 +181,8 @@ internal sealed class TablePlayView
         PaintBoard();
     }
 
-    // The instruction waits for the recap that led to it, and follows what is being tried.
-    private void PaintStatus() => _status.text = _snapshot.Recap.Count > 0 ? string.Empty : InstructionText(_snapshot, _preview);
+    // The instruction waits for the recap or splash that leads to it, and follows what is being tried.
+    private void PaintStatus() => _status.text = _snapshot.Recap.Count > 0 || _recap.IsPlaying ? string.Empty : InstructionText(_snapshot, _preview);
 
     private void PaintBoard()
     {

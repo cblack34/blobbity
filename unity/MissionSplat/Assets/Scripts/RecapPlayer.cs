@@ -16,7 +16,6 @@ internal sealed class RecapPlayer
     private const float FailedItemSeconds = 0.2f;
 
     private readonly RecapStage _stage;
-    private readonly SplashAnimation _splash;
     private Reel _reel;
     private RecapStep _step;
     private float _elapsedSeconds;
@@ -24,7 +23,7 @@ internal sealed class RecapPlayer
     public RecapPlayer(RecapStage stage)
     {
         _stage = stage;
-        _splash = new SplashAnimation(stage);
+        BeginSplash = new SplashAnimation(stage).Begin;
         Begin = new RecapAnimations(stage).Begin;
         stage.Skipped += Skip;
     }
@@ -44,6 +43,9 @@ internal sealed class RecapPlayer
 
     // How an item is drawn; tests swap it to make drawing fail.
     internal Func<TableSnapshot, int, RecapStep> Begin { get; set; }
+
+    // How a splash is drawn; tests swap it to make drawing fail.
+    internal Func<PowerSpot, RecapStep> BeginSplash { get; set; }
 
     public bool IsPlaying => _reel != null;
 
@@ -81,7 +83,7 @@ internal sealed class RecapPlayer
             return;
         }
 
-        Start(new Reel(spots.Count, index => _splash.Begin(spots[index]), index => SplashAnimation.Caption(spots[index].Power), () => SplashesFinished?.Invoke()));
+        Start(new Reel(spots.Count, index => BeginSplash(spots[index]), index => SplashAnimation.Caption(spots[index].Power), () => SplashesFinished?.Invoke()));
     }
 
     public void Tick(float unscaledSeconds)

@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 internal static class CellPainter
 {
+    // The name of a cell's power badge, for whatever looks for it.
+    public const string BadgeName = "Badge";
+
     // A power's badge fills this much of the cell, centred.
     private const float BadgeMargin = 0.16f;
 
@@ -43,7 +46,7 @@ internal static class CellPainter
             return;
         }
 
-        var badge = Ui.Rect("Badge", parent);
+        var badge = Ui.Rect(BadgeName, parent);
         Ui.Anchored(badge, new Vector2(BadgeMargin, BadgeMargin), new Vector2(1f - BadgeMargin, 1f - BadgeMargin), Vector2.zero, Vector2.zero);
         PowerBadge.Paint(badge, symbol, spent);
     }

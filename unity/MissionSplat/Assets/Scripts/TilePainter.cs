@@ -14,6 +14,9 @@ internal static class TilePainter
     // cellAt gives the cell at local (x, y), and quarterTurns moves each cell clockwise to its slot as Rules.Tile does.
     // spentAt, if given, says which local cells hold a power's badge that is already used up; it draws gray.
     // The card is inset so neighbours show a gap; the block itself stays whole so taps in the gap still reach the highlights drawn over it.
+    // The name of the cell at local (x, y) in a painted tile, so what draws a tile and what looks into it agree.
+    public static string CellName(int x, int y) => "C" + x + y;
+
     public static void Paint(RectTransform block, string tileId, Func<int, int, Cell> cellAt, int quarterTurns, Func<int, int, bool> spentAt = null)
     {
         CardPainter.Paint(block, Ui.Card, CardEdge, block.sizeDelta.x);
@@ -27,7 +30,7 @@ internal static class TilePainter
         {
             for (var x = 0; x < 2; x++)
             {
-                var cellRect = Ui.Rect("C" + x + y, cells);
+                var cellRect = Ui.Rect(CellName(x, y), cells);
                 var (slotX, slotY) = TurnClockwise(x, y, quarterTurns);
                 Ui.PlaceCell(cellRect, slotX, slotY, 1, 1, 0, 0, cell, 0f, 0f);
                 // Keyed by the slot after the quarter-turn, on purpose, so the turn preview shows the same angles that land on the board.

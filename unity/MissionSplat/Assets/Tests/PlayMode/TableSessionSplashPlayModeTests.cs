@@ -6,8 +6,11 @@ using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Player;
 using MissionSplat.Rules;
+using System;
+using System.Text.RegularExpressions;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.TestTools;
 
 // The power splash: when a drawn tile's powers are announced, what it waits for, what it blocks, and when it plays again. Splashes play for real here.
 public class TableSessionSplashPlayModeTests : TableSessionFixture
@@ -29,6 +32,7 @@ public class TableSessionSplashPlayModeTests : TableSessionFixture
         Assert.That(recap.Count, Is.EqualTo(1));
         Assert.That(recap.Caption, Is.EqualTo("You got a rotate!"));
         Assert.That(FindText("Heading").text, Is.EqualTo("You got a rotate!"));
+        Assert.That(FindText("Status").text, Is.Empty, "the instruction waits, as in a recap");
         Assert.That(LiveRect("SplashBadge"), Is.Not.Null);
         Assert.That(table.Snapshot.Recap, Is.Empty, "a splash is not a recap");
 
@@ -38,6 +42,58 @@ public class TableSessionSplashPlayModeTests : TableSessionFixture
         Assert.That(LiveRect("SplashBadge"), Is.Null);
         Assert.That(LiveRect("RecapOverlay"), Is.Null, "the overlay closed");
         Assert.That(FindText("Heading").text, Is.EqualTo("Seat 1’s turn!"), "the heading goes back to the turn");
+        Assert.That(FindText("Status").text, Is.Not.Empty, "and so does the instruction");
+    }
+
+    [Test]
+    public void AStackTile_SplashesToo()
+    {
+        BeginHumanTable(StackSetup());
+
+        Assert.That(RecapOf().Caption, Is.EqualTo("You got a stack!"));
+        Assert.That(LiveRect("SplashBadge"), Is.Not.Null);
+    }
+
+    [Test]
+    public void ASplashThatCannotBeDrawn_IsLogged_AndEndsWithTheTableTakingInputAgain()
+    {
+        var table = NewTable();
+        var recap = RecapOf();
+        recap.BeginSplash = _ => throw new InvalidOperationException("cannot draw this");
+        LogAssert.Expect(LogType.Exception, new Regex("cannot draw this"));
+        table.Begin(TableStart.PassAndPlayDraft(), RotateSetup());
+
+        table.ConfirmIncomingSeat();
+
+        Assert.That(recap.IsPlaying, Is.True, "held briefly, unseen");
+        Assert.That(LiveRect("SplashBadge"), Is.Null);
+        recap.Tick(1f);
+        Assert.That(recap.IsPlaying, Is.False);
+        Assert.That(LiveRect("RecapOverlay"), Is.Null);
+        table.SetQuarterTurns(1);
+        Assert.That(table.Snapshot.QuarterTurns, Is.EqualTo(1));
+        Assert.That(FindText("Status").text, Is.Not.Empty);
+    }
+
+    [Test]
+    public void APowerTileThatComesBackAfterAnotherTile_SplashesAgain()
+    {
+        var view = NewViewOnly();
+        view.Recap.PlaysInstantly = false;
+        var power = StartedTable(RotateSetup()).Snapshot;
+        var plain = StartedTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"))).Snapshot;
+
+        view.Render(power);
+        Assert.That(view.Recap.IsPlaying, Is.True);
+        LiveButton("RecapSkip").onClick.Invoke();
+        view.Render(power);
+        Assert.That(view.Recap.IsPlaying, Is.False, "the same tile is not announced twice running");
+
+        view.Render(plain);
+        Assert.That(view.Recap.IsPlaying, Is.False);
+
+        view.Render(StartedTable(RotateSetup()).Snapshot);
+        Assert.That(view.Recap.IsPlaying, Is.True, "the same tile, seen again after another");
     }
 
     [Test]
@@ -98,6 +154,9 @@ public class TableSessionSplashPlayModeTests : TableSessionFixture
         var startSize = badge.sizeDelta.x;
         Assert.That(startSize, Is.GreaterThan(1f));
         Assert.That(start, Is.Not.EqualTo(Vector2.zero), "it starts at the cell on the tray, not the middle");
+        var cell = _root.GetComponentsInChildren<RectTransform>(false).First(rect => rect.name == CellPainter.BadgeName && IsUnder(rect, "Pending"));
+        var cellCentre = (Vector2)LiveRect("RecapScreen").InverseTransformPoint(cell.TransformPoint(cell.rect.center));
+        Assert.That(Vector2.Distance(start, cellCentre), Is.LessThan(1f), "exactly on the tray's badge");
 
         recap.Tick(0.25f);
         Assert.That(badge.localScale.x, Is.GreaterThan(1.2f));
@@ -105,7 +164,7 @@ public class TableSessionSplashPlayModeTests : TableSessionFixture
 
         recap.Tick(0.25f);
         Assert.That(badge.anchoredPosition.magnitude, Is.LessThan(2f), "at the middle of the table");
-        Assert.That(badge.localScale.x, Is.EqualTo(3.5f).Within(0.01f));
+        Assert.That(badge.localScale.x, Is.EqualTo(SplashAnimation.PeakScale).Within(0.01f));
 
         recap.Tick(0.49f);
         Assert.That(recap.IsPlaying, Is.True);

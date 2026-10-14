@@ -187,16 +187,21 @@ internal sealed class TurnTray
         {
             for (var x = 0; x < 2; x++)
             {
+                // A symbol that has a badge look is taken to be a power. A follow-up (#76) has the App say which powers are in play.
                 if (!tile.Local(x, y).TryGetSymbol(out var power) || !PowerBadge.IsPower(power) || spots.Exists(spot => spot.Power.Equals(power)))
                 {
                     continue;
                 }
 
-                var cell = LiveChild(_pending, "C" + x + y);
-                if (cell != null && LiveChild(cell, "Badge") is { } badge)
+                var cell = LiveChild(_pending, TilePainter.CellName(x, y));
+                if (cell != null && LiveChild(cell, CellPainter.BadgeName) is { } badge)
                 {
                     badge.GetWorldCorners(corners);
                     spots.Add(new PowerSpot(power, corners[0], corners[2]));
+                }
+                else
+                {
+                    Debug.LogWarning("The drawn tile's " + power.Value + " at cell " + x + "," + y + " has no badge on the tray to splash from.");
                 }
             }
         }
