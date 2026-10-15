@@ -22,6 +22,13 @@ public static class SplatPalette
     public static readonly Color Purple = Hex("9c36b5");
     public static readonly Color Gray = Hex("adb5bd");
 
+    // The symbol on each colour is drawn in a deeper shade of it: the hue's OKLCH lightness minus 0.16, chroma kept, so it reads as a darker
+    // red, blue and so on and not as off-black. Computed once offline; recompute if the hue changes.
+    public static readonly Color DeepRed = Hex("9a0110");
+    public static readonly Color DeepBlue = Hex("04508e");
+    public static readonly Color DeepGreen = Hex("006a21");
+    public static readonly Color DeepPurple = Hex("66007b");
+
     // Outlines drawn around a tile: a stack target (a tile the drawn tile would cover) and a power target.
     public static readonly Color StackRing = Hex("2f9bd8");
     public static readonly Color TargetRing = Hex("fb8500");
@@ -53,6 +60,29 @@ public static class SplatPalette
                 return Purple;
             default:
                 return HashColor(color.Value);
+        }
+    }
+
+    // The symbol that marks a colour for players who cannot tell it by sight, in that colour's deep shade. Only the four game colours have one.
+    internal static bool TrySymbolOf(ColorId color, out Sprite symbol, out Color deep)
+    {
+        switch (color.Value)
+        {
+            case "red":
+                (symbol, deep) = (Ui.SymbolHeart, DeepRed);
+                return true;
+            case "blue":
+                (symbol, deep) = (Ui.SymbolTriangle, DeepBlue);
+                return true;
+            case "green":
+                (symbol, deep) = (Ui.SymbolSquare, DeepGreen);
+                return true;
+            case "purple":
+                (symbol, deep) = (Ui.SymbolStar, DeepPurple);
+                return true;
+            default:
+                (symbol, deep) = (null, default);
+                return false;
         }
     }
 
