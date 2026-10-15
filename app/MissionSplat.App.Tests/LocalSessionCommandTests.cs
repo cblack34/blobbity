@@ -221,9 +221,9 @@ public class LocalSessionCommandTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("a-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("a-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Row("a-row"),
-                Cards.Mission("b-square", MissionPattern.Square, OrdinaryCatalog.Blue),
+                Cards.Mission("b-square", BlobbityPattern.Square, OrdinaryCatalog.Blue),
                 Cards.Row("b-row"),
             ],
             []);

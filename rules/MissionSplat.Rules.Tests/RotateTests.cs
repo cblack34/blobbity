@@ -291,7 +291,7 @@ public class RotateTests
         Assert.That(next.HasEnded, Is.False);
         Assert.That(placed.Events, Has.Count.EqualTo(2));
         Assert.That(placed.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((MissionClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("red-row"));
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("red-row"));
         Assert.That(placed.Events.OfType<GameWon>(), Is.Empty);
         Assert.That(game.CellAt(1, 0), Is.EqualTo(Cards.Blank));
     }
@@ -307,7 +307,7 @@ public class RotateTests
 
         Assert.That(result.Events, Has.Count.EqualTo(3));
         Assert.That(result.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((MissionClaimed)result.Events[1]).Mission.Value, Is.EqualTo("red-row"));
+        Assert.That(((BlobbityClaimed)result.Events[1]).Mission.Value, Is.EqualTo("red-row"));
         var gameWon = (GameWon)result.Events[2];
         Assert.That(gameWon.Seat, Is.EqualTo(Cards.Seat("a")));
         Assert.That(gameWon.ClaimCount, Is.EqualTo(1));
@@ -335,7 +335,7 @@ public class RotateTests
             Is.EqualTo(new GameEvent[]
             {
                 new TileRotated(Cards.Seat("a"), 1, 0, 1),
-                new MissionClaimed(Cards.Seat("a"), new MissionId("red-row")),
+                new BlobbityClaimed(Cards.Seat("a"), new MissionId("red-row")),
             }));
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "blue-row" }));
@@ -356,8 +356,8 @@ public class RotateTests
 
         Assert.That(
             placed.Events.Select(e => e.GetType()),
-            Is.EqualTo(new[] { typeof(TilePlaced), typeof(MissionClaimed) }));
-        Assert.That(((MissionClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
+            Is.EqualTo(new[] { typeof(TilePlaced), typeof(BlobbityClaimed) }));
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "spare" }));
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")), "the placement ends the turn");
@@ -376,7 +376,7 @@ public class RotateTests
             Is.EqualTo(new GameEvent[]
             {
                 new TileRotated(Cards.Seat("a"), 1, 0, 1),
-                new MissionClaimed(Cards.Seat("a"), new MissionId("red-row")),
+                new BlobbityClaimed(Cards.Seat("a"), new MissionId("red-row")),
                 new GameWon(Cards.Seat("a"), 1),
             }));
         Assert.That(won.HasEnded, Is.True);
@@ -392,8 +392,8 @@ public class RotateTests
     {
         var game = ReadyToRotateEast(
         [
-            Cards.Mission("red-row-1", MissionPattern.Row, OrdinaryCatalog.Red),
-            Cards.Mission("red-row-2", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Mission("red-row-1", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.Mission("red-row-2", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("b1"),
             Cards.Purple("b2"),
             Cards.Purple("repl"),
@@ -411,7 +411,7 @@ public class RotateTests
     {
         var game = ReadyToRotateEast(
         [
-            Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("a2"),
             Cards.Purple("b1"),
             Cards.Purple("b2"),
@@ -448,8 +448,8 @@ public class RotateTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("blue-row", MissionPattern.Row, OrdinaryCatalog.Blue),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-1"),
@@ -472,10 +472,10 @@ public class RotateTests
         var afterSecond = See.Game(second);
 
         Assert.That(
-            first.Events.OfType<MissionClaimed>().Select(e => e.Mission.Value),
+            first.Events.OfType<BlobbityClaimed>().Select(e => e.Mission.Value),
             Is.EqualTo(new[] { "red-row" }));
         Assert.That(
-            second.Events.OfType<MissionClaimed>().Select(e => e.Mission.Value),
+            second.Events.OfType<BlobbityClaimed>().Select(e => e.Mission.Value),
             Is.EqualTo(new[] { "blue-row" }));
         Assert.That(See.Ids(afterSecond.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
         Assert.That(afterSecond.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
@@ -508,7 +508,7 @@ public class RotateTests
             Is.EqualTo(cells),
             "no colour moved");
         Assert.That(
-            rotated.Events.OfType<MissionClaimed>().Select(e => e.Mission.Value),
+            rotated.Events.OfType<BlobbityClaimed>().Select(e => e.Mission.Value),
             Is.EqualTo(new[] { "red-row" }));
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
     }
@@ -520,7 +520,7 @@ public class RotateTests
         [
             Cards.Purple("a1"),
             Cards.Purple("a2"),
-            Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("b2"),
             Cards.Purple("repl"),
         ]);
@@ -594,7 +594,7 @@ public class RotateTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -627,11 +627,11 @@ public class RotateTests
 
     private static Mission[] RedRowThenSpares() =>
     [
-        Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+        Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
         Cards.Purple("a2"),
         Cards.Purple("b1"),
         Cards.Purple("b2"),
-        Cards.Mission("blue-row", MissionPattern.Row, OrdinaryCatalog.Blue),
+        Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
         Cards.Purple("spare"),
     ];
 

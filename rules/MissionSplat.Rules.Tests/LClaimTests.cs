@@ -27,8 +27,8 @@ public class LClaimTests
     {
         var finished = Finish(
             index,
-            Cards.Mission("l-red", MissionPattern.L, OrdinaryCatalog.Red),
-            Cards.Mission("row-red", MissionPattern.Row, OrdinaryCatalog.Red));
+            Cards.Mission("l-red", BlobbityPattern.L, OrdinaryCatalog.Red),
+            Cards.Mission("row-red", BlobbityPattern.Row, OrdinaryCatalog.Red));
 
         Assert.That(See.Ids(finished.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "l-red" }));
         Assert.That(See.Ids(finished.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "row-red", "repl" }));
@@ -48,7 +48,7 @@ public class LClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("l-red", MissionPattern.L, OrdinaryCatalog.Red),
+                Cards.Mission("l-red", BlobbityPattern.L, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -71,7 +71,7 @@ public class LClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("l-red", MissionPattern.L, OrdinaryCatalog.Red),
+                Cards.Mission("l-red", BlobbityPattern.L, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -88,7 +88,7 @@ public class LClaimTests
     {
         var finished = Finish(
             0,
-            Cards.Mission("square-red", MissionPattern.Square, OrdinaryCatalog.Red),
+            Cards.Mission("square-red", BlobbityPattern.Square, OrdinaryCatalog.Red),
             Cards.Purple("a2"));
 
         Assert.That(finished.Claims(Cards.Seat("a")), Is.Empty);
@@ -119,7 +119,7 @@ public class LClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("l-red", MissionPattern.L, OrdinaryCatalog.Red),
+                Cards.Mission("l-red", BlobbityPattern.L, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -185,7 +185,7 @@ public class LClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("l-red", MissionPattern.L, OrdinaryCatalog.Red),
+                Cards.Mission("l-red", BlobbityPattern.L, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),

@@ -84,8 +84,8 @@ public class WinTests
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Square("c3", C3),
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("filler-1"),
                 Cards.Purple("filler-2"),
                 Cards.Purple("spare"),
@@ -138,8 +138,8 @@ public class WinTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
-                Cards.Mission("blue-square", MissionPattern.Square, OrdinaryCatalog.Blue),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("blue-square", BlobbityPattern.Square, OrdinaryCatalog.Blue),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("filler-1"),
@@ -175,7 +175,7 @@ public class WinTests
     }
 
     private static Mission Square(string id, ColorId color) =>
-        Cards.Mission(id, MissionPattern.Square, color);
+        Cards.Mission(id, BlobbityPattern.Square, color);
 
     private static Game After(Game game, int tileX, int tileY) =>
         See.Game(RepresentativeDeck.Play(game, tileX, tileY));

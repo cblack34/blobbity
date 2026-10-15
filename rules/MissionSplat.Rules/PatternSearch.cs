@@ -31,7 +31,7 @@ internal static class PatternSearch
 
     // Every distinct four-cell set that makes the pattern in the color and holds a written cell.
     public static IReadOnlyCollection<CellSet> CompletingSets(
-        MissionPattern pattern,
+        BlobbityPattern pattern,
         ColorId color,
         IReadOnlyDictionary<CellCoord, Cell> cells,
         HashSet<CellCoord> written)
@@ -54,11 +54,11 @@ internal static class PatternSearch
         return found;
     }
 
-    private static (int X, int Y)[][] Shapes(MissionPattern pattern) => pattern switch
+    private static (int X, int Y)[][] Shapes(BlobbityPattern pattern) => pattern switch
     {
-        MissionPattern.Row => Rows,
-        MissionPattern.Square => Squares,
-        MissionPattern.L => Ls,
+        BlobbityPattern.Row => Rows,
+        BlobbityPattern.Square => Squares,
+        BlobbityPattern.L => Ls,
         _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "That pattern has no matcher."),
     };
 

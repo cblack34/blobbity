@@ -19,12 +19,12 @@ internal static class MissionCardPainter
     private const float SplatOverfill = -0.05f;
 
     // Each pattern's lattice cells (x right, y up), centred on the lattice; a row runs diagonally, bottom-left to top-right, which gives it the most room on the portrait card.
-    private static (float X, float Y)[] Pattern(MissionPattern pattern) =>
+    private static (float X, float Y)[] Pattern(BlobbityPattern pattern) =>
         pattern switch
         {
-            MissionPattern.Row => new[] { (0f, 0f), (1f / 3f, 1f), (2f / 3f, 2f), (1f, 3f) },
-            MissionPattern.Square => new[] { (0f, 1f), (1f, 1f), (0f, 2f), (1f, 2f) },
-            MissionPattern.L => new[] { (0f, 2.5f), (0f, 1.5f), (0f, 0.5f), (1f, 0.5f) },
+            BlobbityPattern.Row => new[] { (0f, 0f), (1f / 3f, 1f), (2f / 3f, 2f), (1f, 3f) },
+            BlobbityPattern.Square => new[] { (0f, 1f), (1f, 1f), (0f, 2f), (1f, 2f) },
+            BlobbityPattern.L => new[] { (0f, 2.5f), (0f, 1.5f), (0f, 0.5f), (1f, 0.5f) },
             _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown mission pattern."),
         };
 

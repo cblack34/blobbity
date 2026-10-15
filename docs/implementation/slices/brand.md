@@ -6,9 +6,11 @@
 - **Human approval:** Approved in session on 2026-10-14. The maintainer's decisions:
   - "Mission Splat" is a working title. Trademark concerns mean it must change.
   - The game is **Blobbity**, and so are the secret target cards ("a blobbity"). The game is named for what you collect.
-  - The player critters are **Blobkins**.
+  - The player critters are blobs, the **Blobbity blobs**. "Blobkins" was dropped on 2026-10-15: plush toys suit the shape, and the "-kins" toy space is crowded, so the critter name gets a proper search before any plush.
   - Colour-blind support: every colour keeps today's splat, with a symbol upright in the middle of the splat body. The symbols are red heart, blue triangle, green square, purple star, and a wild four-point sparkle. A–D are outlines with no fill, drawn in a deeper shade of the splat's own colour (OKLCH lightness −0.16, chroma kept, so the shade reads as colour, not black). The wild's sparkle is filled, and each quarter is deepened from its own colour. These were chosen on 2026-10-14 from rendered sheets, after per-colour splat silhouettes were rejected as losing the splat's feel. A colour-blind mode in options stays the fallback.
-  - The app icon is a Blobkin.
+  - The app icon is a critter's face.
+  - The name is cleared for this slice on 2026-10-15. A deeper screen found no exact conflict, and the nearest mark is BLOBBIE (class 28, #78). The maintainer's own USPTO search raised no concern, and blobbity.com is an unrelated business app.
+  - The card is blobbity in code too, and the product is Blobbity in every namespace, project, package and the repo name, so no copied-work name survives in the tree. History is kept (#92). Decided 2026-10-15; the renames are separate small PRs (#85–#92).
   - The guide is the source of truth. A human-readable board and the player's code are checked against it.
   - The type system uses two or three fonts: Baloo 2 for display, plus Atkinson Hyperlegible Next for text, chosen from rendered samples on 2026-10-14.
   - Package scope: brand guide, board, style tile, mascot sheet, logo package, and app icons now; the rest later.
@@ -17,7 +19,7 @@
 ## Outcome
 
 The game has an identity a contracted designer can pick up without asking:
-- a name (Blobbity), a card word (blobbity), and a mascot name (Blobkins), screened for obvious conflicts;
+- a name (Blobbity) and a card word (blobbity), screened for obvious conflicts, used in code as well as in text;
 - a brand guide covering:
   - who it is for and what it promises;
   - principles;
@@ -42,14 +44,16 @@ The table looks right, but the game has no name it can keep, no icon, no logo, a
 ### In scope
 
 - Renaming the secret cards to blobbity in the player and the docs (#68).
-- Adopting Blobbity and Blobkins in player-facing text, the product name, and the pack's product description. This includes a deeper screen covering exact spellings, sound-alikes, and direct store search.
+- A deeper name screen (#78).
+- Renaming the card in code (#85–#89), and the product in projects, namespaces, the Unity project, the package and the repo (#90–#92).
 - The brand guide and its board, the fonts (closes #67), and the guide-to-board-to-code drift check.
 - Symbols in every colour cell and on blobbity cards, with retaken captures. Hues are re-tuned only if a simulation shows the symbols are not enough.
-- The Blobkin mascot sheet, the wordmark and logo package, app icons wired into the Unity player, and a real `companyName`.
+- The critter mascot sheet, the wordmark and logo package, app icons wired into the Unity player, and a real `companyName`.
 
 ### Out of scope
 
-- Renaming code identifiers, namespaces, solutions, or the repo (`MissionSplat.*` stays).
+- Rewriting git history; past commits keep the old names.
+- Moving player text into a string table for other languages; that is separate work after this slice.
 - Legal trademark clearance; that is a human step.
 - Store listing assets (feature graphic, screenshots, video), merch and packaging mockups, a brand portal, a design-token pipeline, and a UI kit.
 - New power icons (#69), new shapes (#70), and new powers (#71).

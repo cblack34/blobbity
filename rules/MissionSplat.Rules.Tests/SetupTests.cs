@@ -12,7 +12,7 @@ public class SetupTests
         var names = new[] { "a", "b", "c", "d" }.Take(seatCount).ToArray();
         var first = names[^1];
         var missions = new Mission[seatCount * 2 + 1];
-        missions[0] = Cards.Mission("square-red", MissionPattern.Square, OrdinaryCatalog.Red);
+        missions[0] = Cards.Mission("square-red", BlobbityPattern.Square, OrdinaryCatalog.Red);
         for (var i = 1; i < missions.Length; i++)
         {
             missions[i] = Cards.Purple("m" + i);
@@ -119,7 +119,7 @@ public class SetupTests
         Rejects(
             Open(missions:
             [
-                new Mission(default, MissionPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(default, BlobbityPattern.Row, OrdinaryCatalog.Purple),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -128,7 +128,7 @@ public class SetupTests
         Rejects(
             Open(missions:
             [
-                new Mission(new MissionId("a1"), MissionPattern.Row, default),
+                new Mission(new MissionId("a1"), BlobbityPattern.Row, default),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -140,11 +140,11 @@ public class SetupTests
     }
 
     [Test]
-    public void UnknownMissionPattern_IsRejected()
+    public void UnknownBlobbityPattern_IsRejected()
     {
         var result = Open(missions:
         [
-            new Mission(new MissionId("a1"), (MissionPattern)99, OrdinaryCatalog.Purple),
+            new Mission(new MissionId("a1"), (BlobbityPattern)99, OrdinaryCatalog.Purple),
             Cards.Purple("a2"),
             Cards.Purple("b1"),
             Cards.Purple("b2"),
@@ -243,7 +243,7 @@ public class SetupTests
                 colors: [OrdinaryCatalog.Purple],
                 missions:
                 [
-                    Cards.Mission("a1", MissionPattern.Row, OrdinaryCatalog.Red),
+                    Cards.Mission("a1", BlobbityPattern.Row, OrdinaryCatalog.Red),
                     Cards.Purple("a2"),
                     Cards.Purple("b1"),
                     Cards.Purple("b2"),

@@ -9,7 +9,7 @@ public class RowClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -34,7 +34,7 @@ public class RowClaimTests
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
         Assert.That(placed.Events, Has.Count.EqualTo(2));
         Assert.That(placed.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((MissionClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("red-row"));
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("red-row"));
         Assert.That(placed.Events.OfType<GameWon>(), Is.Empty);
     }
 
@@ -45,7 +45,7 @@ public class RowClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -76,7 +76,7 @@ public class RowClaimTests
             [
                 Cards.Purple("a1"),
                 Cards.Purple("a2"),
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("b2"),
                 Cards.Purple("repl"),
             ],
@@ -101,7 +101,7 @@ public class RowClaimTests
         Assert.That(afterThird.CellAt(4, 3), Is.Null);
         Assert.That(afterThird.Claims(Cards.Seat("b")), Is.Empty);
         Assert.That(See.Ids(afterThird.Hand(Cards.Seat("b"))), Is.EqualTo(new[] { "red-row", "b2" }));
-        Assert.That(third.Events.OfType<MissionClaimed>(), Is.Empty);
+        Assert.That(third.Events.OfType<BlobbityClaimed>(), Is.Empty);
 
         var afterSide = See.Game(RepresentativeDeck.Play(afterThird, 2, 0));
         Assert.That(afterSide.CellAt(4, 3), Is.Null);
@@ -151,7 +151,7 @@ public class RowClaimTests
         Assert.That(afterThird.CellAt(3, 1), Is.Null);
         Assert.That(afterThird.Claims(Cards.Seat("a")), Is.Empty);
         Assert.That(See.Ids(afterThird.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "a2" }));
-        Assert.That(third.Events.OfType<MissionClaimed>(), Is.Empty);
+        Assert.That(third.Events.OfType<BlobbityClaimed>(), Is.Empty);
 
         var afterSide = See.Game(RepresentativeDeck.Play(afterThird, 1, 2));
         Assert.That(afterSide.CellAt(3, 1), Is.Null);
@@ -169,7 +169,7 @@ public class RowClaimTests
 
     private static Mission[] RowMissions() =>
     [
-        Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+        Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
         Cards.Purple("a2"),
         Cards.Purple("b1"),
         Cards.Purple("b2"),

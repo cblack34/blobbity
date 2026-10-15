@@ -1,10 +1,10 @@
 namespace MissionSplat.Rules;
 
-public enum MissionPattern
+public enum BlobbityPattern
 {
     Row,
     Square,
     L,
 }
 
-public sealed record Mission(MissionId Id, MissionPattern Pattern, ColorId Color);
+public sealed record Mission(MissionId Id, BlobbityPattern Pattern, ColorId Color);

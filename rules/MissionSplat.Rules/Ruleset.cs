@@ -5,9 +5,9 @@ namespace MissionSplat.Rules;
 internal sealed class Ruleset
 {
     private readonly SymbolId[] _symbols;
-    private readonly MissionPattern[] _patterns;
+    private readonly BlobbityPattern[] _patterns;
 
-    public Ruleset(IReadOnlyList<SymbolId> symbolsInPlay, IReadOnlyList<MissionPattern> patternsInPlay)
+    public Ruleset(IReadOnlyList<SymbolId> symbolsInPlay, IReadOnlyList<BlobbityPattern> patternsInPlay)
     {
         _symbols = symbolsInPlay.ToArray();
         _patterns = patternsInPlay.ToArray();
@@ -214,7 +214,7 @@ internal sealed class Ruleset
 
     private bool ShowsStack(Tile tile) => IsInPlay(OrdinaryCatalog.Stack) && CountSymbol(tile, OrdinaryCatalog.Stack) > 0;
 
-    private bool PatternIsActive(MissionPattern pattern) => Array.IndexOf(_patterns, pattern) >= 0;
+    private bool PatternIsActive(BlobbityPattern pattern) => Array.IndexOf(_patterns, pattern) >= 0;
 
     private bool IsInPlay(SymbolId symbol) => Array.IndexOf(_symbols, symbol) >= 0;
 

@@ -110,7 +110,7 @@ public class SplatMarkPlayModeTests
     {
         var slot = NewSlot();
 
-        MissionCardPainter.Paint(slot, new Mission(new MissionId("m"), MissionPattern.Square, OrdinaryCatalog.Blue));
+        MissionCardPainter.Paint(slot, new Mission(new MissionId("m"), BlobbityPattern.Square, OrdinaryCatalog.Blue));
 
         var marks = MarksIn(slot);
         Assert.That(marks, Has.Length.EqualTo(4));

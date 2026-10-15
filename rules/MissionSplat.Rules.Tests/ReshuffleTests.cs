@@ -155,7 +155,7 @@ public class ReshuffleTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -172,7 +172,7 @@ public class ReshuffleTests
         Assert.That(next.CellAt(0, 0), Is.EqualTo(Cards.Red));
         Assert.That(next.Claims(Cards.Seat("a")), Is.Empty);
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-square", "a2" }));
-        Assert.That(result.Events.OfType<MissionClaimed>(), Is.Empty);
+        Assert.That(result.Events.OfType<BlobbityClaimed>(), Is.Empty);
         Assert.That(next.HasEnded, Is.False);
     }
 
@@ -203,7 +203,7 @@ public class ReshuffleTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),

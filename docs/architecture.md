@@ -57,7 +57,7 @@ ACTIONS   (closed set per ruleset; adding one is a compiler-visible change)
   ReshuffleBoard(order)                  # only while the draw deck is empty; order comes from outside
 
 EVENTS    (what happened; the GUI animates these, the network ships them)
-  TileRotated · TileBounced · TilePlaced(covered?) · MissionClaimed · GameWon · BoardReshuffled(order)
+  TileRotated · TileBounced · TilePlaced(covered?) · BlobbityClaimed · GameWon · BoardReshuffled(order)
 
 MATCH
   Match.Start(setup) -> Match                       # decks arrive already ordered; no shuffle here
@@ -79,7 +79,7 @@ MATCH
 
   RESOLVE CLAIMS (shared by Place and UseRotate; pure per pass, no memory of earlier passes this turn)
     completed = RulesEngine.completedBy(board, cellsJustWritten, hand, patternsInPlay)
-    for each completed: move to claim row, draw a replacement, events += MissionClaimed
+    for each completed: move to claim row, draw a replacement, events += BlobbityClaimed
     if claim row >= claimsToWin: events += GameWon
 
   QUERIES  (read-only)

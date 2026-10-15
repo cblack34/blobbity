@@ -37,7 +37,7 @@ public static class TableDeck
     // Two of each colour and shape: the digital deck doubles the twelve printed cards so the mission deck cannot run out.
     private static Mission[] Missions()
     {
-        var shapes = new[] { (MissionPattern.Row, "line"), (MissionPattern.Square, "square"), (MissionPattern.L, "l") };
+        var shapes = new[] { (BlobbityPattern.Row, "line"), (BlobbityPattern.Square, "square"), (BlobbityPattern.L, "l") };
         const int copies = 2;
         var missions = new List<Mission>();
         foreach (var (pattern, name) in shapes)

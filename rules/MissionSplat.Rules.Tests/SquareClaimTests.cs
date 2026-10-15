@@ -10,7 +10,7 @@ public class SquareClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -44,6 +44,6 @@ public class SquareClaimTests
         Assert.That(See.Ids(finished.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-square" }));
         Assert.That(finished.Claims(Cards.Seat("b")), Is.Empty);
         Assert.That(finished.Hand(Cards.Seat("a")), Has.Count.EqualTo(2));
-        Assert.That(placed.Events.OfType<MissionClaimed>().Single().Mission.Value, Is.EqualTo("red-square"));
+        Assert.That(placed.Events.OfType<BlobbityClaimed>().Single().Mission.Value, Is.EqualTo("red-square"));
     }
 }

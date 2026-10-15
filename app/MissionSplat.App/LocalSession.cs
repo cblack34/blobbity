@@ -84,7 +84,7 @@ public sealed class LocalSession : ISession
         }
 
         var claimed = new List<MissionId>();
-        foreach (var claim in result.Events.OfType<MissionClaimed>())
+        foreach (var claim in result.Events.OfType<BlobbityClaimed>())
         {
             claimed.Add(claim.Mission);
         }

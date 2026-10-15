@@ -34,10 +34,10 @@ internal static class Cards
 
     public static readonly Cell Blank = Cell.Symbol(OrdinaryCatalog.Blank);
 
-    public static Mission Mission(string id, MissionPattern pattern, ColorId color) =>
+    public static Mission Mission(string id, BlobbityPattern pattern, ColorId color) =>
         new(new MissionId(id), pattern, color);
 
-    public static Mission Row(string id) => Mission(id, MissionPattern.Row, OrdinaryCatalog.Purple);
+    public static Mission Row(string id) => Mission(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
 
     public static Tile Tile(string id, Cell x0y0, Cell x1y0, Cell x0y1, Cell x1y1) =>
         new(new TileId(id), x0y0, x1y0, x0y1, x1y1);
@@ -67,7 +67,7 @@ internal static class ClaimingTable
         var missions = new List<Mission>();
         foreach (var name in names)
         {
-            missions.Add(Cards.Mission(name + "-square", MissionPattern.Square, ColorOf(name)));
+            missions.Add(Cards.Mission(name + "-square", BlobbityPattern.Square, ColorOf(name)));
             missions.Add(Cards.Row(name + "-row"));
         }
 

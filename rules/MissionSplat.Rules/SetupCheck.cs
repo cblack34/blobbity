@@ -215,13 +215,13 @@ internal static class SetupCheck
         return false;
     }
 
-    private static bool IsKnownPattern(MissionPattern pattern) =>
-        Enum.IsDefined(typeof(MissionPattern), pattern);
+    private static bool IsKnownPattern(BlobbityPattern pattern) =>
+        Enum.IsDefined(typeof(BlobbityPattern), pattern);
 
-    private static bool HasDuplicatePattern(IReadOnlyList<MissionPattern> patterns, out bool unknown)
+    private static bool HasDuplicatePattern(IReadOnlyList<BlobbityPattern> patterns, out bool unknown)
     {
         unknown = false;
-        var seen = new HashSet<MissionPattern>();
+        var seen = new HashSet<BlobbityPattern>();
         foreach (var pattern in patterns)
         {
             if (!IsKnownPattern(pattern))

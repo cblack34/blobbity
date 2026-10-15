@@ -7,7 +7,7 @@ public sealed class GameSetup
         SeatId firstSeat,
         IReadOnlyList<ColorId> colors,
         IReadOnlyList<SymbolId> nonScoringSymbols,
-        IReadOnlyList<MissionPattern> activePatterns,
+        IReadOnlyList<BlobbityPattern> activePatterns,
         int claimsRequiredToWin,
         IReadOnlyList<Mission> missionDeck,
         IReadOnlyList<Tile> matchDeck)
@@ -30,7 +30,7 @@ public sealed class GameSetup
 
     public IReadOnlyList<SymbolId> NonScoringSymbols { get; }
 
-    public IReadOnlyList<MissionPattern> ActivePatterns { get; }
+    public IReadOnlyList<BlobbityPattern> ActivePatterns { get; }
 
     public int ClaimsRequiredToWin { get; }
 

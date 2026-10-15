@@ -23,8 +23,8 @@ public class ScoringCellTests
     public void NonScoringSymbol_BlocksAnOtherwiseCompleteSquare(string symbol)
     {
         var start = Cards.BlankTile("start");
-        var control = PlaceFinish(MissionPattern.Square, start, SquareFinish(Cards.Red));
-        var blocked = PlaceFinish(MissionPattern.Square, start, SquareFinish(Cards.Symbol(symbol)));
+        var control = PlaceFinish(BlobbityPattern.Square, start, SquareFinish(Cards.Red));
+        var blocked = PlaceFinish(BlobbityPattern.Square, start, SquareFinish(Cards.Symbol(symbol)));
 
         Assert.That(See.Ids(control.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-pattern" }));
         AssertNothingClaimed(blocked);
@@ -37,8 +37,8 @@ public class ScoringCellTests
     public void NonScoringSymbol_BlocksAnOtherwiseCompleteL(string symbol)
     {
         var start = Cards.Tile("start", Cards.Blank, Cards.Red, Cards.Blank, Cards.Blank);
-        var control = PlaceFinish(MissionPattern.L, start, LFinish(Cards.Red));
-        var blocked = PlaceFinish(MissionPattern.L, start, LFinish(Cards.Symbol(symbol)));
+        var control = PlaceFinish(BlobbityPattern.L, start, LFinish(Cards.Red));
+        var blocked = PlaceFinish(BlobbityPattern.L, start, LFinish(Cards.Symbol(symbol)));
 
         Assert.That(See.Ids(control.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-pattern" }));
         AssertNothingClaimed(blocked);
@@ -67,11 +67,11 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("amber-row", MissionPattern.Row, amber),
-                Cards.Mission("amber-square", MissionPattern.Square, amber),
-                Cards.Mission("b1", MissionPattern.L, amber),
-                Cards.Mission("b2", MissionPattern.L, amber),
-                Cards.Mission("repl", MissionPattern.L, amber),
+                Cards.Mission("amber-row", BlobbityPattern.Row, amber),
+                Cards.Mission("amber-square", BlobbityPattern.Square, amber),
+                Cards.Mission("b1", BlobbityPattern.L, amber),
+                Cards.Mission("b2", BlobbityPattern.L, amber),
+                Cards.Mission("repl", BlobbityPattern.L, amber),
             ],
             [
                 Cards.Tile("start", amberCell, amberCell, Cards.Blank, Cards.Blank),
@@ -93,8 +93,8 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl"),
@@ -104,7 +104,7 @@ public class ScoringCellTests
                 Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
                 Cards.Solid("finish", Cards.Red),
             ],
-            patterns: [MissionPattern.Square]);
+            patterns: [BlobbityPattern.Square]);
 
         var next = See.Game(RepresentativeDeck.Play(game, 1, 0));
 
@@ -119,9 +119,9 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
-                Cards.Mission("blue-row", MissionPattern.Row, OrdinaryCatalog.Blue),
+                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-a"),
                 Cards.Purple("repl-b"),
@@ -169,7 +169,7 @@ public class ScoringCellTests
         Assert.That(blocked.TileCount, Is.EqualTo(2));
     }
 
-    private static Game PlaceFinish(MissionPattern pattern, Tile start, Tile finish)
+    private static Game PlaceFinish(BlobbityPattern pattern, Tile start, Tile finish)
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],
@@ -194,7 +194,7 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
