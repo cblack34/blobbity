@@ -30,9 +30,9 @@ public readonly record struct SymbolId
     public string Value { get; }
 }
 
-public readonly record struct MissionId
+public readonly record struct BlobbityId
 {
-    public MissionId(string value)
+    public BlobbityId(string value)
     {
         Value = IdText.Required(value, nameof(value));
     }

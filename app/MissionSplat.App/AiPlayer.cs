@@ -71,7 +71,7 @@ public sealed class AiPlayer : IPlayer
         throw new InvalidOperationException(message);
     }
 
-    private static bool ClaimsOwnMission(IReadOnlyList<MissionId> claimed, HashSet<MissionId> ownMissions)
+    private static bool ClaimsOwnMission(IReadOnlyList<BlobbityId> claimed, HashSet<BlobbityId> ownMissions)
     {
         for (var i = 0; i < claimed.Count; i++)
         {
@@ -84,9 +84,9 @@ public sealed class AiPlayer : IPlayer
         return false;
     }
 
-    private static HashSet<MissionId> IdsOf(IReadOnlyList<Mission> missions)
+    private static HashSet<BlobbityId> IdsOf(IReadOnlyList<Mission> missions)
     {
-        var ids = new HashSet<MissionId>();
+        var ids = new HashSet<BlobbityId>();
         for (var i = 0; i < missions.Count; i++)
         {
             ids.Add(missions[i].Id);

@@ -4,7 +4,7 @@ using System.Collections;
 using System.Reflection;
 using MissionSplat.Rules;
 
-internal static class MissionIds
+internal static class BlobbityIds
 {
     public static HashSet<string> In(object root)
     {
@@ -23,7 +23,7 @@ internal static class MissionIds
 
         switch (value)
         {
-            case MissionId mission:
+            case BlobbityId mission:
                 ids.Add(mission.Value);
                 return;
             case Mission mission:

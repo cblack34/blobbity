@@ -35,7 +35,7 @@ internal static class Cards
     public static readonly Cell Blank = Cell.Symbol(OrdinaryCatalog.Blank);
 
     public static Mission Mission(string id, BlobbityPattern pattern, ColorId color) =>
-        new(new MissionId(id), pattern, color);
+        new(new BlobbityId(id), pattern, color);
 
     public static Mission Row(string id) => Mission(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
 

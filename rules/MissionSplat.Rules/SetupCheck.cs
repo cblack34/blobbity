@@ -70,7 +70,7 @@ internal static class SetupCheck
             return Invalid("The mission deck does not have two cards for every seat.");
         }
 
-        var missionIds = new HashSet<MissionId>();
+        var blobbityIds = new HashSet<BlobbityId>();
         foreach (var mission in setup.MissionDeck)
         {
             if (IdText.IsMissing(mission.Id.Value))
@@ -88,7 +88,7 @@ internal static class SetupCheck
                 return Invalid("A color id is required.");
             }
 
-            if (!missionIds.Add(mission.Id))
+            if (!blobbityIds.Add(mission.Id))
             {
                 return Invalid($"Mission '{mission.Id.Value}' is in the deck twice.");
             }

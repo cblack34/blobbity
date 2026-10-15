@@ -87,7 +87,7 @@ internal static class Cards
     public static SeatId Seat(string name) => new(name);
 
     public static Mission Mission(string id, BlobbityPattern pattern, ColorId color) =>
-        new(new MissionId(id), pattern, color);
+        new(new BlobbityId(id), pattern, color);
 
     public static Mission Purple(string id) => Mission(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
 

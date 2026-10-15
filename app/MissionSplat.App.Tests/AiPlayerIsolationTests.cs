@@ -17,7 +17,7 @@ public class AiPlayerIsolationTests
             var recorder = new Recorder(session, seat);
             var ai = new AiPlayer(seat, recorder.LegalPlacements, recorder.Preview);
             var view = session.View(seat);
-            var hidden = HiddenMissionIds(session, seat);
+            var hidden = HiddenBlobbityIds(session, seat);
 
             Assert.That(hidden, Is.Not.Empty);
             Assert.That(view.Seat, Is.EqualTo(seat));
@@ -32,9 +32,9 @@ public class AiPlayerIsolationTests
 
             // Everything the AI was handed: its view, each answer the two queries returned,
             // and the object behind both query delegates, which holds no session.
-            var reachable = MissionIds.In(view);
-            reachable.UnionWith(MissionIds.In(recorder.Answers));
-            reachable.UnionWith(MissionIds.In(recorder));
+            var reachable = BlobbityIds.In(view);
+            reachable.UnionWith(BlobbityIds.In(recorder.Answers));
+            reachable.UnionWith(BlobbityIds.In(recorder));
             Assert.That(reachable.Intersect(hidden), Is.Empty);
             Assert.That(reachable, Is.SupersetOf(view.UnclaimedMissions.Select(mission => mission.Id.Value)));
 
@@ -53,7 +53,7 @@ public class AiPlayerIsolationTests
     }
 
     // The seats' unclaimed mission ids that the given seat must never see.
-    private static HashSet<string> HiddenMissionIds(LocalSession session, SeatId seat)
+    private static HashSet<string> HiddenBlobbityIds(LocalSession session, SeatId seat)
     {
         var hidden = new HashSet<string>();
         foreach (var other in new[] { "a", "b", "c" }.Where(name => name != seat.Value))

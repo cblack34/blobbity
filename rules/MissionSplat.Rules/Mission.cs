@@ -7,4 +7,4 @@ public enum BlobbityPattern
     L,
 }
 
-public sealed record Mission(MissionId Id, BlobbityPattern Pattern, ColorId Color);
+public sealed record Mission(BlobbityId Id, BlobbityPattern Pattern, ColorId Color);
