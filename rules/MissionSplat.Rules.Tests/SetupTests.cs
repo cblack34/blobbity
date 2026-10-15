@@ -11,8 +11,8 @@ public class SetupTests
 
         var names = new[] { "a", "b", "c", "d" }.Take(seatCount).ToArray();
         var first = names[^1];
-        var missions = new Mission[seatCount * 2 + 1];
-        missions[0] = Cards.Mission("square-red", BlobbityPattern.Square, OrdinaryCatalog.Red);
+        var missions = new BlobbityCard[seatCount * 2 + 1];
+        missions[0] = Cards.BlobbityCard("square-red", BlobbityPattern.Square, OrdinaryCatalog.Red);
         for (var i = 1; i < missions.Length; i++)
         {
             missions[i] = Cards.Purple("m" + i);
@@ -119,7 +119,7 @@ public class SetupTests
         Rejects(
             Open(missions:
             [
-                new Mission(default, BlobbityPattern.Row, OrdinaryCatalog.Purple),
+                new BlobbityCard(default, BlobbityPattern.Row, OrdinaryCatalog.Purple),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -128,7 +128,7 @@ public class SetupTests
         Rejects(
             Open(missions:
             [
-                new Mission(new BlobbityId("a1"), BlobbityPattern.Row, default),
+                new BlobbityCard(new BlobbityId("a1"), BlobbityPattern.Row, default),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -144,7 +144,7 @@ public class SetupTests
     {
         var result = Open(missions:
         [
-            new Mission(new BlobbityId("a1"), (BlobbityPattern)99, OrdinaryCatalog.Purple),
+            new BlobbityCard(new BlobbityId("a1"), (BlobbityPattern)99, OrdinaryCatalog.Purple),
             Cards.Purple("a2"),
             Cards.Purple("b1"),
             Cards.Purple("b2"),
@@ -158,7 +158,7 @@ public class SetupTests
     public void SeatCountOutsideTwoThroughFour_IsRejected(int seatCount)
     {
         var names = new[] { "a", "b", "c", "d", "e" }.Take(seatCount).ToArray();
-        var missions = new Mission[seatCount * 2];
+        var missions = new BlobbityCard[seatCount * 2];
         for (var i = 0; i < missions.Length; i++)
         {
             missions[i] = Cards.Purple("m" + i);
@@ -243,7 +243,7 @@ public class SetupTests
                 colors: [OrdinaryCatalog.Purple],
                 missions:
                 [
-                    Cards.Mission("a1", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                    Cards.BlobbityCard("a1", BlobbityPattern.Row, OrdinaryCatalog.Red),
                     Cards.Purple("a2"),
                     Cards.Purple("b1"),
                     Cards.Purple("b2"),
@@ -302,7 +302,7 @@ public class SetupTests
     }
 
     private static CommandResult Open(
-        Mission[]? missions = null,
+        BlobbityCard[]? missions = null,
         Tile[]? tiles = null,
         IReadOnlyList<ColorId>? colors = null,
         IReadOnlyList<SymbolId>? symbols = null,

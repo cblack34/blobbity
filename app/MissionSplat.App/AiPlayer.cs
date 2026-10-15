@@ -84,7 +84,7 @@ public sealed class AiPlayer : IPlayer
         return false;
     }
 
-    private static HashSet<BlobbityId> IdsOf(IReadOnlyList<Mission> missions)
+    private static HashSet<BlobbityId> IdsOf(IReadOnlyList<BlobbityCard> missions)
     {
         var ids = new HashSet<BlobbityId>();
         for (var i = 0; i < missions.Count; i++)

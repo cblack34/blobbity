@@ -59,7 +59,7 @@ public class PendingMatchTileTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),

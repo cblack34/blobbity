@@ -8,7 +8,7 @@ internal static class RepresentativeDeck
 {
     public const string Label = "representative";
 
-    public static GameSetup Setup(string[] seatNames, string firstSeat, Mission[] missions, Tile[] tiles)
+    public static GameSetup Setup(string[] seatNames, string firstSeat, BlobbityCard[] missions, Tile[] tiles)
     {
         return new GameSetup(
             seatNames.Select(name => new SeatId(name)).ToArray(),
@@ -34,10 +34,10 @@ internal static class Cards
 
     public static readonly Cell Blank = Cell.Symbol(OrdinaryCatalog.Blank);
 
-    public static Mission Mission(string id, BlobbityPattern pattern, ColorId color) =>
+    public static BlobbityCard BlobbityCard(string id, BlobbityPattern pattern, ColorId color) =>
         new(new BlobbityId(id), pattern, color);
 
-    public static Mission Row(string id) => Mission(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
+    public static BlobbityCard Row(string id) => BlobbityCard(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
 
     public static Tile Tile(string id, Cell x0y0, Cell x1y0, Cell x0y1, Cell x1y1) =>
         new(new TileId(id), x0y0, x1y0, x0y1, x1y1);
@@ -64,10 +64,10 @@ internal static class ClaimingTable
     public static Opened Open(int seatCount)
     {
         var names = Names.Take(seatCount).ToArray();
-        var missions = new List<Mission>();
+        var missions = new List<BlobbityCard>();
         foreach (var name in names)
         {
-            missions.Add(Cards.Mission(name + "-square", BlobbityPattern.Square, ColorOf(name)));
+            missions.Add(Cards.BlobbityCard(name + "-square", BlobbityPattern.Square, ColorOf(name)));
             missions.Add(Cards.Row(name + "-row"));
         }
 

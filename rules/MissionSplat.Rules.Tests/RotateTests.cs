@@ -392,8 +392,8 @@ public class RotateTests
     {
         var game = ReadyToRotateEast(
         [
-            Cards.Mission("red-row-1", BlobbityPattern.Row, OrdinaryCatalog.Red),
-            Cards.Mission("red-row-2", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.BlobbityCard("red-row-1", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.BlobbityCard("red-row-2", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("b1"),
             Cards.Purple("b2"),
             Cards.Purple("repl"),
@@ -411,7 +411,7 @@ public class RotateTests
     {
         var game = ReadyToRotateEast(
         [
-            Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("a2"),
             Cards.Purple("b1"),
             Cards.Purple("b2"),
@@ -448,8 +448,8 @@ public class RotateTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-1"),
@@ -520,7 +520,7 @@ public class RotateTests
         [
             Cards.Purple("a1"),
             Cards.Purple("a2"),
-            Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("b2"),
             Cards.Purple("repl"),
         ]);
@@ -594,7 +594,7 @@ public class RotateTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -608,7 +608,7 @@ public class RotateTests
     // Start (red bottom row) and east (red at its bottom right) share the y=0 row; turning east once puts both of its
     // red cells in that row, completing red-row from the rotate's own cells. Pad and the drawn tile hold a blue row
     // that the drawn tile finishes at (1, 1), for a replacement mission to claim later in the turn.
-    private static Game ReadyToRotateEast(Mission[] missions, int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin)
+    private static Game ReadyToRotateEast(BlobbityCard[] missions, int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin)
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],
@@ -625,13 +625,13 @@ public class RotateTests
         return See.Game(RepresentativeDeck.Play(afterEast, 0, 1));
     }
 
-    private static Mission[] RedRowThenSpares() =>
+    private static BlobbityCard[] RedRowThenSpares() =>
     [
-        Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+        Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
         Cards.Purple("a2"),
         Cards.Purple("b1"),
         Cards.Purple("b2"),
-        Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+        Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
         Cards.Purple("spare"),
     ];
 

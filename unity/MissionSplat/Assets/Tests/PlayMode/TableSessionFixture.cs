@@ -182,7 +182,7 @@ public abstract class TableSessionFixture
             OrdinaryCatalog.NonScoringSymbols,
             OrdinaryCatalog.Patterns,
             1,
-            Enumerable.Range(0, 16).Select(id => new Mission(new BlobbityId("m" + id), BlobbityPattern.Row, OrdinaryCatalog.Purple)).ToArray(),
+            Enumerable.Range(0, 16).Select(id => new BlobbityCard(new BlobbityId("m" + id), BlobbityPattern.Row, OrdinaryCatalog.Purple)).ToArray(),
             new[] { new Tile(new TileId("start"), purple, purple, purple, purple), new Tile(new TileId("next"), purple, purple, purple, purple), BlankTile("pad") });
         var table = NewTable();
         table.Begin(start, setup);
@@ -240,7 +240,7 @@ public abstract class TableSessionFixture
     protected static GameSetup SetupFrom(string[] blobbityIds, params Tile[] tiles)
     {
         var missions = blobbityIds
-            .Select(id => new Mission(new BlobbityId(id), BlobbityPattern.Row, OrdinaryCatalog.Purple))
+            .Select(id => new BlobbityCard(new BlobbityId(id), BlobbityPattern.Row, OrdinaryCatalog.Purple))
             .ToArray();
         var seats = TableStart.PassAndPlayDraft().SeatsInTurnOrder();
         return new GameSetup(

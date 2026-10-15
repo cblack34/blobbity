@@ -53,7 +53,7 @@ internal static class Ui
     public static Sprite Card { get; } = LoadSprite("TileCard");
 
     // A white rounded rectangle, 5:7 like a playing card.
-    public static Sprite MissionCard { get; } = LoadSprite("MissionCard");
+    public static Sprite BlobbityCard { get; } = LoadSprite("BlobbityCard");
 
     // A dashed rounded square with a faint plus, its colours baked in: a place the drawn tile may go.
     public static Sprite LegalSpot { get; } = LoadSprite("LegalSpot");

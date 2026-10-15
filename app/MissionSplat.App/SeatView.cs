@@ -6,7 +6,7 @@ public sealed class SeatView
 {
     public SeatView(
         SeatId seat,
-        IReadOnlyList<Mission> unclaimedMissions,
+        IReadOnlyList<BlobbityCard> unclaimedMissions,
         IReadOnlyList<SeatClaims> claims,
         BoardView board,
         SeatId currentSeat,
@@ -30,7 +30,7 @@ public sealed class SeatView
 
     public SeatId Seat { get; }
 
-    public IReadOnlyList<Mission> UnclaimedMissions { get; }
+    public IReadOnlyList<BlobbityCard> UnclaimedMissions { get; }
 
     public IReadOnlyList<SeatClaims> Claims { get; }
 
@@ -54,7 +54,7 @@ public sealed class SeatView
 
 public sealed class SeatClaims
 {
-    public SeatClaims(SeatId seat, IReadOnlyList<Mission> missions)
+    public SeatClaims(SeatId seat, IReadOnlyList<BlobbityCard> missions)
     {
         Seat = seat;
         Missions = Copied.Items(missions, nameof(missions));
@@ -62,7 +62,7 @@ public sealed class SeatClaims
 
     public SeatId Seat { get; }
 
-    public IReadOnlyList<Mission> Missions { get; }
+    public IReadOnlyList<BlobbityCard> Missions { get; }
 }
 
 public sealed class BoardView

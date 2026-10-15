@@ -28,11 +28,11 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
-                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("spare"),
             ],
             [
@@ -54,11 +54,11 @@ public class ResolutionTests
     public void StolenPattern_IsNotClaimed_EvenAfterALaterTileMissesIt(int seatCount)
     {
         var names = new[] { "a", "b", "c" }.Take(seatCount).ToArray();
-        var missions = new List<Mission>
+        var missions = new List<BlobbityCard>
         {
             Cards.Purple("a1"),
             Cards.Purple("a2"),
-            Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("b2"),
         };
         for (var i = 2; i < seatCount; i++)
@@ -131,7 +131,7 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -154,8 +154,8 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-1"),
@@ -175,8 +175,8 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-1"),

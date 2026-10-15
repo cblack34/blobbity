@@ -6,7 +6,7 @@ using MissionSplat.Rules;
 using UnityEngine;
 using UnityEngine.UI;
 
-internal static class MissionCardPainter
+internal static class BlobbityCardPainter
 {
     // The edge line, as a fraction of the card's width.
     private const float CardEdge = 0.03f;
@@ -29,15 +29,15 @@ internal static class MissionCardPainter
         };
 
     // Draws the mission as a portrait card centred in slot, whatever shape slot is, and sized by it.
-    public static void Paint(RectTransform slot, Mission mission)
+    public static void Paint(RectTransform slot, BlobbityCard mission)
     {
         var card = Ui.Rect("Card", slot);
         // The fitter resizes the card at layout time; stretching first gives it a sane rect before then.
         Ui.Stretch(card);
         var fit = card.gameObject.AddComponent<AspectRatioFitter>();
         fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        fit.aspectRatio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
-        CardPainter.Paint(card, Ui.MissionCard, CardEdge, FittedWidth(slot));
+        fit.aspectRatio = Ui.BlobbityCard.rect.width / Ui.BlobbityCard.rect.height;
+        CardPainter.Paint(card, Ui.BlobbityCard, CardEdge, FittedWidth(slot));
         PaintPattern(card, mission);
     }
 
@@ -46,12 +46,12 @@ internal static class MissionCardPainter
     private static float FittedWidth(RectTransform slot)
     {
         Canvas.ForceUpdateCanvases();
-        var ratio = Ui.MissionCard.rect.width / Ui.MissionCard.rect.height;
+        var ratio = Ui.BlobbityCard.rect.width / Ui.BlobbityCard.rect.height;
         var width = Mathf.Min(slot.rect.width, slot.rect.height * ratio);
         return width > 1f ? width : 100f;
     }
 
-    private static void PaintPattern(RectTransform card, Mission mission)
+    private static void PaintPattern(RectTransform card, BlobbityCard mission)
     {
         // The lattice fits its own ratio inside the card less a margin, so the splats stay round at any card size and clear of the edge.
         var area = Ui.Rect("Pattern", card);

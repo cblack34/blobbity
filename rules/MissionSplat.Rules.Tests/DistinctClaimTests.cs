@@ -16,8 +16,8 @@ public sealed class DistinctClaimTests
         var claimed = Claim(
             Cards.Tile("start", Blue, Blue, Cards.Blank, Cards.Blank),
             Cards.Tile("finish", Blue, Blue, Blue, Cards.Blank),
-            Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
-            Cards.Mission("blue-l", BlobbityPattern.L, OrdinaryCatalog.Blue));
+            Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+            Cards.BlobbityCard("blue-l", BlobbityPattern.L, OrdinaryCatalog.Blue));
 
         Assert.That(See.Ids(claimed), Is.EqualTo(new[] { "blue-row", "blue-l" }));
     }
@@ -54,7 +54,7 @@ public sealed class DistinctClaimTests
             Cards.Tile("start", Cards.Wild, Cards.Wild, Blue, Blue),
             Cards.Tile("finish", Cards.Wild, Cards.Wild, Blue, Blue),
             BlueRow("blue-row"),
-            Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red));
+            Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red));
 
         Assert.That(See.Ids(claimed), Is.EqualTo(new[] { "blue-row", "red-row" }));
     }
@@ -95,7 +95,7 @@ public sealed class DistinctClaimTests
             "a",
             [
                 BlueRow("blue-row"),
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-1"),
@@ -114,10 +114,10 @@ public sealed class DistinctClaimTests
         Assert.That(next.MissionDeckRemaining, Is.EqualTo(1));
     }
 
-    private static Mission BlueRow(string id) => Cards.Mission(id, BlobbityPattern.Row, OrdinaryCatalog.Blue);
+    private static BlobbityCard BlueRow(string id) => Cards.BlobbityCard(id, BlobbityPattern.Row, OrdinaryCatalog.Blue);
 
     // The finish tile goes beside the start tile, so it writes cells x=2..3.
-    private static List<Mission> Claim(Tile start, Tile finish, params Mission[] hand)
+    private static List<BlobbityCard> Claim(Tile start, Tile finish, params BlobbityCard[] hand)
     {
         var (grid, located, _) = Ordinary.Place(Grid.FromStart(start), finish, new Place(1, 0, 0));
         return Ordinary.CompletedMissions(grid, located, hand);
