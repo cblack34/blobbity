@@ -128,7 +128,7 @@ public class SetupTests
         Rejects(
             Open(missions:
             [
-                new Mission(new MissionId("a1"), BlobbityPattern.Row, default),
+                new Mission(new BlobbityId("a1"), BlobbityPattern.Row, default),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -144,7 +144,7 @@ public class SetupTests
     {
         var result = Open(missions:
         [
-            new Mission(new MissionId("a1"), (BlobbityPattern)99, OrdinaryCatalog.Purple),
+            new Mission(new BlobbityId("a1"), (BlobbityPattern)99, OrdinaryCatalog.Purple),
             Cards.Purple("a2"),
             Cards.Purple("b1"),
             Cards.Purple("b2"),
@@ -222,7 +222,7 @@ public class SetupTests
     }
 
     [Test]
-    public void DuplicateMissionId_IsRejected()
+    public void DuplicateBlobbityId_IsRejected()
     {
         Rejects(
             Open(missions:

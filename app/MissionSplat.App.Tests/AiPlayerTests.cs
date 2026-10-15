@@ -16,7 +16,7 @@ public class AiPlayerTests
         var view = session.View(ai.Seat);
 
         Assert.That(Ids(view.UnclaimedMissions), Is.EqualTo(new[] { "a-square", "a-row" }));
-        var visible = MissionIds.In(view);
+        var visible = BlobbityIds.In(view);
         Assert.That(visible, Is.EquivalentTo(new[] { "a-square", "a-row" }));
         Assert.That(visible, Does.Not.Contain("b-square"));
         Assert.That(visible, Does.Not.Contain("b-row"));

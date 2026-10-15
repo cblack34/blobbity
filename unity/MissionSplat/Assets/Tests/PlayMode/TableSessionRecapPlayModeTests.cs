@@ -178,11 +178,11 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
             OrdinaryCatalog.ClaimsRequiredToWin,
             new[]
             {
-                new Mission(new MissionId("red-row"), BlobbityPattern.Row, OrdinaryCatalog.Red),
-                new Mission(new MissionId("a2"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
-                new Mission(new MissionId("b1"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
-                new Mission(new MissionId("b2"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
-                new Mission(new MissionId("spare"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(new BlobbityId("red-row"), BlobbityPattern.Row, OrdinaryCatalog.Red),
+                new Mission(new BlobbityId("a2"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(new BlobbityId("b1"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(new BlobbityId("b2"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
+                new Mission(new BlobbityId("spare"), BlobbityPattern.Row, OrdinaryCatalog.Purple),
             },
             new[]
             {
@@ -444,9 +444,9 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
     {
         var seat1 = new SeatId("1");
         var seat2 = new SeatId("2");
-        var row = new Mission(new MissionId("a"), BlobbityPattern.Row, OrdinaryCatalog.Purple);
-        var ell = new Mission(new MissionId("b"), BlobbityPattern.L, OrdinaryCatalog.Red);
-        var square = new Mission(new MissionId("c"), BlobbityPattern.Square, OrdinaryCatalog.Blue);
+        var row = new Mission(new BlobbityId("a"), BlobbityPattern.Row, OrdinaryCatalog.Purple);
+        var ell = new Mission(new BlobbityId("b"), BlobbityPattern.L, OrdinaryCatalog.Red);
+        var square = new Mission(new BlobbityId("c"), BlobbityPattern.Square, OrdinaryCatalog.Blue);
         var cells = new OccupiedCell[0];
 
         Assert.That(RecapSummary.Of(new RecapItem[0]), Is.Null);

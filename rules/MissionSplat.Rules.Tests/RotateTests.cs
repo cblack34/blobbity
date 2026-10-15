@@ -335,7 +335,7 @@ public class RotateTests
             Is.EqualTo(new GameEvent[]
             {
                 new TileRotated(Cards.Seat("a"), 1, 0, 1),
-                new BlobbityClaimed(Cards.Seat("a"), new MissionId("red-row")),
+                new BlobbityClaimed(Cards.Seat("a"), new BlobbityId("red-row")),
             }));
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "blue-row" }));
@@ -376,7 +376,7 @@ public class RotateTests
             Is.EqualTo(new GameEvent[]
             {
                 new TileRotated(Cards.Seat("a"), 1, 0, 1),
-                new BlobbityClaimed(Cards.Seat("a"), new MissionId("red-row")),
+                new BlobbityClaimed(Cards.Seat("a"), new BlobbityId("red-row")),
                 new GameWon(Cards.Seat("a"), 1),
             }));
         Assert.That(won.HasEnded, Is.True);

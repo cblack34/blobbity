@@ -308,7 +308,7 @@ public class RecapTests
             [typeof(TilePlaced)] = new TilePlaced(First, new TileId("t"), 0, 0, 0, null),
             [typeof(TileRotated)] = new TileRotated(First, 0, 0, 1),
             [typeof(TileBounced)] = new TileBounced(First, 0, 0, new TileId("t"), null),
-            [typeof(BlobbityClaimed)] = new BlobbityClaimed(First, new MissionId("1-a")),
+            [typeof(BlobbityClaimed)] = new BlobbityClaimed(First, new BlobbityId("1-a")),
             [typeof(GameWon)] = new GameWon(First, 1),
             [typeof(BoardReshuffled)] = new BoardReshuffled(First, [new TileId("t")]),
         };

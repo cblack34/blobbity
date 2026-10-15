@@ -79,7 +79,7 @@ internal sealed class RecapFeed(GameSetup setup)
         _ => throw new InvalidOperationException("The recap has no item for " + gameEvent.GetType().Name + "."),
     };
 
-    private Mission MissionOf(MissionId id)
+    private Mission MissionOf(BlobbityId id)
     {
         foreach (var mission in _setup.MissionDeck)
         {

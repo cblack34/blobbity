@@ -13,8 +13,8 @@ public class SeatViewTests
 
         var before = session.View(new SeatId("a"));
         Assert.That(Ids(before.UnclaimedMissions), Is.EqualTo(new[] { "a-square", "a-row" }));
-        Assert.That(MissionIds.In(before), Does.Contain("a-square"));
-        Assert.That(MissionIds.In(before), Does.Contain("a-row"));
+        Assert.That(BlobbityIds.In(before), Does.Contain("a-square"));
+        Assert.That(BlobbityIds.In(before), Does.Contain("a-row"));
         Assert.That(before.Claims.Select(row => row.Seat.Value), Is.EqualTo(new[] { "a", "b", "c" }));
         Assert.That(before.Claims.Select(row => row.Missions.Count), Is.All.EqualTo(0));
         Assert.That(before.CurrentSeat, Is.EqualTo(new SeatId("a")));
@@ -67,12 +67,12 @@ public class SeatViewTests
         Assert.That(pending.Local(1, 1), Is.EqualTo(cell));
     }
 
-    private static void AssertAbsent(SeatView view, params string[] missionIds)
+    private static void AssertAbsent(SeatView view, params string[] blobbityIds)
     {
-        var present = MissionIds.In(view);
-        foreach (var missionId in missionIds)
+        var present = BlobbityIds.In(view);
+        foreach (var blobbityId in blobbityIds)
         {
-            Assert.That(present, Does.Not.Contain(missionId));
+            Assert.That(present, Does.Not.Contain(blobbityId));
         }
     }
 

@@ -46,7 +46,7 @@ public static class TableDeck
             {
                 foreach (var color in OrdinaryCatalog.Colors)
                 {
-                    missions.Add(new Mission(new MissionId(name + "-" + color.Value + "-" + copy), pattern, color));
+                    missions.Add(new Mission(new BlobbityId(name + "-" + color.Value + "-" + copy), pattern, color));
                 }
             }
         }

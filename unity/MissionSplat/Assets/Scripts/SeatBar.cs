@@ -26,7 +26,7 @@ internal sealed class SeatBar
     private const float TextLeftUnits = CritterMarginUnits + CritterUnits + 8f;
 
     private readonly RectTransform _bar;
-    private readonly Dictionary<SeatId, List<(MissionId Mission, RectTransform Pip)>> _pips = new Dictionary<SeatId, List<(MissionId, RectTransform)>>();
+    private readonly Dictionary<SeatId, List<(BlobbityId Mission, RectTransform Pip)>> _pips = new Dictionary<SeatId, List<(BlobbityId, RectTransform)>>();
 
     public SeatBar(RectTransform bar)
     {
@@ -52,7 +52,7 @@ internal sealed class SeatBar
     }
 
     // The pip a claimed mission fills in the seat's entry, as last painted; null when it is not drawn.
-    public RectTransform PipOf(SeatId seat, MissionId mission)
+    public RectTransform PipOf(SeatId seat, BlobbityId mission)
     {
         if (_pips.TryGetValue(seat, out var pips))
         {
@@ -91,7 +91,7 @@ internal sealed class SeatBar
         // The pips share what is left of the entry, so a longer row shrinks them instead of spilling out of the entry.
         var pips = Math.Max(Seats.ClaimsToWin, claims.Missions.Count);
         var step = Math.Min(PipStepUnits, Math.Max(1f, (entryWidth - TextLeftUnits - CritterMarginUnits) / pips));
-        var filled = new List<(MissionId, RectTransform)>();
+        var filled = new List<(BlobbityId, RectTransform)>();
         _pips[claims.Seat] = filled;
         for (var p = 0; p < pips; p++)
         {

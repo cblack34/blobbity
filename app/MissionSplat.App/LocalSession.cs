@@ -83,7 +83,7 @@ public sealed class LocalSession : ISession
             return ActionPreview.Reject(Required(result.Rejection));
         }
 
-        var claimed = new List<MissionId>();
+        var claimed = new List<BlobbityId>();
         foreach (var claim in result.Events.OfType<BlobbityClaimed>())
         {
             claimed.Add(claim.Mission);
