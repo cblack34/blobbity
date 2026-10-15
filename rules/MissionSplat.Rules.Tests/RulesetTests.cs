@@ -107,7 +107,7 @@ public sealed class RulesetTests
         Assert.That(Ordinary.CompletedMissions(board, Written(3, 0), [row]), Is.EqualTo(new[] { row }));
         Assert.That(Ordinary.CompletedMissions(board, Written(9, 9), [row]), Is.Empty);
 
-        var squaresOnly = new Ruleset(OrdinaryCatalog.NonScoringSymbols, [MissionPattern.Square]);
+        var squaresOnly = new Ruleset(OrdinaryCatalog.NonScoringSymbols, [BlobbityPattern.Square]);
         Assert.That(squaresOnly.CompletedMissions(board, Written(3, 0), [row]), Is.Empty);
     }
 

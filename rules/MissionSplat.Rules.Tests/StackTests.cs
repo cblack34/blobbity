@@ -51,9 +51,9 @@ public class StackTests
         var ready = BeforeCoveringRedSquare(
             top,
             [
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
-                Cards.Mission("blue-row", MissionPattern.Row, OrdinaryCatalog.Blue),
-                Cards.Mission("b-blue", MissionPattern.Row, OrdinaryCatalog.Blue),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+                Cards.Mission("b-blue", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("b2"),
                 Cards.Purple("repl"),
                 Cards.Purple("spare"),
@@ -102,7 +102,7 @@ public class StackTests
         Assert.That(placed.TileY, Is.EqualTo(0));
         Assert.That(placed.QuarterTurnsClockwise, Is.EqualTo(0));
         Assert.That(placed.Covered, Is.EqualTo(new TileId("covered")));
-        Assert.That(((MissionClaimed)stacked.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
+        Assert.That(((BlobbityClaimed)stacked.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
         Assert.That(stacked.Events.OfType<GameWon>(), Is.Empty);
         Assert.That(ready.CellAt(0, 0), Is.EqualTo(Cards.Red));
         Assert.That(ready.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
@@ -187,7 +187,7 @@ public class StackTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("green-square", MissionPattern.Square, OrdinaryCatalog.Green),
+                Cards.Mission("green-square", BlobbityPattern.Square, OrdinaryCatalog.Green),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -227,7 +227,7 @@ public class StackTests
         var ready = BeforeCoveringRedSquare(
             Cards.Tile("top", Cards.Blue, Cards.Blue, Stack, Cards.Blank),
             [
-                Cards.Mission("blue-row", MissionPattern.Row, OrdinaryCatalog.Blue),
+                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -242,7 +242,7 @@ public class StackTests
 
         Assert.That(stacked.Events, Has.Count.EqualTo(3));
         Assert.That(stacked.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((MissionClaimed)stacked.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
+        Assert.That(((BlobbityClaimed)stacked.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
         var gameWon = (GameWon)stacked.Events[2];
         Assert.That(gameWon.Seat, Is.EqualTo(Cards.Seat("a")));
         Assert.That(gameWon.ClaimCount, Is.EqualTo(1));

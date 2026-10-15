@@ -88,11 +88,11 @@ internal static class RecapSummary
         _ => throw new System.ArgumentException("Unknown recap item " + item.GetType().Name + ".", nameof(item)),
     };
 
-    private static string Shape(MissionPattern pattern) => pattern switch
+    private static string Shape(BlobbityPattern pattern) => pattern switch
     {
-        MissionPattern.Row => "a row",
-        MissionPattern.Square => "a square",
-        MissionPattern.L => "an L",
+        BlobbityPattern.Row => "a row",
+        BlobbityPattern.Square => "a square",
+        BlobbityPattern.L => "an L",
         _ => throw new System.ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown mission pattern."),
     };
 

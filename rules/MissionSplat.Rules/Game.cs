@@ -249,7 +249,7 @@ public sealed class Game
     {
         foreach (var mission in resolution.Claimed)
         {
-            events.Add(new MissionClaimed(resolution.ActingSeat.Id, mission.Id));
+            events.Add(new BlobbityClaimed(resolution.ActingSeat.Id, mission.Id));
         }
 
         if (resolution.Won)

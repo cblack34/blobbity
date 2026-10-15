@@ -284,7 +284,7 @@ public class BounceTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -322,7 +322,7 @@ public class BounceTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("green-square", MissionPattern.Square, OrdinaryCatalog.Green),
+                Cards.Mission("green-square", BlobbityPattern.Square, OrdinaryCatalog.Green),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),

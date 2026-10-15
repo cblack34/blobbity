@@ -33,7 +33,7 @@ public class AiPlayerTests
         var placed = session.Submit(seat, chosen);
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
         Assert.That(
-            placed.Events.OfType<MissionClaimed>().Select(claim => claim.Mission.Value),
+            placed.Events.OfType<BlobbityClaimed>().Select(claim => claim.Mission.Value),
             Is.EqualTo(new[] { "a-square" }));
     }
 
@@ -44,7 +44,7 @@ public class AiPlayerTests
         // Start paints (1,0) and (1,1) red. Only (1, 0) quarter-turn 0 also paints (2,0) and (2,1).
         var session = Open(
             [
-                Cards.Mission("a-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("a-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Row("a-row"),
                 Cards.Row("b-row"),
                 Cards.Row("b-other"),

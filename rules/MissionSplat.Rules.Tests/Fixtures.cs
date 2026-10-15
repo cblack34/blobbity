@@ -13,7 +13,7 @@ internal static class RepresentativeDeck
         int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin,
         IReadOnlyList<ColorId>? colors = null,
         IReadOnlyList<SymbolId>? symbols = null,
-        IReadOnlyList<MissionPattern>? patterns = null)
+        IReadOnlyList<BlobbityPattern>? patterns = null)
     {
         return Game.Start(new GameSetup(
             seatNames.Select(name => new SeatId(name)).ToArray(),
@@ -34,7 +34,7 @@ internal static class RepresentativeDeck
         int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin,
         IReadOnlyList<ColorId>? colors = null,
         IReadOnlyList<SymbolId>? symbols = null,
-        IReadOnlyList<MissionPattern>? patterns = null)
+        IReadOnlyList<BlobbityPattern>? patterns = null)
     {
         var result = Open(
             seatNames,
@@ -86,10 +86,10 @@ internal static class Cards
 
     public static SeatId Seat(string name) => new(name);
 
-    public static Mission Mission(string id, MissionPattern pattern, ColorId color) =>
+    public static Mission Mission(string id, BlobbityPattern pattern, ColorId color) =>
         new(new MissionId(id), pattern, color);
 
-    public static Mission Purple(string id) => Mission(id, MissionPattern.Row, OrdinaryCatalog.Purple);
+    public static Mission Purple(string id) => Mission(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
 
     public static Tile Tile(string id, Cell x0y0, Cell x1y0, Cell x0y1, Cell x1y1) =>
         new(new TileId(id), x0y0, x1y0, x0y1, x1y1);

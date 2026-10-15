@@ -22,7 +22,7 @@ public class PassAndPlayTests
 
             var result = session.Submit(player.Seat, player.ChooseAction(view));
             Assert.That(result.IsAccepted, Is.True, result.Rejection?.Message);
-            Assert.That(result.Events.OfType<MissionClaimed>().Select(claim => claim.Mission.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
+            Assert.That(result.Events.OfType<BlobbityClaimed>().Select(claim => claim.Mission.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
 
             var next = table.Players[(i + 1) % table.Players.Length];
             Assert.That(session.View(player.Seat).CurrentSeat, Is.EqualTo(next.Seat));

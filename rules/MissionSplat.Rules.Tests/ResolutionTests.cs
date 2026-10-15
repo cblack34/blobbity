@@ -15,7 +15,7 @@ public class ResolutionTests
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
         Assert.That(placed.Events.OfType<TilePlaced>().Count(), Is.EqualTo(1));
         Assert.That(
-            placed.Events.OfType<MissionClaimed>().Select(claim => claim.Mission.Value).ToArray(),
+            placed.Events.OfType<BlobbityClaimed>().Select(claim => claim.Mission.Value).ToArray(),
             Is.EqualTo(new[] { "red-row", "red-square" }));
         Assert.That(placed.Events.OfType<GameWon>(), Is.Empty);
         Assert.That(next.HasEnded, Is.False);
@@ -28,11 +28,11 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("spare"),
             ],
             [
@@ -45,7 +45,7 @@ public class ResolutionTests
 
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "red-square" }));
-        Assert.That(placed.Events.OfType<MissionClaimed>().Count(), Is.EqualTo(1));
+        Assert.That(placed.Events.OfType<BlobbityClaimed>().Count(), Is.EqualTo(1));
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
     }
 
@@ -58,7 +58,7 @@ public class ResolutionTests
         {
             Cards.Purple("a1"),
             Cards.Purple("a2"),
-            Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+            Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
             Cards.Purple("b2"),
         };
         for (var i = 2; i < seatCount; i++)
@@ -120,7 +120,7 @@ public class ResolutionTests
         Assert.That(next.Claims(Cards.Seat("b")), Is.Empty);
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a1", "a2" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("b"))), Is.EqualTo(new[] { "b1", "b2" }));
-        Assert.That(placed.Events.OfType<MissionClaimed>(), Is.Empty);
+        Assert.That(placed.Events.OfType<BlobbityClaimed>(), Is.Empty);
     }
 
     [Test]
@@ -131,7 +131,7 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -154,8 +154,8 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-1"),
@@ -175,8 +175,8 @@ public class ResolutionTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("red-square", MissionPattern.Square, OrdinaryCatalog.Red),
+                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-1"),

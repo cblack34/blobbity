@@ -23,8 +23,8 @@ public static class OrdinaryCatalog
 
     public static IReadOnlyList<SymbolId> NonScoringSymbols { get; } = [Blank, Rotate, Stack, Bounce];
 
-    public static IReadOnlyList<MissionPattern> Patterns { get; } =
-        [MissionPattern.Row, MissionPattern.Square, MissionPattern.L];
+    public static IReadOnlyList<BlobbityPattern> Patterns { get; } =
+        [BlobbityPattern.Row, BlobbityPattern.Square, BlobbityPattern.L];
 
     public const int ClaimsRequiredToWin = 4;
 

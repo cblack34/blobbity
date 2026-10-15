@@ -308,7 +308,7 @@ public class RecapTests
             [typeof(TilePlaced)] = new TilePlaced(First, new TileId("t"), 0, 0, 0, null),
             [typeof(TileRotated)] = new TileRotated(First, 0, 0, 1),
             [typeof(TileBounced)] = new TileBounced(First, 0, 0, new TileId("t"), null),
-            [typeof(MissionClaimed)] = new MissionClaimed(First, new MissionId("1-a")),
+            [typeof(BlobbityClaimed)] = new BlobbityClaimed(First, new MissionId("1-a")),
             [typeof(GameWon)] = new GameWon(First, 1),
             [typeof(BoardReshuffled)] = new BoardReshuffled(First, [new TileId("t")]),
         };
@@ -328,7 +328,7 @@ public class RecapTests
     [Test]
     public void AClaimAndTheWin_ProduceClaimedAndWonItems_WithTheMissionCard()
     {
-        var square = Cards.Mission("one-square", MissionPattern.Square, OrdinaryCatalog.Red);
+        var square = Cards.Mission("one-square", BlobbityPattern.Square, OrdinaryCatalog.Red);
         var setup = new GameSetup(
             [First, Second],
             First,
@@ -354,7 +354,7 @@ public class RecapTests
     [Test]
     public void ARotateClaim_IsRecappedAsRotatedThenClaimed_ForTheActingSeat()
     {
-        var redRow = Cards.Mission("red-row", MissionPattern.Row, OrdinaryCatalog.Red);
+        var redRow = Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red);
         var setup = new GameSetup(
             [First, Second],
             First,
