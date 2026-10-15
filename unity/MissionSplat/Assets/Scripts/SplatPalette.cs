@@ -22,6 +22,13 @@ public static class SplatPalette
     public static readonly Color Purple = Hex("9c36b5");
     public static readonly Color Gray = Hex("adb5bd");
 
+    // The mark on each colour is drawn in a deeper shade of it: the hue's OKLCH lightness minus 0.16, chroma kept, so it reads as a darker
+    // red, blue and so on and not as off-black. Computed once offline; recompute if the hue changes.
+    public static readonly Color DeepRed = Hex("9a0110");
+    public static readonly Color DeepBlue = Hex("04508e");
+    public static readonly Color DeepGreen = Hex("006a21");
+    public static readonly Color DeepPurple = Hex("66007b");
+
     // Outlines drawn around a tile: a stack target (a tile the drawn tile would cover) and a power target.
     public static readonly Color StackRing = Hex("2f9bd8");
     public static readonly Color TargetRing = Hex("fb8500");

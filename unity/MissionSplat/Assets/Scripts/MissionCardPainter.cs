@@ -61,7 +61,6 @@ internal static class MissionCardPainter
         var latticeFit = lattice.gameObject.AddComponent<AspectRatioFitter>();
         latticeFit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         latticeFit.aspectRatio = LatticeWidth / (float)LatticeHeight;
-        var color = SplatPalette.Of(mission.Color);
         var cells = Pattern(mission.Pattern);
         for (var i = 0; i < cells.Length; i++)
         {
@@ -69,7 +68,7 @@ internal static class MissionCardPainter
             var (x, y) = cells[i];
             Ui.Anchored(splat, new Vector2(x / LatticeWidth, y / LatticeHeight), new Vector2((x + 1f) / LatticeWidth, (y + 1f) / LatticeHeight), Vector2.zero, Vector2.zero);
             // One turn per splat, keyed by the mission, so the card looks the same wherever it is drawn.
-            CellPainter.Splat(splat, color, Vector2.zero, Vector2.one, CellPainter.SplatAngle(mission.Id.Value + ":" + i), SplatOverfill);
+            CellPainter.ColourSplat(splat, mission.Color, Vector2.zero, Vector2.one, CellPainter.SplatAngle(mission.Id.Value + ":" + i), SplatOverfill);
         }
     }
 }

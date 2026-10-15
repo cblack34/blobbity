@@ -38,6 +38,17 @@ internal static class Ui
 
     public static Sprite Splat { get; } = LoadSprite("Splat");
 
+    // The white colour marks drawn upright on a splat, tinted by the caller: outlines for the four colours, a filled sparkle for the wild.
+    public static Sprite MarkHeart { get; } = LoadSprite("MarkHeart");
+
+    public static Sprite MarkTriangle { get; } = LoadSprite("MarkTriangle");
+
+    public static Sprite MarkSquare { get; } = LoadSprite("MarkSquare");
+
+    public static Sprite MarkStar { get; } = LoadSprite("MarkStar");
+
+    public static Sprite MarkSparkle { get; } = LoadSprite("MarkSparkle");
+
     // A white rounded square, tinted by the caller.
     public static Sprite Card { get; } = LoadSprite("TileCard");
 
