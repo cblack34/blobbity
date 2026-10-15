@@ -23,8 +23,8 @@ internal static class BlobbityIds
 
         switch (value)
         {
-            case BlobbityId mission:
-                ids.Add(mission.Value);
+            case BlobbityId id:
+                ids.Add(id.Value);
                 return;
             case Mission mission:
                 ids.Add(mission.Id.Value);
