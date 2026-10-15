@@ -1,6 +1,7 @@
 namespace MissionSplat.Player
 {
 
+using System.Collections.Generic;
 using MissionSplat.Rules;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,23 +11,33 @@ internal static class CellPainter
     // The name of a cell's power badge, for whatever looks for it.
     public const string BadgeName = "Badge";
 
-    // The name of the symbol on a colour splat, for whatever looks for it.
-    public const string SymbolName = "Symbol";
+    // The name of the mark on a colour splat, for whatever looks for it. A mark tells a colour without seeing it; it is not a rules symbol.
+    public const string MarkName = "Mark";
 
     // The middle of the splat's body, as anchors of a square splat Image. The body's centre (the point farthest from its edge) was measured at
     // (71.5, 73.5) in art/splat.svg's 148 x 141 box; it is not the box's centre. The sprite is 256 x 244 and drawn with preserveAspect, so in a
-    // square rect it fills the width and is letterboxed vertically to 244/256 of the height. x = 71.5 / 148 = 0.483. y, measured up from the
-    // bottom: 0.5 + (0.5 - 73.5 / 141) * (244 / 256) = 0.480. A rect that is not square would move the body, so every caller hands over a square.
-    // Recompute if art/splat.svg changes.
-    private static readonly Vector2 BodyCentre = new Vector2(71.5f / 148f, 0.5f + ((0.5f - (73.5f / 141f)) * (244f / 256f)));
+    // square rect it fills the width and is letterboxed vertically to its height over width (244/256 today). x = 71.5 / 148 = 0.483. y, measured
+    // up from the bottom: 0.5 + (0.5 - 73.5 / 141) * (244 / 256) = 0.480. A rect that is not square would move the body, so every caller hands
+    // over a square. Recompute the measurement if art/splat.svg changes.
+    private static readonly Vector2 BodyCentre =
+        new Vector2(71.5f / 148f, 0.5f + ((0.5f - (73.5f / 141f)) * (Ui.Splat.rect.height / Ui.Splat.rect.width)));
 
-    // The symbol's art is a 64-unit box, which on the splat's 148-unit width reaches 32 / 148 of the splat either side of the centre.
-    private const float SymbolHalfExtent = 32f / 148f;
+    // The mark's art is a 64-unit box, which on the splat's 148-unit width reaches 32 / 148 of the splat either side of the centre.
+    private const float MarkHalfExtent = 32f / 148f;
 
     // The wild's sparkle is centred where the four quarter windows meet, so every window holds the same share of it; it is drawn larger than a
     // colour's symbol, because its thin points are lost at board size otherwise.
     private static readonly Vector2 WildCentre = new Vector2(0.5f, 0.5f);
     private const float WildSparkleHalfExtent = 0.3f;
+
+    // Each game colour's mark and the deep shade it is drawn in, keyed by colour id. Any other colour has no mark.
+    private static readonly Dictionary<string, (Sprite Sprite, Color Deep)> Marks = new Dictionary<string, (Sprite, Color)>
+    {
+        [OrdinaryCatalog.Red.Value] = (Ui.MarkHeart, SplatPalette.DeepRed),
+        [OrdinaryCatalog.Blue.Value] = (Ui.MarkTriangle, SplatPalette.DeepBlue),
+        [OrdinaryCatalog.Green.Value] = (Ui.MarkSquare, SplatPalette.DeepGreen),
+        [OrdinaryCatalog.Purple.Value] = (Ui.MarkStar, SplatPalette.DeepPurple),
+    };
 
     // A power's badge fills this much of the cell, centred.
     private const float BadgeMargin = 0.16f;
@@ -79,29 +90,28 @@ internal static class CellPainter
         // Anchors are relative to the quarter, which is half the cell, so the cell's extent is -quarter..2-quarter.
         var shift = new Vector2(quarterX, quarterY);
         var splat = Splat(window, SplatPalette.Of(colour), -shift, new Vector2(2f, 2f) - shift, 0f);
-        SplatPalette.TrySymbolOf(colour, out _, out var deep);
-        PaintSymbol(splat, Ui.SymbolSparkle, deep, WildCentre, WildSparkleHalfExtent, 0f);
+        PaintMark(splat, Ui.MarkSparkle, Marks[colour.Value].Deep, WildCentre, WildSparkleHalfExtent, 0f);
     }
 
-    // A splat for a game colour, marked with that colour's symbol so it can be told without seeing the colour. A colour with no symbol gets none.
-    // The area between min and max must be square, because the symbol's place on the splat's body assumes a square (see BodyCentre).
+    // A splat for a game colour, marked so it can be told without seeing the colour. A colour with no mark gets none.
+    // The area between min and max must be square, because the mark's place on the splat's body assumes a square (see BodyCentre).
     internal static void ColourSplat(RectTransform parent, ColorId colour, Vector2 min, Vector2 max, float angleDegrees, float padding = 0.1f)
     {
         var splat = Splat(parent, SplatPalette.Of(colour), min, max, angleDegrees, padding);
-        if (SplatPalette.TrySymbolOf(colour, out var symbol, out var deep))
+        if (Marks.TryGetValue(colour.Value, out var mark))
         {
-            PaintSymbol(splat, symbol, deep, BodyCentre, SymbolHalfExtent, angleDegrees);
+            PaintMark(splat, mark.Sprite, mark.Deep, BodyCentre, MarkHalfExtent, angleDegrees);
         }
     }
 
-    // The symbol is a child of the splat, so it rides the splat's turn, and is turned back by the same angle so it stays upright.
-    private static void PaintSymbol(Image splat, Sprite sprite, Color deep, Vector2 centre, float halfExtent, float splatAngleDegrees)
+    // The mark is a child of the splat, so it rides the splat's turn, and is turned back by the same angle so it stays upright.
+    private static void PaintMark(Image splat, Sprite sprite, Color deep, Vector2 centre, float halfExtent, float splatAngleDegrees)
     {
-        var symbol = Ui.Image(SymbolName, splat.transform, deep, sprite);
-        symbol.preserveAspect = true;
+        var mark = Ui.Image(MarkName, splat.transform, deep, sprite);
+        mark.preserveAspect = true;
         var half = new Vector2(halfExtent, halfExtent);
-        Ui.Anchored(symbol.rectTransform, centre - half, centre + half, Vector2.zero, Vector2.zero);
-        symbol.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -splatAngleDegrees);
+        Ui.Anchored(mark.rectTransform, centre - half, centre + half, Vector2.zero, Vector2.zero);
+        mark.rectTransform.localRotation = Quaternion.Euler(0f, 0f, -splatAngleDegrees);
     }
 
     // Fills the area between min and max (anchors of the parent), less padding on each side as a fraction of it.
