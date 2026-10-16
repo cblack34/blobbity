@@ -13,4 +13,4 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - run: dotnet test rules/Blobbity.Rules.sln --configuration Release
-      - run: dotnet test app/MissionSplat.App.sln --configuration Release
+      - run: dotnet test app/Blobbity.App.sln --configuration Release

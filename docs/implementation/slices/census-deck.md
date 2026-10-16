@@ -60,7 +60,7 @@ Encode the census rows as data, translating its top-row-first cell order into th
 ## Verification
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
-- `dotnet test app/MissionSplat.App.sln --configuration Release`
+- `dotnet test app/Blobbity.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
 - Repository definition-of-done commands remain mandatory.
 

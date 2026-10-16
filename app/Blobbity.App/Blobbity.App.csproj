@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>14</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Blobbity.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\rules\Blobbity.Rules\Blobbity.Rules.csproj" />
+  </ItemGroup>
+
+  <!-- Release output already contains Rules, so one copy publishes both assemblies. A Debug build must not replace those DLLs. -->
+  <Target Name="CopyGameAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <GamePackagePlugins>$(MSBuildThisFileDirectory)..\..\packages\com.mission-splat.game\Runtime\Plugins\</GamePackagePlugins>
+    </PropertyGroup>
+    <ItemGroup>
+      <GameAssembly Include="$(TargetDir)Blobbity.App.dll" />
+      <GameAssembly Include="$(TargetDir)Blobbity.Rules.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(GameAssembly)" DestinationFolder="$(GamePackagePlugins)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

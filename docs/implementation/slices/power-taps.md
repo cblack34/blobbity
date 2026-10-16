@@ -73,7 +73,7 @@ Extend the view's preview state to cover three modes: a placement, a power targe
 ## Verification
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
-- `dotnet test app/MissionSplat.App.sln --configuration Release`
+- `dotnet test app/Blobbity.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
 - Captures of a rotate preview and a bounce selection, and the maintainer's look on the phone.
 

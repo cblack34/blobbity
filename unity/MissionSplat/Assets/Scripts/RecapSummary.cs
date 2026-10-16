@@ -2,7 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System.Collections.Generic;
-using MissionSplat.App;
+using Blobbity.App;
 using Blobbity.Rules;
 
 // The one line that stays after a recap: what it showed, in plain words, one sentence per run of items by the same seat.

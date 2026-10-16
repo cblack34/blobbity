@@ -44,7 +44,7 @@ Claim fixtures are on `main`. The build brief's next consumer is `ISession`, `Lo
 | Session view hides other hands | The real session view, not a test double, omits other seats' unclaimed blobbity ids. Claimed blobbities stay public. |
 | AI plays legally without other blobbities | `AiPlayer` receives the seat view and uses the session preview. A test pins a claiming choice and the absence of other blobbity ids. |
 | Rules stay engine-free | App references Rules. A guard rejects a Unity reference in the app project. Rules behavior is unchanged apart from the pending-tile read. |
-| App definition of done | `dotnet test app/MissionSplat.App.sln --configuration Release` runs locally and in the `rules` job. |
+| App definition of done | `dotnet test app/Blobbity.App.sln --configuration Release` runs locally and in the `rules` job. |
 | Powers stay later | This slice does not execute rotate, stack, or bounce. |
 
 ## Gates and dependencies
@@ -83,7 +83,7 @@ The preview calls `Game.Place` and drops the returned game, so the AI can ask wh
 ## Verification
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
-- `dotnet test app/MissionSplat.App.sln --configuration Release`
+- `dotnet test app/Blobbity.App.sln --configuration Release`
 - The secrecy check uses the real session view.
 - The three-seat and four-seat scripts each complete a full round, and each seat claims.
 - The AI command is accepted, and a fixture shows it choosing a placement that claims its own blobbity.
@@ -124,7 +124,7 @@ None.
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
 - **Outcome:** `LocalSession` runs a 2–4 seat game in process. A seat view shows that seat's unclaimed blobbities and every seat's claims. `AiPlayer` returns a legal placement and prefers one that claims its own blobbity. The `rules` job also runs the app tests.
-- **Verification:** `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed, 77 tests, 0 failed. `dotnet test app/MissionSplat.App.sln --configuration Release` passed, 13 tests, 0 failed. Evidence is on #6, #7, #8, and the pull request.
+- **Verification:** `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed, 77 tests, 0 failed. `dotnet test app/Blobbity.App.sln --configuration Release` passed, 13 tests, 0 failed. Evidence is on #6, #7, #8, and the pull request.
 - **Deviations:** `Game.PendingMatchTile` reads the one tile the next placement will consume. `Tile.Local` is public so that tile's four cells can be shown. `LocalSession` remembers accepted placement coordinates because `Game` does not enumerate placed tiles; cell values are read back from the grid. No difficulty control.
 - **Unresolved gates or risks:** Power effects, how long a stack stays buried, bounce of the last tile, a tile with no legal placement, and deck exhaustion. Exhaustion still throws `UnresolvedRulingException` and does not change the game. Uncorrected census rows still need a maintainer pass. Unity, the UPM package, and device play are a later slice.
 - **Final PR:** https://github.com/cblack34/mission-splat/pull/9

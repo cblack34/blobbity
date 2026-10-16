@@ -35,7 +35,7 @@ Matching and placement-owned claim are the hard dependency for every later adapt
 
 - Executing rotate, stack-on-top, or bounce.
 - A plugin loader, scripted rules, or a player screen that asks the table for the win count.
-- `ISession`, `LocalSession`, `AiPlayer`, seat-scoped views, and `app/MissionSplat.App.sln`.
+- `ISession`, `LocalSession`, `AiPlayer`, seat-scoped views, and `app/Blobbity.App.sln`.
 - Unity, the UPM package, a desktop build, the room service, and `RemoteSession`.
 - A physical-box deck census.
 - Any still-open ruling in [`docs/rules.md`](../../rules.md) other than the two this slice closes.
@@ -99,7 +99,7 @@ The behavior issue updates the strategic docs that still say the placer names a 
 ## Verification
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
-- `dotnet test app/MissionSplat.App.sln --configuration Release` is omitted. That solution does not exist. The PR records the omission.
+- `dotnet test app/Blobbity.App.sln --configuration Release` is omitted. That solution does not exist. The PR records the omission.
 - The rules project does not reference Unity.
 - The new solution and project files are visible to git.
 - No device or Unity evidence in this slice.

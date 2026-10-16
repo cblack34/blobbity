@@ -59,7 +59,7 @@ Make the pattern search enumerate completing cell sets instead of stopping at th
 ## Verification
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
-- `dotnet test app/MissionSplat.App.sln --configuration Release`
+- `dotnet test app/Blobbity.App.sln --configuration Release`
 - Repository definition-of-done commands remain mandatory.
 
 ## Risks and stop conditions
@@ -89,7 +89,7 @@ None.
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
 - **Outcome:** One placement still claims several blobbities, but each claimed blobbity now needs its own four cells. Overlapping sets are fine; identical sets, compared by cells rather than colour, give one claim. `PatternSearch.CompletingSets` lists every completing set that touches the placed cells. `DistinctAssignment.Choose` takes blobbities in hand order and keeps each one only if every kept blobbity can still get a different set. The completing sets form a transversal matroid, so this greedy pass claims the most blobbities possible and prefers earlier cards. Nothing else in resolution changed, and no public API moved.
-- **Verification:** On the final head (code last changed in the PR review round), `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 226 (214 plus 6 claim cases and 6 assignment cases) and `dotnet test app/MissionSplat.App.sln --configuration Release` passed 60, with no existing test changed. The first fresh-context design review ran on `fbcfe68` (three production files); applying it extracted `DistinctAssignment`, made `CellSet.Of` non-mutating, named the matroid, and removed a tentative add-then-remove (`f6950ab`). Because that changed the surface, a second fresh-context review ran on the final code and covered all four production files (`PatternSearch`, `CellSet`, `DistinctAssignment`, `Ruleset`). It found no blocking or issue-level problem. Two of its suggestions were applied: a test for a contended middle entry, and acceptance wording aligned with the rule.
+- **Verification:** On the final head (code last changed in the PR review round), `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 226 (214 plus 6 claim cases and 6 assignment cases) and `dotnet test app/Blobbity.App.sln --configuration Release` passed 60, with no existing test changed. The first fresh-context design review ran on `fbcfe68` (three production files); applying it extracted `DistinctAssignment`, made `CellSet.Of` non-mutating, named the matroid, and removed a tentative add-then-remove (`f6950ab`). Because that changed the surface, a second fresh-context review ran on the final code and covered all four production files (`PatternSearch`, `CellSet`, `DistinctAssignment`, `Ruleset`). It found no blocking or issue-level problem. Two of its suggestions were applied: a test for a contended middle entry, and acceptance wording aligned with the rule.
 - **Deviations:** None from the approved plan. The assignment search lives in its own internal type rather than inside `Ruleset`, so it can be tested on its own.
 - **Unresolved gates or risks:** The census deck with 24 blobbities is next; identical cards in one hand are what this rule protects. GUI redesign deferred.
 - **Refactor and handoff receipt:** In the PR body and on issue #37.

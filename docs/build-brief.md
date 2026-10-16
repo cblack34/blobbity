@@ -108,7 +108,7 @@ An offline game of 2–4 seats can be played to the configured claim count on a 
 
 ```bash
 dotnet test rules/Blobbity.Rules.sln --configuration Release
-dotnet test app/MissionSplat.App.sln --configuration Release
+dotnet test app/Blobbity.App.sln --configuration Release
 ```
 
 Every item in [`acceptance.md`](acceptance.md) passes. The room service is absent.

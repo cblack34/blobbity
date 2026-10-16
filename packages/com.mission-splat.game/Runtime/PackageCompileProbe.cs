@@ -2,6 +2,6 @@ namespace MissionSplat.Game
 {
     internal static class PackageCompileProbe
     {
-        internal static System.Type SessionType => typeof(MissionSplat.App.ISession);
+        internal static System.Type SessionType => typeof(Blobbity.App.ISession);
     }
 }

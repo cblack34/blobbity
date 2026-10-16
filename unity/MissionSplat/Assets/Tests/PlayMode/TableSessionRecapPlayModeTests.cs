@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
-using MissionSplat.App;
+using Blobbity.App;
 using MissionSplat.Player;
 using Blobbity.Rules;
 using NUnit.Framework;

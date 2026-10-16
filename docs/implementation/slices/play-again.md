@@ -59,7 +59,7 @@ Remember the `TableStart` the current game began from. On Play again, build the 
 ## Verification
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
-- `dotnet test app/MissionSplat.App.sln --configuration Release`
+- `dotnet test app/Blobbity.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
 - A game-end capture, and the maintainer's look on the phone.
 
