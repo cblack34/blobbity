@@ -3,7 +3,7 @@
 # Needs rsvg-convert (brew install librsvg). Re-run after editing an SVG and commit both.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
-out="$here/../unity/MissionSplat/Assets/Art/Resources"
+out="$here/../unity/Blobbity/Assets/Art/Resources"
 mkdir -p "$out"
 # The sed below turns the black fill white. Without it the splat would export black and would not tint.
 grep -q 'fill="#000"' "$here/splat.svg" || { echo 'art/splat.svg has no fill="#000"; the export would not be tintable.' >&2; exit 1; }

@@ -68,7 +68,7 @@ Keep one card painter so tiles and blobbities change together. Draw outlines and
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs.
 - Every capture retaken in portrait, and the maintainer's look on the phone.
 
 ## Risks and stop conditions
@@ -109,7 +109,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - a setup panel sized to its rows.
 
   The hand-off cover and the claims panel use the same toy box. New art goes through `art/*.svg` and `export.sh`. Baloo 2 ships as three fixed weights with its OFL licence.
-- **Verification:** On `d980a3a`, `dotnet test` passed Rules 234 and App 66. `unity test unity/MissionSplat --mode PlayMode` passed 29 of 29. The new tests check three things: background art is not a raycast target, legal spots and rings still take taps, and seat entries are centred and evenly spaced for two, three, and four seats. The maintainer then checked the game on the device and reported that it looks good. All captures were retaken in portrait, and `setup.png` is new.
+- **Verification:** On `d980a3a`, `dotnet test` passed Rules 234 and App 66. `unity test unity/Blobbity --mode PlayMode` passed 29 of 29. The new tests check three things: background art is not a raycast target, legal spots and rings still take taps, and seat entries are centred and evenly spaced for two, three, and four seats. The maintainer then checked the game on the device and reported that it looks good. All captures were retaken in portrait, and `setup.png` is new.
 - **Deviations:**
   - The ink colour changed from navy `#1c3348` to `#1d1d1b`, to match the reference.
   - Cards sit slightly smaller in their slots, because the inset now covers the shadow's reach.

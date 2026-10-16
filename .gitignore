@@ -583,8 +583,8 @@ sysinfo.txt
 
 # Builds
 # Unity player output: the default iOS Build Profile folder and the recommended Builds/ folder.
-unity/MissionSplat/Build Profiles/*/Build/
-unity/MissionSplat/Builds/
+unity/Blobbity/Build Profiles/*/Build/
+unity/Blobbity/Builds/
 *.apk
 *.aab
 *.unitypackage

@@ -74,7 +74,7 @@ Extend the view's preview state to cover three modes: a placement, a power targe
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs.
 - Captures of a rotate preview and a bounce selection, and the maintainer's look on the phone.
 
 ## Risks and stop conditions
@@ -113,7 +113,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - **Remaining uses:** spent badges grey out on the drawn tile.
   - **Tray:** it shrank from 560 to 450 units, giving the board 110.
   - **Spin:** it survives a confirmed rotate (the amendment).
-- **Verification:** On `325cba2`, Rules 241, App 86, and `unity test unity/MissionSplat --mode PlayMode` 70 of 70 (in a scratch copy, because the maintainer's editor was open). `4ca6727` changes only captures. The PlayMode tests cover:
+- **Verification:** On `325cba2`, Rules 241, App 86, and `unity test unity/Blobbity --mode PlayMode` 70 of 70 (in a scratch copy, because the maintainer's editor was open). `4ca6727` changes only captures. The PlayMode tests cover:
   - selection, live preview, Confirm and Cancel, and zero-turn Confirm disabled;
   - the preview equalling the applied board at 1, 2, and 3 turns;
   - rotate claims;
