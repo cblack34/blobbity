@@ -582,9 +582,8 @@ ExportedObj/
 sysinfo.txt
 
 # Builds
-# Unity player output: the default iOS Build Profile folder and the recommended Builds/ folder.
-unity/Blobbity/Build Profiles/*/Build/
-unity/Blobbity/Builds/
+# Unity player output in the default iOS Build Profile folder (Builds/ is ignored with the other Unity folders below).
+unity/*/Build Profiles/*/Build/
 *.apk
 *.aab
 *.unitypackage
