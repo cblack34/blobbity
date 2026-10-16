@@ -3,7 +3,7 @@ namespace MissionSplat.Rules.Tests;
 public class ResolutionTests
 {
     [Test]
-    public void OneTile_ClaimsBothMissionsTheActingSeatHolds_AndPassesOnce()
+    public void OneTile_ClaimsBothBlobbitiesTheActingSeatHolds_AndPassesOnce()
     {
         var placed = RepresentativeDeck.Play(RowAndSquareGame(), 1, 0);
         var next = See.Game(placed);
@@ -54,7 +54,7 @@ public class ResolutionTests
     public void StolenPattern_IsNotClaimed_EvenAfterALaterTileMissesIt(int seatCount)
     {
         var names = new[] { "a", "b", "c" }.Take(seatCount).ToArray();
-        var missions = new List<BlobbityCard>
+        var blobbities = new List<BlobbityCard>
         {
             Cards.Purple("a1"),
             Cards.Purple("a2"),
@@ -63,15 +63,15 @@ public class ResolutionTests
         };
         for (var i = 2; i < seatCount; i++)
         {
-            missions.Add(Cards.Purple(names[i] + "1"));
-            missions.Add(Cards.Purple(names[i] + "2"));
+            blobbities.Add(Cards.Purple(names[i] + "1"));
+            blobbities.Add(Cards.Purple(names[i] + "2"));
         }
 
-        missions.Add(Cards.Purple("spare"));
+        blobbities.Add(Cards.Purple("spare"));
         var game = RepresentativeDeck.Start(
             names,
             "a",
-            missions.ToArray(),
+            blobbities.ToArray(),
             [
                 Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
                 Cards.Tile("stolen", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
@@ -93,7 +93,7 @@ public class ResolutionTests
     }
 
     [Test]
-    public void EmptyMissionDeck_AcceptsABlankFullSide_AndClaimsNothing()
+    public void EmptyBlobbityDeck_AcceptsABlankFullSide_AndClaimsNothing()
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],
@@ -124,7 +124,7 @@ public class ResolutionTests
     }
 
     [Test]
-    public void EmptyMissionDeck_ThrowsWhenThePlacementWouldClaimOne_AndTheGameStays()
+    public void EmptyBlobbityDeck_ThrowsWhenThePlacementWouldClaimOne_AndTheGameStays()
     {
         // Same full-side row as HorizontalRow_ClaimsForTheFinisher, with no replacement left.
         var game = RepresentativeDeck.Start(
@@ -149,7 +149,7 @@ public class ResolutionTests
     [Test]
     public void OneReplacement_ThrowsWhenThePlacementWouldClaimTwo_AndTheGameStays()
     {
-        // Same both-missions placement as OneTile_ClaimsBothMissions, with one replacement left.
+        // Same both-blobbities placement as OneTile_ClaimsBothBlobbities, with one replacement left.
         var game = RepresentativeDeck.Start(
             ["a", "b"],
             "a",
@@ -208,7 +208,7 @@ public class ResolutionTests
         Assert.That(
             () => { RepresentativeDeck.Try(game, new Place(1, 0, 0)); },
             Throws.TypeOf<UnresolvedRulingException>().With.Message.EqualTo(
-                "The mission deck cannot replace every mission this command completed. Exhausting the mission deck is an open ruling, so this command was not applied."));
+                "The blobbity deck cannot replace every blobbity this command completed. Exhausting the blobbity deck is an open ruling, so this command was not applied."));
 
         Assert.That(game.TileCount, Is.EqualTo(tiles));
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(matchRemaining));

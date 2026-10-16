@@ -67,36 +67,36 @@ internal static class SetupCheck
 
         if (setup.BlobbityDeck.Count < seats.Count * 2)
         {
-            return Invalid("The mission deck does not have two cards for every seat.");
+            return Invalid("The blobbity deck does not have two cards for every seat.");
         }
 
         var blobbityIds = new HashSet<BlobbityId>();
-        foreach (var mission in setup.BlobbityDeck)
+        foreach (var blobbity in setup.BlobbityDeck)
         {
-            if (IdText.IsMissing(mission.Id.Value))
+            if (IdText.IsMissing(blobbity.Id.Value))
             {
-                return Invalid("A mission id is required.");
+                return Invalid("A blobbity id is required.");
             }
 
-            if (!IsKnownPattern(mission.Pattern))
+            if (!IsKnownPattern(blobbity.Pattern))
             {
-                return Invalid($"Mission '{mission.Id.Value}' is not a row, square, or L.");
+                return Invalid($"Blobbity '{blobbity.Id.Value}' is not a row, square, or L.");
             }
 
-            if (IdText.IsMissing(mission.Color.Value))
+            if (IdText.IsMissing(blobbity.Color.Value))
             {
                 return Invalid("A color id is required.");
             }
 
-            if (!blobbityIds.Add(mission.Id))
+            if (!blobbityIds.Add(blobbity.Id))
             {
-                return Invalid($"Mission '{mission.Id.Value}' is in the deck twice.");
+                return Invalid($"Blobbity '{blobbity.Id.Value}' is in the deck twice.");
             }
 
-            if (!colors.Contains(mission.Color))
+            if (!colors.Contains(blobbity.Color))
             {
                 return Invalid(
-                    $"Mission '{mission.Id.Value}' uses color '{mission.Color.Value}', which is not in the catalog.");
+                    $"Blobbity '{blobbity.Id.Value}' uses color '{blobbity.Color.Value}', which is not in the catalog.");
             }
         }
 
