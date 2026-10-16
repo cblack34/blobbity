@@ -1,7 +1,7 @@
 namespace MissionSplat.Player
 {
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using UnityEngine;
 
 // Where a power's badge sits on screen, as the world corners of its rect, taken when the splash is queued so it holds no UI object.

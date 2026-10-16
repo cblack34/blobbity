@@ -1,6 +1,6 @@
 namespace MissionSplat.App;
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 // Everything a GUI draws for the seat holding the device. The lists are empty when nobody may act.
 public sealed class TableSnapshot

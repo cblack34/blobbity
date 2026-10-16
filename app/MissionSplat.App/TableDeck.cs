@@ -1,7 +1,7 @@
 namespace MissionSplat.App;
 
 using System.Globalization;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 public static class TableDeck
 {

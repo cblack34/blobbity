@@ -12,7 +12,7 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "MissionSplat.App.dll",
-        "MissionSplat.Rules.dll"
+        "Blobbity.Rules.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

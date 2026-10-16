@@ -15,7 +15,7 @@
     "precompiledReferences": [
         "nunit.framework.dll",
         "MissionSplat.App.dll",
-        "MissionSplat.Rules.dll"
+        "Blobbity.Rules.dll"
     ],
     "autoReferenced": false,
     "defineConstraints": [

@@ -2,7 +2,7 @@ namespace MissionSplat.App.Tests;
 
 using System.Reflection;
 using MissionSplat.App;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 public class AiPlayerTests
 {

@@ -1,6 +1,6 @@
 namespace MissionSplat.App;
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 // The turn driver: it runs the automated seats, hands the device between seats, and builds what a GUI draws.
 // It talks to the match only through the session, so any ISession adapter fits.

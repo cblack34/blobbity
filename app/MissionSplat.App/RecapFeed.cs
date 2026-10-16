@@ -1,6 +1,6 @@
 namespace MissionSplat.App;
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 // The table's ordered log of public events and what each human seat has already seen of it.
 internal sealed class RecapFeed(GameSetup setup)

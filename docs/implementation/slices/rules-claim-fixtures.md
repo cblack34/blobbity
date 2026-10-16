@@ -19,7 +19,7 @@ Matching and placement-owned claim are the hard dependency for every later adapt
 ### In scope
 
 - Rules library and test project, callable from `dotnet test`, with no Unity reference.
-- CI for `dotnet test rules/MissionSplat.Rules.sln --configuration Release`.
+- CI for `dotnet test rules/Blobbity.Rules.sln --configuration Release`.
 - Representative blobbity deck and match deck, ordered by the fixture, large enough that the fixtures do not exhaust either deck.
 - Explicit first seat and explicit claims-to-win count. The ordinary game uses 4.
 - Orthogonal placement. Corner-only contact is illegal. A non-stack tile on an occupied cell is illegal. A tile that shows stack may still be placed on a legal full side.
@@ -98,7 +98,7 @@ The behavior issue updates the strategic docs that still say the placer names a 
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release` is omitted. That solution does not exist. The PR records the omission.
 - The rules project does not reference Unity.
 - The new solution and project files are visible to git.
@@ -134,7 +134,7 @@ None.
 ## Delivery record
 
 - **Outcome:** The rules library deals a 2–4 seat game, places a tile on the cell grid, and claims every secret blobbity the acting seat's placement completed. A wildcard stays wild. The ordinary win count is 4, and setup can pass another count. CI runs the rules tests.
-- **Verification:** `dotnet test rules/MissionSplat.Rules.sln --configuration Release` passed, 75 tests, 0 failed. The `rules` check is green on `9c246d2`. This receipt update is the following commit. The app solution does not exist, so that command was omitted. Evidence is on #2, #3, and the pull request.
+- **Verification:** `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed, 75 tests, 0 failed. The `rules` check is green on `9c246d2`. This receipt update is the following commit. The app solution does not exist, so that command was omitted. Evidence is on #2, #3, and the pull request.
 - **Deviations:** CI landed in this slice because neither test solution existed. The base-deck census from `main` is included. Fixtures use smaller named decks and do not encode the 30 match tiles.
 - **Unresolved gates or risks:** Power effects, how long a stack stays buried, bounce of the last tile, a tile with no legal placement, and deck exhaustion. Exhaustion throws `UnresolvedRulingException` and does not change the game. Uncorrected census rows still need a maintainer pass.
 - **Final PR:** https://github.com/cblack34/mission-splat/pull/5

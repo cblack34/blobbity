@@ -2,7 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System.Collections.Generic;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using UnityEngine;
 
 // A power's badge, on a tile cell: a coloured disc with an ink rim and the power's mark in ink

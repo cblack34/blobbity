@@ -21,7 +21,7 @@ The user approves each tactical slice. Agents may open PRs. Only the user merges
 Run these exact commands before every PR is integration-ready and before declaring the project complete:
 
 ```bash
-dotnet test rules/MissionSplat.Rules.sln --configuration Release
+dotnet test rules/Blobbity.Rules.sln --configuration Release
 dotnet test app/MissionSplat.App.sln --configuration Release
 ```
 

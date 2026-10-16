@@ -4,7 +4,7 @@ namespace MissionSplat.Player
 using System;
 using System.Collections.Generic;
 using MissionSplat.App;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using UnityEngine;
 
 // Forwards the view's input to the App table and draws its snapshot. It starts games, and builds the next game's start from the last

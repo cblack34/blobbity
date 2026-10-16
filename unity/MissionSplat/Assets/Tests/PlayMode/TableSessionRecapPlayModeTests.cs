@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using MissionSplat.App;
 using MissionSplat.Player;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;

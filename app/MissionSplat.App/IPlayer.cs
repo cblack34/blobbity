@@ -1,6 +1,6 @@
 namespace MissionSplat.App;
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 // The action source for an automated seat. A human seat is a GUI submitting through the table.
 public interface IPlayer

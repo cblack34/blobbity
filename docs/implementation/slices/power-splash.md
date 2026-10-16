@@ -61,7 +61,7 @@ Reuse the recap player's overlay, input blocking, and per-item skip. Queue one s
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
 - One mid-splash capture, and the maintainer's look on the phone.

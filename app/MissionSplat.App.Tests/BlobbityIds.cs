@@ -2,7 +2,7 @@ namespace MissionSplat.App.Tests;
 
 using System.Collections;
 using System.Reflection;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 internal static class BlobbityIds
 {
