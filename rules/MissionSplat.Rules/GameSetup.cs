@@ -9,7 +9,7 @@ public sealed class GameSetup
         IReadOnlyList<SymbolId> nonScoringSymbols,
         IReadOnlyList<BlobbityPattern> activePatterns,
         int claimsRequiredToWin,
-        IReadOnlyList<BlobbityCard> missionDeck,
+        IReadOnlyList<BlobbityCard> blobbityDeck,
         IReadOnlyList<Tile> matchDeck)
     {
         SeatsInTurnOrder = Copy(seatsInTurnOrder, nameof(seatsInTurnOrder));
@@ -18,7 +18,7 @@ public sealed class GameSetup
         NonScoringSymbols = Copy(nonScoringSymbols, nameof(nonScoringSymbols));
         ActivePatterns = Copy(activePatterns, nameof(activePatterns));
         ClaimsRequiredToWin = claimsRequiredToWin;
-        BlobbityDeck = CopyItems(missionDeck, nameof(missionDeck));
+        BlobbityDeck = CopyItems(blobbityDeck, nameof(blobbityDeck));
         MatchDeck = CopyItems(matchDeck, nameof(matchDeck));
     }
 

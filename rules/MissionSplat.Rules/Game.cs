@@ -4,7 +4,7 @@ public sealed class Game
 {
     private readonly SeatSnapshot[] _seats;
     private readonly int _currentIndex;
-    private readonly BlobbityCard[] _missionDeck;
+    private readonly BlobbityCard[] _blobbityDeck;
     private readonly Tile[] _matchDeck;
     private readonly Grid _grid;
     private readonly Ruleset _ruleset;
@@ -14,7 +14,7 @@ public sealed class Game
     private Game(
         SeatSnapshot[] seats,
         int currentIndex,
-        BlobbityCard[] missionDeck,
+        BlobbityCard[] blobbityDeck,
         Tile[] matchDeck,
         Grid grid,
         Ruleset ruleset,
@@ -24,7 +24,7 @@ public sealed class Game
     {
         _seats = seats;
         _currentIndex = currentIndex;
-        _missionDeck = missionDeck;
+        _blobbityDeck = blobbityDeck;
         _matchDeck = matchDeck;
         _grid = grid;
         _ruleset = ruleset;
@@ -41,7 +41,7 @@ public sealed class Game
 
     public int TileCount => _grid.TileCount;
 
-    public int BlobbityDeckRemaining => _missionDeck.Length;
+    public int BlobbityDeckRemaining => _blobbityDeck.Length;
 
     public int MatchDeckRemaining => _matchDeck.Length;
 
@@ -220,7 +220,7 @@ public sealed class Game
     {
         var acting = _seats[_currentIndex];
         var completed = _ruleset.CompletedBlobbities(grid, written, acting.Hand);
-        if (completed.Count > _missionDeck.Length)
+        if (completed.Count > _blobbityDeck.Length)
         {
             throw new UnresolvedRulingException(
                 "The mission deck cannot replace every mission this command completed. Exhausting the mission deck is an open ruling, so this command was not applied.");
@@ -228,12 +228,12 @@ public sealed class Game
 
         var hand = new List<BlobbityCard>(acting.Hand);
         var claims = new List<BlobbityCard>(acting.Claims);
-        var missionDeck = new List<BlobbityCard>(_missionDeck);
+        var blobbityDeck = new List<BlobbityCard>(_blobbityDeck);
         foreach (var mission in completed)
         {
             hand.Remove(mission);
-            var replacement = missionDeck[0];
-            missionDeck.RemoveAt(0);
+            var replacement = blobbityDeck[0];
+            blobbityDeck.RemoveAt(0);
             hand.Add(replacement);
             claims.Add(mission);
         }
@@ -241,7 +241,7 @@ public sealed class Game
         return new ClaimResolution(
             completed,
             new SeatSnapshot(acting.Id, hand.ToArray(), claims.ToArray()),
-            missionDeck.ToArray(),
+            blobbityDeck.ToArray(),
             claims.Count >= ClaimsRequiredToWin);
     }
 
@@ -262,7 +262,7 @@ public sealed class Game
     private Game Next(
         SeatSnapshot actingSeat,
         int currentIndex,
-        BlobbityCard[] missionDeck,
+        BlobbityCard[] blobbityDeck,
         Tile[] matchDeck,
         Grid grid,
         SpentUses spent,
@@ -273,7 +273,7 @@ public sealed class Game
         return new Game(
             seats,
             currentIndex,
-            missionDeck,
+            blobbityDeck,
             matchDeck,
             grid,
             _ruleset,
@@ -345,7 +345,7 @@ public sealed class Game
         Array.Copy(_matchDeck, matchDeck, _matchDeck.Length);
         matchDeck[^1] = removed;
 
-        var next = Next(_seats[_currentIndex], _currentIndex, _missionDeck, matchDeck, grid, _spent.WithUse(OrdinaryCatalog.Bounce), _hasEnded);
+        var next = Next(_seats[_currentIndex], _currentIndex, _blobbityDeck, matchDeck, grid, _spent.WithUse(OrdinaryCatalog.Bounce), _hasEnded);
         return CommandResult.Accept(
             next,
             [new TileBounced(CurrentSeat, bounce.TileX, bounce.TileY, removed.Id, revealed)]);
@@ -402,7 +402,7 @@ public sealed class Game
         var next = new Game(
             _seats,
             _currentIndex,
-            _missionDeck,
+            _blobbityDeck,
             order[1..],
             Grid.FromStart(order[0]),
             _ruleset,
@@ -482,10 +482,10 @@ public sealed class Game
         }
 
         var missionsLeft = setup.BlobbityDeck.Count - deckIndex;
-        var missionDeck = new BlobbityCard[missionsLeft];
+        var blobbityDeck = new BlobbityCard[missionsLeft];
         for (var i = 0; i < missionsLeft; i++)
         {
-            missionDeck[i] = setup.BlobbityDeck[deckIndex + i];
+            blobbityDeck[i] = setup.BlobbityDeck[deckIndex + i];
         }
 
         var matchLeft = setup.MatchDeck.Count - 1;
@@ -498,7 +498,7 @@ public sealed class Game
         return new Game(
             seats,
             IndexOf(seats, setup.FirstSeat),
-            missionDeck,
+            blobbityDeck,
             matchDeck,
             Grid.FromStart(setup.MatchDeck[0]),
             new Ruleset(setup.NonScoringSymbols, setup.ActivePatterns),

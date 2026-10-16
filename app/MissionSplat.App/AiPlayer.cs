@@ -50,7 +50,7 @@ public sealed class AiPlayer : IPlayer
                     continue;
                 }
 
-                if (ClaimsOwnBlobbity(preview.ClaimedBlobbities, ownBlobbities))
+                if (ClaimsOwnBlobbity(preview.ClaimedBlobbityIds, ownBlobbities))
                 {
                     return place;
                 }
