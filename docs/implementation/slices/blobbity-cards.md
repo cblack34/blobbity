@@ -70,7 +70,7 @@ Give the blobbity its own 5:7 sprite rather than stretching the square tile spri
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:mission-cards` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Amission-cards
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:blobbity-cards` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Ablobbity-cards
 
 ## Delivery shape
 
