@@ -76,10 +76,10 @@ internal sealed class RecapStage
         return block;
     }
 
-    // Where a claimed mission lands: its seat-bar pip, in the screen layer's space; null when the bar does not draw it.
-    public Vector2? PipPosition(SeatId seat, BlobbityId mission)
+    // Where a claimed blobbity lands: its seat-bar pip, in the screen layer's space; null when the bar does not draw it.
+    public Vector2? PipPosition(SeatId seat, BlobbityId id)
     {
-        var pip = _seatBar.PipOf(seat, mission);
+        var pip = _seatBar.PipOf(seat, id);
         return pip == null ? null : (Vector2)_screenLayer.InverseTransformPoint(pip.position);
     }
 

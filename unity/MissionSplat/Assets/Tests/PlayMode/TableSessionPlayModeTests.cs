@@ -276,7 +276,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     }
 
     [Test]
-    public void SecretAndClaimedMissions_RenderAsPortraitCardsWithFourSplats()
+    public void SecretAndClaimedBlobbities_RenderAsPortraitCardsWithFourSplats()
     {
         var purple = Cell.Color(OrdinaryCatalog.Purple);
         var table = BeginHumanTable(SetupFrom(
@@ -285,16 +285,16 @@ public class TableSessionPlayModeTests : TableSessionFixture
             new Tile(new TileId("next"), purple, purple, purple, purple),
             BlankTile("pad")));
 
-        // Secrets: the seat's two unclaimed missions, drawn in the turn tray.
-        AssertBlobbityCards("Mission", 2);
+        // Secrets: the seat's two unclaimed blobbities, drawn in the turn tray.
+        AssertBlobbityCards("Blobbity", 2);
         AssertPips("Seat1", filled: 0, empty: 4);
 
-        // Placing the second purple tile beside the first finishes a purple row, so the seat claims both of its purple-row missions.
+        // Placing the second purple tile beside the first finishes a purple row, so the seat claims both of its purple-row blobbities.
         table.Place(1, 0);
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.Claims.Single(row => row.Seat.Value == "1").Blobbities.Count, Is.EqualTo(2));
 
-        // The score shows as pips; the claimed missions themselves open on a tap, drawn with the same painter.
+        // The score shows as pips; the claimed blobbities themselves open on a tap, drawn with the same painter.
         AssertPips("Seat1", filled: 2, empty: 2);
         AssertPips("Seat2", filled: 0, empty: 4);
         Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.False);
@@ -353,7 +353,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
     }
 
     [Test]
-    public void TheHandOffCover_SitsOverTheSecretMissionsOnly()
+    public void TheHandOffCover_SitsOverTheSecretBlobbitiesOnly()
     {
         var table = BeginHumanTable(SetupFrom(BlankTile("start"), BlankTile("one"), BlankTile("two"), BlankTile("three")));
         PlaceAt(LiveButtons("Highlight").First());
@@ -367,7 +367,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(conceal.anchorMax, Is.EqualTo(secrets.anchorMax));
         Assert.That(LiveButton("Spin"), Is.Not.Null);
         Assert.That(LiveButton("Confirm"), Is.Not.Null);
-        Assert.That(_root.GetComponentsInChildren<RectTransform>(false).Any(rect => rect.name.StartsWith("Mission") && rect.name.Length > "Mission".Length && char.IsDigit(rect.name["Mission".Length])), Is.False, "no mission card is drawn under the cover");
+        Assert.That(_root.GetComponentsInChildren<RectTransform>(false).Any(rect => rect.name.StartsWith("Blobbity") && rect.name.Length > "Blobbity".Length && char.IsDigit(rect.name["Blobbity".Length])), Is.False, "no blobbity card is drawn under the cover");
     }
 
     [Test]

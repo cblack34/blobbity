@@ -8,7 +8,7 @@ internal static class RepresentativeDeck
 {
     public const string Label = "representative";
 
-    public static GameSetup Setup(string[] seatNames, string firstSeat, BlobbityCard[] missions, Tile[] tiles)
+    public static GameSetup Setup(string[] seatNames, string firstSeat, BlobbityCard[] blobbities, Tile[] tiles)
     {
         return new GameSetup(
             seatNames.Select(name => new SeatId(name)).ToArray(),
@@ -17,7 +17,7 @@ internal static class RepresentativeDeck
             OrdinaryCatalog.NonScoringSymbols,
             OrdinaryCatalog.Patterns,
             OrdinaryCatalog.ClaimsRequiredToWin,
-            missions,
+            blobbities,
             tiles);
     }
 }
@@ -64,19 +64,19 @@ internal static class ClaimingTable
     public static Opened Open(int seatCount)
     {
         var names = Names.Take(seatCount).ToArray();
-        var missions = new List<BlobbityCard>();
+        var blobbities = new List<BlobbityCard>();
         foreach (var name in names)
         {
-            missions.Add(Cards.BlobbityCard(name + "-square", BlobbityPattern.Square, ColorOf(name)));
-            missions.Add(Cards.Row(name + "-row"));
+            blobbities.Add(Cards.BlobbityCard(name + "-square", BlobbityPattern.Square, ColorOf(name)));
+            blobbities.Add(Cards.Row(name + "-row"));
         }
 
         foreach (var name in names)
         {
-            missions.Add(Cards.Row(name + "-replacement"));
+            blobbities.Add(Cards.Row(name + "-replacement"));
         }
 
-        missions.Add(Cards.Row("spare-mission"));
+        blobbities.Add(Cards.Row("spare-blobbity"));
 
         var tiles = new List<Tile> { Cards.BlankTile("start") };
         for (var i = 0; i < names.Length; i++)
@@ -87,7 +87,7 @@ internal static class ClaimingTable
         tiles.Add(Cards.BlankTile("spare-tile"));
 
         var session = new LocalSession();
-        var started = session.Start(RepresentativeDeck.Setup(names, names[0], missions.ToArray(), tiles.ToArray()));
+        var started = session.Start(RepresentativeDeck.Setup(names, names[0], blobbities.ToArray(), tiles.ToArray()));
         Assert.That(started.IsAccepted, Is.True, RepresentativeDeck.Label + ": " + started.Rejection?.Message);
 
         var players = new IPlayer[names.Length];

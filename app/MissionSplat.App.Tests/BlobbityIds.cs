@@ -26,8 +26,8 @@ internal static class BlobbityIds
             case BlobbityId id:
                 ids.Add(id.Value);
                 return;
-            case BlobbityCard mission:
-                ids.Add(mission.Id.Value);
+            case BlobbityCard blobbity:
+                ids.Add(blobbity.Id.Value);
                 return;
             case string text:
                 ids.Add(text);

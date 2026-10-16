@@ -9,7 +9,7 @@ using MissionSplat.Rules;
 using UnityEngine;
 using UnityEngine.UI;
 
-// The bottom of the table: the drawn tile (its power badges grayed as their uses are spent), Spin, and the seat's secret missions, with the hand-off cover over the missions.
+// The bottom of the table: the drawn tile (its power badges grayed as their uses are spent), Spin, and the seat's secret blobbities, with the hand-off cover over the blobbities.
 // When the game is over it shows the winner instead.
 internal sealed class TurnTray
 {
@@ -20,13 +20,13 @@ internal sealed class TurnTray
 
     public const float ReachUnits = HeightUnits + WaveUnits;
 
-    // The secret missions lie a little askew, one each way, like cards dealt on a table.
+    // The secret blobbities lie a little askew, one each way, like cards dealt on a table.
     private const float BlobbityTiltDegrees = 4f;
 
     // The drawn tile's side before the first layout has given its slot a size.
     private const float FallbackTileUnits = 72f;
 
-    // The turn tray's rows, as fractions of its height: the drawn tile, Spin, and the secret missions fill the tray from the bottom margin to the top.
+    // The turn tray's rows, as fractions of its height: the drawn tile, Spin, and the secret blobbities fill the tray from the bottom margin to the top.
     private const float ContentBottom = 0.03f;
     private const float ContentTop = 0.97f;
 
@@ -63,7 +63,7 @@ internal sealed class TurnTray
         _secrets = SecretsArea("Secrets", _turn);
         _winner = Area("Winner", tray.transform, 0.03f, 0.04f, 0.97f, 0.96f);
 
-        // Over the secret missions only; the tile and Spin beside it stay in view.
+        // Over the secret blobbities only; the tile and Spin beside it stay in view.
         _conceal = SecretsArea("Conceal", _turn);
         var cover = Ui.Toy("Cover", _conceal, SplatPalette.Paper);
         Ui.Stretch(cover.rectTransform);
@@ -120,7 +120,7 @@ internal sealed class TurnTray
         return area;
     }
 
-    // The secret missions' area, which the hand-off cover sits exactly over.
+    // The secret blobbities' area, which the hand-off cover sits exactly over.
     private static RectTransform SecretsArea(string name, Transform parent) =>
         Area(name, parent, SecretsMinX, ContentBottom, SecretsMaxX, ContentTop);
 
@@ -282,15 +282,15 @@ internal sealed class TurnTray
             return;
         }
 
-        var missions = snapshot.View.UnclaimedBlobbities;
-        for (var i = 0; i < missions.Count; i++)
+        var blobbities = snapshot.View.UnclaimedBlobbities;
+        for (var i = 0; i < blobbities.Count; i++)
         {
-            var slot = Ui.Rect("Mission" + i, _secrets);
+            var slot = Ui.Rect("Blobbity" + i, _secrets);
             var min = new Vector2(0.01f + (i * 0.5f), 0.14f);
             var max = new Vector2(0.49f + (i * 0.5f), 1f);
             Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
             slot.localRotation = Quaternion.Euler(0f, 0f, i % 2 == 0 ? BlobbityTiltDegrees : -BlobbityTiltDegrees);
-            BlobbityCardPainter.Paint(slot, missions[i]);
+            BlobbityCardPainter.Paint(slot, blobbities[i]);
         }
     }
 

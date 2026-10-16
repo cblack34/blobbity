@@ -106,7 +106,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Assert.That(FindText("Status").text, Is.Empty, "the hand-off instruction waits");
 
         // Nothing of the incoming player's is on the table while the outgoing player watches.
-        Assert.That(LiveRect("Mission0"), Is.Null, "no secret mission card is drawn");
+        Assert.That(LiveRect("Blobbity0"), Is.Null, "no secret blobbity card is drawn");
         Assert.That(LiveText("Title").text, Is.EqualTo("Missions hidden"));
 
         table.ConfirmIncomingSeat();
@@ -164,7 +164,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
 
     // The seat holds a drawn rotate and a row of red that its own turn of the tile just east of the start would finish: a row it did not write.
     [Test]
-    public void AConfirmedRotateThatCompletesAMission_ClaimsAtOnce_AndTheRecapShowsIt()
+    public void AConfirmedRotateThatCompletesABlobbity_ClaimsAtOnce_AndTheRecapShowsIt()
     {
         var red = Cell.Color(OrdinaryCatalog.Red);
         var blank = Cell.Symbol(OrdinaryCatalog.Blank);
@@ -464,7 +464,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Assert.That(RecapSummary.Caption(new RecapReshuffled(seat1)), Is.EqualTo("Board reshuffled"));
     }
 
-    // Two humans: the first seat's second tile finishes a purple row beside the start, which claims both of its purple-row missions.
+    // Two humans: the first seat's second tile finishes a purple row beside the start, which claims both of its purple-row blobbities.
     private static GameSetup PurpleRowSetup()
     {
         var purple = Cell.Color(OrdinaryCatalog.Purple);

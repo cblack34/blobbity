@@ -32,7 +32,7 @@ public sealed class AiPlayer : IPlayer
             throw new ArgumentException("The view is for a different seat.", nameof(view));
         }
 
-        var ownBlobbities = IdsOf(view.UnclaimedBlobbities);
+        var ownBlobbityIds = IdsOf(view.UnclaimedBlobbities);
         Place? firstAccepted = null;
         for (var quarterTurns = 0; quarterTurns < 4; quarterTurns++)
         {
@@ -50,7 +50,7 @@ public sealed class AiPlayer : IPlayer
                     continue;
                 }
 
-                if (ClaimsOwnBlobbity(preview.ClaimedBlobbityIds, ownBlobbities))
+                if (ClaimsOwnBlobbity(preview.ClaimedBlobbityIds, ownBlobbityIds))
                 {
                     return place;
                 }
@@ -71,11 +71,11 @@ public sealed class AiPlayer : IPlayer
         throw new InvalidOperationException(message);
     }
 
-    private static bool ClaimsOwnBlobbity(IReadOnlyList<BlobbityId> claimed, HashSet<BlobbityId> ownBlobbities)
+    private static bool ClaimsOwnBlobbity(IReadOnlyList<BlobbityId> claimed, HashSet<BlobbityId> ownBlobbityIds)
     {
         for (var i = 0; i < claimed.Count; i++)
         {
-            if (ownBlobbities.Contains(claimed[i]))
+            if (ownBlobbityIds.Contains(claimed[i]))
             {
                 return true;
             }
@@ -84,12 +84,12 @@ public sealed class AiPlayer : IPlayer
         return false;
     }
 
-    private static HashSet<BlobbityId> IdsOf(IReadOnlyList<BlobbityCard> missions)
+    private static HashSet<BlobbityId> IdsOf(IReadOnlyList<BlobbityCard> blobbities)
     {
         var ids = new HashSet<BlobbityId>();
-        for (var i = 0; i < missions.Count; i++)
+        for (var i = 0; i < blobbities.Count; i++)
         {
-            ids.Add(missions[i].Id);
+            ids.Add(blobbities[i].Id);
         }
 
         return ids;

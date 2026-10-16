@@ -509,8 +509,8 @@ public class TableTests
         Assert.That(first.Snapshot.View.Board.Tiles[0].Id, Is.EqualTo(again.Snapshot.View.Board.Tiles[0].Id));
         Assert.That(first.Snapshot.View.PendingMatchTile?.Id, Is.EqualTo(again.Snapshot.View.PendingMatchTile?.Id));
         Assert.That(
-            first.Snapshot.View.UnclaimedBlobbities.Select(mission => mission.Id),
-            Is.EqualTo(again.Snapshot.View.UnclaimedBlobbities.Select(mission => mission.Id)));
+            first.Snapshot.View.UnclaimedBlobbities.Select(blobbity => blobbity.Id),
+            Is.EqualTo(again.Snapshot.View.UnclaimedBlobbities.Select(blobbity => blobbity.Id)));
     }
 
     [Test]
@@ -769,7 +769,7 @@ public class TableTests
         Assert.That(after.LegalPlacements, Is.Not.Empty);
     }
 
-    private static string[] HandOf(SeatView view) => view.UnclaimedBlobbities.Select(mission => mission.Id.Value).ToArray();
+    private static string[] HandOf(SeatView view) => view.UnclaimedBlobbities.Select(blobbity => blobbity.Id.Value).ToArray();
 
     private static void PlaceFirstLegal(Table table)
     {
@@ -860,13 +860,13 @@ public class TableTests
 
     private static TableStart Humans(int seatCount) => new(seatCount, new bool[seatCount], 0, false);
 
-    // Seats are named as TableStart names them; the missions never complete, so only the tiles drive a test.
+    // Seats are named as TableStart names them; the blobbities never complete, so only the tiles drive a test.
     private static GameSetup Setup(int seatCount, params Tile[] tiles)
     {
         var seats = Enumerable.Range(1, seatCount).Select(number => number.ToString()).ToArray();
-        var missions = seats.SelectMany(seat => new[] { Cards.Row(seat + "-a"), Cards.Row(seat + "-b"), Cards.Row(seat + "-replacement") }).ToList();
-        missions.Add(Cards.Row("spare"));
-        return RepresentativeDeck.Setup(seats, "1", missions.ToArray(), tiles);
+        var blobbities = seats.SelectMany(seat => new[] { Cards.Row(seat + "-a"), Cards.Row(seat + "-b"), Cards.Row(seat + "-replacement") }).ToList();
+        blobbities.Add(Cards.Row("spare"));
+        return RepresentativeDeck.Setup(seats, "1", blobbities.ToArray(), tiles);
     }
 
     // The session as LocalSession answers it, remembering the reshuffles it accepted and the order the match last offered.

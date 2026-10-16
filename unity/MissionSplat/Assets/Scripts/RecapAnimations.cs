@@ -128,15 +128,15 @@ internal sealed class RecapAnimations
         });
     }
 
-    // The mission pops up large at the middle of the table, then shrinks and flies into the claiming seat's score pip.
+    // The blobbity pops up large at the middle of the table, then shrinks and flies into the claiming seat's score pip.
     private RecapStep Claimed(RecapClaimed item)
     {
         var screen = _stage.ScreenLayer;
         var dim = Ui.Image("RecapDim", screen, SplatPalette.Overlay);
         Ui.Stretch(dim.rectTransform);
-        var card = Ui.Centered("RecapClaim", screen, new Vector2(ClaimCardWidthUnits, ClaimCardHeightUnits));
-        var cardGroup = card.gameObject.AddComponent<CanvasGroup>();
-        BlobbityCardPainter.Paint(card, item.Card);
+        var cardRect = Ui.Centered("RecapClaim", screen, new Vector2(ClaimCardWidthUnits, ClaimCardHeightUnits));
+        var cardGroup = cardRect.gameObject.AddComponent<CanvasGroup>();
+        BlobbityCardPainter.Paint(cardRect, item.Card);
 
         var rest = new Vector2(0f, ClaimRestHeightUnits);
         var target = _stage.PipPosition(item.Seat, item.Card.Id) ?? rest;
@@ -144,8 +144,8 @@ internal sealed class RecapAnimations
         {
             var pop = Mathf.Clamp01(progress / PopShare);
             var fly = Smooth(Mathf.Clamp01((progress - HoldShare) / (1f - HoldShare)));
-            card.anchoredPosition = Vector2.Lerp(rest, target, fly);
-            card.localScale = Vector3.one * Mathf.Lerp(Mathf.Lerp(0.4f, 1f, OutBack(pop)), 0.06f, fly);
+            cardRect.anchoredPosition = Vector2.Lerp(rest, target, fly);
+            cardRect.localScale = Vector3.one * Mathf.Lerp(Mathf.Lerp(0.4f, 1f, OutBack(pop)), 0.06f, fly);
             cardGroup.alpha = Mathf.Clamp01(pop * 4f);
             dim.color = WithAlpha(dim.color, DimAlpha * pop * (1f - fly));
         });

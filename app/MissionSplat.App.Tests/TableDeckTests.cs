@@ -82,19 +82,19 @@ public class TableDeckTests
     }
 
     [Test]
-    public void TheMissionDeck_HoldsTwoOfEveryColorAndShape()
+    public void TheBlobbityDeck_HoldsTwoOfEveryColorAndShape()
     {
-        var missions = TableDeck.Ordinary(Seats, Seats[0], null).BlobbityDeck;
+        var blobbities = TableDeck.Ordinary(Seats, Seats[0], null).BlobbityDeck;
 
         foreach (var pattern in OrdinaryCatalog.Patterns)
         {
             foreach (var color in OrdinaryCatalog.Colors)
             {
-                Assert.That(missions.Count(mission => mission.Pattern == pattern && mission.Color.Equals(color)), Is.EqualTo(2), pattern + " " + color.Value);
+                Assert.That(blobbities.Count(blobbity => blobbity.Pattern == pattern && blobbity.Color.Equals(color)), Is.EqualTo(2), pattern + " " + color.Value);
             }
         }
 
-        Assert.That(missions.Select(mission => mission.Id.Value).Distinct().Count(), Is.EqualTo(24));
+        Assert.That(blobbities.Select(blobbity => blobbity.Id.Value).Distinct().Count(), Is.EqualTo(24));
     }
 
     [Test]
@@ -122,13 +122,13 @@ public class TableDeckTests
     }
 
     [Test]
-    public void AShuffle_KeepsEveryTileAndMission()
+    public void AShuffle_KeepsEveryTileAndBlobbity()
     {
         var authored = TableDeck.Ordinary(Seats, Seats[0], null);
         var shuffled = TableDeck.Ordinary(Seats, Seats[0], 99);
 
         Assert.That(shuffled.MatchDeck.Select(tile => tile.Id.Value), Is.EquivalentTo(authored.MatchDeck.Select(tile => tile.Id.Value)));
-        Assert.That(shuffled.BlobbityDeck.Select(mission => mission.Id.Value), Is.EquivalentTo(authored.BlobbityDeck.Select(mission => mission.Id.Value)));
+        Assert.That(shuffled.BlobbityDeck.Select(blobbity => blobbity.Id.Value), Is.EquivalentTo(authored.BlobbityDeck.Select(blobbity => blobbity.Id.Value)));
         Assert.That(Game.Start(shuffled).IsAccepted, Is.True);
     }
 
@@ -141,5 +141,5 @@ public class TableDeckTests
     };
 
     private static string[] Ids(GameSetup setup) =>
-        setup.MatchDeck.Select(tile => tile.Id.Value).Concat(setup.BlobbityDeck.Select(mission => mission.Id.Value)).ToArray();
+        setup.MatchDeck.Select(tile => tile.Id.Value).Concat(setup.BlobbityDeck.Select(blobbity => blobbity.Id.Value)).ToArray();
 }
