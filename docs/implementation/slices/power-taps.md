@@ -83,7 +83,7 @@ Extend the view's preview state to cover three modes: a placement, a power targe
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:power-taps` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Apower-taps
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:power-taps` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Apower-taps
 
 ## Delivery shape
 

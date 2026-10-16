@@ -72,7 +72,7 @@ Reuse the recap player's overlay, input blocking, and per-item skip. Queue one s
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:power-splash` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Apower-splash
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:power-splash` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Apower-splash
 
 ## Delivery shape
 

@@ -69,7 +69,7 @@ Remember the `TableStart` the current game began from. On Play again, build the 
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:play-again` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Aplay-again
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:play-again` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Aplay-again
 
 ## Delivery shape
 

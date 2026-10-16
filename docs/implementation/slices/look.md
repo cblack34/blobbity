@@ -78,7 +78,7 @@ Keep one card painter so tiles and blobbities change together. Draw outlines and
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:look` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Alook
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:look` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Alook
 
 ## Delivery shape
 

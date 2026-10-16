@@ -77,7 +77,7 @@ Write the rulings into `rules.md` as plain sentences in the sections that alread
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:pack-power-timing` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Apack-power-timing
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:pack-power-timing` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Apack-power-timing
 
 ## Delivery shape
 
@@ -100,5 +100,5 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
 - **Verification:** Both definition-of-done commands green on the PR head (135 and 15 tests), run for the record with no code changed. Relative links resolve. A fresh-context read-only review of the five files against the eight session rulings found no remaining contradiction after four fixes; evidence is in the PR body.
 - **Deviations:** Two sentences are derivations rather than direct maintainer answers and are flagged on the PR for confirmation: only the placed tile's cells claim after a power, and an accepted use stays applied when a later use or the placement is rejected. The C4 diagram was amended (text only) although the plan listed it as "checked"; its caption and two component boxes named the superseded design.
 - **Unresolved gates or risks:** The census, deck exhaustion, a drawn tile with no legal placement on a non-empty board, and the two-different-powers ruleset question stay open. Shipped code lags the pack until the corrected Rules actions, the match/rules split, and the App session and turn driver land.
-- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/mission-splat/pull/22, and on https://github.com/cblack34/mission-splat/issues/21.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/22
+- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/blobbity/pull/22, and on https://github.com/cblack34/blobbity/issues/21.
+- **Final PR:** https://github.com/cblack34/blobbity/pull/22

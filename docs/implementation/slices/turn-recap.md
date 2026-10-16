@@ -106,7 +106,7 @@ Record every accepted session result's events in order. Give each human seat a c
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:turn-recap` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Aturn-recap
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:turn-recap` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Aturn-recap
 
 ## Delivery shape
 

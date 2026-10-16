@@ -75,7 +75,7 @@ Add the selection to the driver beside the quarter-turn choice: it is input stat
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:power-ui` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Apower-ui
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:power-ui` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Apower-ui
 
 ## Delivery shape
 
@@ -98,5 +98,5 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
 - **Verification:** After two PR review rounds (the first added two-cell repeat-use tests and fixed the pending-tile preview in bounce mode; the second disabled rotate targets until a 1–3 amount is chosen, so a tap never submits a zero-turn rotate Rules would refuse), on the final head `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 195, `dotnet test app/Blobbity.App.sln --configuration Release` passed 56 (was 45; two repeat-use cases were added in review), and `unity test unity/Blobbity --mode PlayMode` on editor 6000.3.16f1 passed 11 of 11 (four new, all through rendered buttons), run by the implementation lead independently of the execution agents' receipts. A clean import of `d8e9bbe` in a detached worktree with no `Library/` passed the same 11 with no tracked file altered. Greps confirm no `UnityEngine` in App or Rules, `MonoBehaviour` only in `TableSession` and `TableView`, and no `Game` type reference in Unity scripts. Captures of the power panel with targets highlighted and of the board after a bounce are tracked by LFS. A fresh-context design review of all six production files found no blocking or issue-level finding; five of seven suggestions were applied, two deferred to the GUI slice.
 - **Deviations:** The pending-tile preview ignores the quarter-turn value while rotate is selected (the row is then the rotate amount); in bounce mode it follows the row. The power band is full-width under the top row and the board lost about 15% of its height. A test that pinned the rotate amount leaking into the placement orientation now pins the reset. Observed for the GUI slice, not changed here: the target tint muddies the cell colours beneath it; the lattice rescales between placement and target modes; a power's name is composed two ways; input events relay through three classes.
 - **Unresolved gates or risks:** The GUI redesign is the next slice, before the completing device evidence. The census, deck exhaustion, no legal placement on a non-empty board, and a tile showing two different powers stay open.
-- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/mission-splat/pull/33, and on issues #31 and #32.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/33
+- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/blobbity/pull/33, and on issues #31 and #32.
+- **Final PR:** https://github.com/cblack34/blobbity/pull/33

@@ -76,7 +76,7 @@ Create the engine from the setup data `Game` already carries, move the judgment 
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:rules-match-split` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Arules-match-split
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:rules-match-split` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Arules-match-split
 
 ## Delivery shape
 
@@ -99,5 +99,5 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
 - **Verification:** On `17f9eda` (after the PR review round), `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 194 — the 176 pre-existing tests byte-identical plus 18 engine tests that build a `Grid` and `Tile` with no match — and `dotnet test app/Blobbity.App.sln --configuration Release` passed 16, both run by the implementation lead independently of the execution agents' receipts. Greps confirm `Ruleset.cs` names no seat, deck, turn, or `Game` member, `Game.cs` calls no `Grid` transformation, and the library references no Unity type. A fresh-context design review of all five production files found no blocking or issue-level finding; six of eight suggestions were applied, two left with evidence in the PR. The PR review then found that the power effects were still applied in `Game`; they moved into the engine.
 - **Deviations:** No per-power static classes — each would hold one short method with no separate reason to change; rotate and bounce legality are paired methods inside the engine. `Ruleset.UseRefusal` throws for a non-use power, unreachable from `Game`, which guards first. The execution agent's receipt called the empty-board branches dead; they are reachable by a bounce, the code was never changed on that belief, and an engine test now pins the case.
 - **Unresolved gates or risks:** The session boundary (`ISession` still exposes one placement and no queries or phase) and the Unity-hosted turn driver and deck are the two remaining Shipped-state lags, owned by the next slices. Unifying `TileCoord` with `BoardPosition` would change `Grid` and is noted for a later unit. The open rulings and the omitted-power rendering question are unchanged.
-- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/mission-splat/pull/27, and on issue #26.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/27
+- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/blobbity/pull/27, and on issue #26.
+- **Final PR:** https://github.com/cblack34/blobbity/pull/27

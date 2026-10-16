@@ -111,7 +111,7 @@ The table looks right, but the game has no name it can keep, no icon, no logo, a
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and the source of task-level detail. Every issue for this slice carries the `slice:brand` label: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Abrand
+GitHub issues are the WIP tracker and the source of task-level detail. Every issue for this slice carries the `slice:brand` label: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Abrand
 
 ## Delivery shape
 

@@ -99,7 +99,7 @@ GitHub issues are the WIP tracker and source of task-level detail.
 
 | Issue | Purpose | Dependencies |
 | --- | --- | --- |
-| [#15](https://github.com/cblack34/mission-splat/issues/15) — Rotate the drawn tile's charges before that placement claims | Rotate-bearing placement, surrounded rejection, charge counts, and the rules and architecture sentences. | None |
+| [#15](https://github.com/cblack34/blobbity/issues/15) — Rotate the drawn tile's charges before that placement claims | Rotate-bearing placement, surrounded rejection, charge counts, and the rules and architecture sentences. | None |
 
 ## Delivery shape
 
@@ -118,5 +118,5 @@ None.
 - **Verification:** On `fad0871`, `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 121, failed 0, and `dotnet test app/Blobbity.App.sln --configuration Release` passed 15, failed 0. The implementation lead ran both. A read-only design review on `grok-4.7` found no structural change. Evidence is on #15 and #16. This delivery-record commit does not change code.
 - **Deviations:** None. A tile with both stack and rotate can stack without rotating, or take a side and rotate. It cannot do both in one command. `ISession` and the Unity table are unchanged.
 - **Unresolved gates or risks:** Bounce, uncover, a tile with nowhere legal, deck exhaustion, and the uncorrected census rows. The player still declines rotate.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/16
+- **Final PR:** https://github.com/cblack34/blobbity/pull/16
 - **Merge state:** Ready for the human to merge; agents do not merge to `main`.
