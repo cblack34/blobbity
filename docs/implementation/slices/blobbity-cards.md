@@ -12,7 +12,7 @@ Blobbities, both a seat's secret blobbities and every seat's claims row, are por
 
 ## Why this slice is next
 
-The tile cards (#47) made the board read as cards, but blobbities still show flat dots on white boxes. On the phone, the secret cards are tall boxes and the claim cards near-squares. The maintainer noticed both in the phone check.
+The tile cards (#47) made the board read as cards, but blobbities still show flat dots on white boxes. On the phone, the secret blobbities are tall boxes and the claim cards near-squares. The maintainer noticed both in the phone check.
 
 ## Scope
 
@@ -95,7 +95,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
 - **Unresolved gates or risks:** Portrait layout problems, all for the layout slice:
   - The board is tiny in long games.
   - There are large empty bands.
-  - The pending tile is tiny next to the secret cards.
+  - The pending tile is tiny next to the secret blobbities.
   - The quarter-turn and power buttons are badly proportioned.
   - The pending and secrets areas are blank at game end.
   - Claim cards are small.
