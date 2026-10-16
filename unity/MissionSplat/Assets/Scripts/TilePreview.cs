@@ -4,7 +4,7 @@ namespace MissionSplat.Player
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using MissionSplat.App;
+using Blobbity.App;
 using Blobbity.Rules;
 
 internal enum PreviewKind

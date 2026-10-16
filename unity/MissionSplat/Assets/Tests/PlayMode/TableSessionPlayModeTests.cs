@@ -2,7 +2,7 @@ namespace MissionSplat.Player.Tests
 {
 
 using System.Linq;
-using MissionSplat.App;
+using Blobbity.App;
 using MissionSplat.Player;
 using Blobbity.Rules;
 using System.Collections;

@@ -76,7 +76,7 @@ Reuse the placement's claim pass with the rotated tile's cells as the written ce
   - a bounce that exposes a pattern and does not claim;
   - distinct cells within a rotate's pass;
   - a rotate claim that does not end the turn.
-- `dotnet test app/MissionSplat.App.sln --configuration Release`, and a recap of a rotate claim.
+- `dotnet test app/Blobbity.App.sln --configuration Release`, and a recap of a rotate claim.
 - `unity test unity/MissionSplat --mode PlayMode`, and the maintainer's look on the phone.
 
 ## Risks and stop conditions

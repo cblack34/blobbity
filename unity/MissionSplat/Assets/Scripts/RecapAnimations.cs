@@ -3,7 +3,7 @@ namespace MissionSplat.Player
 
 using System;
 using System.Collections.Generic;
-using MissionSplat.App;
+using Blobbity.App;
 using Blobbity.Rules;
 using UnityEngine;
 using UnityEngine.UI;

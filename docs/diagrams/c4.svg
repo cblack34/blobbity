@@ -71,7 +71,7 @@
   <text x="203" y="626" text-anchor="middle" class="box-body">later desktop.</text>
 
   <rect x="360" y="496" width="230" height="150" rx="8" fill="#438dd5"/>
-  <text x="475" y="528" text-anchor="middle" class="box-title">MissionSplat.App</text>
+  <text x="475" y="528" text-anchor="middle" class="box-title">Blobbity.App</text>
   <text x="475" y="550" text-anchor="middle" class="box-body">Library · netstandard2.1</text>
   <text x="475" y="570" text-anchor="middle" class="box-body">ISession, IPlayer, turn driver,</text>
   <text x="475" y="586" text-anchor="middle" class="box-body">LocalSession, AiPlayer, decks.</text>

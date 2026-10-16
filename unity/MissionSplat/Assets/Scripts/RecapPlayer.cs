@@ -3,7 +3,7 @@ namespace MissionSplat.Player
 
 using System;
 using System.Collections.Generic;
-using MissionSplat.App;
+using Blobbity.App;
 using UnityEngine;
 
 // Plays a snapshot's recap, or the power splashes of a drawn tile, one item at a time on the stage and says when it is done. It does not

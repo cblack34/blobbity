@@ -65,7 +65,7 @@ Close the two automated gaps with focused fixtures. Retake the Presentation capt
 ## Verification
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
-- `dotnet test app/MissionSplat.App.sln --configuration Release`
+- `dotnet test app/Blobbity.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs, with a clean-import run.
 - The maintainer's device games recorded on the PR.
 
