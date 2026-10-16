@@ -6,7 +6,7 @@ _Code, types, schemas, and file layouts are **illustrative guidance, not mandate
 
 ## Product outcome
 
-Mission Splat is a 2–4 seat tile game for one phone. Each seat has two secret mission cards. On a turn a seat draws a 2×2 match tile and places it orthogonal to the board. If the cells that seat writes — by placing the tile, or rotating one already on the board — finish one or more of that seat's missions — a line, square, or L of one color — the seat claims each of them, lays it face up, and draws one replacement per claim. The ordinary game is first to four claims. Setup can require another count.
+Blobbity is a 2–4 seat tile game for one phone. Each seat has two secret blobbities. On a turn a seat draws a 2×2 match tile and places it orthogonal to the board. If the cells that seat writes — by placing the tile, or rotating one already on the board — finish one or more of that seat's blobbities — a line, square, or L of one color — the seat claims each of them, lays it face up, and draws one replacement per claim. The ordinary game is first to four claims. Setup can require another count.
 
 The POC is offline. One human can play every seat (pass-and-play), or play alongside AI seats. Any seat count from 2 to 4 and any human/AI mix is allowed. A later room service is a seam, not a deliverable.
 
@@ -14,9 +14,9 @@ Intended users are the people at the table, including a child who can follow a s
 
 ## In scope
 
-- The rules in [`rules.md`](rules.md): setup, orthogonal placement, three mission shapes, claim-on-the-cells-you-write, power cells, and a win at the configured claim count, which is four in the ordinary game.
+- The rules in [`rules.md`](rules.md): setup, orthogonal placement, three blobbity shapes, claim-on-the-cells-you-write, power cells, and a win at the configured claim count, which is four in the ordinary game.
 - A rules library a `dotnet test` run can execute with no Unity editor.
-- An application library with `ISession` and `IPlayer`, a `LocalSession` adapter, an `AiPlayer` adapter that does not see any other seat's secret missions, the turn driver that runs AI seats and hands the device between humans, and the named deck content.
+- An application library with `ISession` and `IPlayer`, a `LocalSession` adapter, an `AiPlayer` adapter that does not see any other seat's secret blobbities, the turn driver that runs AI seats and hands the device between humans, and the named deck content.
 - A Unity player that collects setup, renders the board, the secret hand, the face-up claim row, and the legal moves the session reports, and submits a human's choices as actions for 2–4 seats on `LocalSession`: a tap on a legal spot only previews the drawn tile there, and Place submits the placement. It computes no legality and runs no turn loop.
 - Pass-and-play on one device, and human versus AI on one device.
 - Schematic diagrams in [`diagrams/`](diagrams/) as the visual reference. Source photographs stay out of the repo.
@@ -33,7 +33,7 @@ Intended users are the people at the table, including a child who can follow a s
 ## User directives and non-negotiables
 
 1. **Rules stay engine-free.** The domain library references no `UnityEngine` type. Failure: a server or `dotnet test` cannot judge a move without the editor. Verification: `dotnet test` on the rules solution, with no Unity reference in that project.
-2. **Claim is owned by the writing seat.** A pattern on your mission scores only if the cells you just wrote, by placing a tile or rotating one, completed it. Failure: another seat's tile completes your card and you take the claim. Verification: rules fixtures for both the legal claim and the stolen-pattern rejection.
+2. **Claim is owned by the writing seat.** A pattern on your blobbity scores only if the cells you just wrote, by placing a tile or rotating one, completed it. Failure: another seat's tile completes your card and you take the claim. Verification: rules fixtures for both the legal claim and the stolen-pattern rejection.
 3. **Offline multiplayer is local.** Two to four human seats share one `LocalSession`. Failure: pass-and-play opens a socket or requires a second device. Verification: human observation of a 3-seat game on one player, plus an automated test that four human seats can alternate submitting actions on `LocalSession`.
 4. **No copied trade dress.** Original splat shapes and original names only. Failure: a farm character, the physical product name, or a source photo lands in the tree or the player. Verification: review of the diff and of the built content.
 
@@ -41,7 +41,7 @@ Intended users are the people at the table, including a child who can follow a s
 
 Canonical rules behavior is [`rules.md`](rules.md). The C4 ownership cut is [`architecture.md`](architecture.md) and [`diagrams/c4.svg`](diagrams/c4.svg).
 
-- `Rules` owns two parts with a named seam. A stateless rules engine judges one action against the board, the drawn tile, the acting seat's hand, and the catalog: where the drawn tile may go, which board tiles a power may act on, what a use does, and which missions the cells just written (by a placement or a rotate) completed. The match owns seats, hands, decks, claim rows, the current seat, and the turn phase; it accepts one action from a closed, typed set per ruleset — use rotate, use bounce, place — and returns the next match with events. The board a seat renders comes from the match.
+- `Rules` owns two parts with a named seam. A stateless rules engine judges one action against the board, the drawn tile, the acting seat's hand, and the catalog: where the drawn tile may go, which board tiles a power may act on, what a use does, and which blobbities the cells just written (by a placement or a rotate) completed. The match owns seats, hands, decks, claim rows, the current seat, and the turn phase; it accepts one action from a closed, typed set per ruleset — use rotate, use bounce, place — and returns the next match with events. The board a seat renders comes from the match.
 - `App` owns `ISession` and `IPlayer`. `LocalSession` and `AiPlayer` are adapters in `App`. `App` also owns the turn driver (which seats are automated, running them, the hand-off between humans, the render model a GUI draws) and the deck content. `IPlayer` is the action source for an automated seat.
 - The Unity player owns the setup form, the table view, and the composition root. It submits a human's confirmed choices as actions (a legal-spot tap previews; Place submits) and renders what the session reports. It computes no legality, runs no turn loop, holds no deck, and does not reimplement matching.
 - A later room service would reference the same rules library and accept an action only if that library accepts it. It is not built in this horizon.
@@ -54,15 +54,15 @@ Adopted from the design session, not from a second implementation:
 - Shared rules are a `netstandard2.1` library. The player consumes a local UPM package that holds the built DLL. A NuGet feed inside Unity is rejected for this repo.
 - The later server, if built, is ASP.NET Core so it can reference that library. FastAPI was rejected because it would fork the matcher.
 - Web is out. Desktop is another player build.
-- A wildcard stays wild. Each mission check counts it as that mission's color. Nothing stores a chosen color.
-- One placement claims every secret mission the acting seat holds that the placement completed. The turn then passes once.
-- Each mission claimed by one placement is completed by its own four cells: cells may overlap between claims, identical sets may not, and colour does not tell two sets apart. The placement claims as many as it can; earlier hand cards win ties. Decided 2026-10-10 by the maintainer.
-- The shipped deck is the census: 30 match tiles as listed, and 24 mission cards, two of each color and shape, so the mission deck cannot run out. Decided 2026-10-10 by the maintainer.
+- A wildcard stays wild. Each blobbity check counts it as that blobbity's color. Nothing stores a chosen color.
+- One placement claims every secret blobbity the acting seat holds that the placement completed. The turn then passes once.
+- Each blobbity claimed by one placement is completed by its own four cells: cells may overlap between claims, identical sets may not, and colour does not tell two sets apart. The placement claims as many as it can; earlier hand cards win ties. Decided 2026-10-10 by the maintainer.
+- The shipped deck is the census: 30 match tiles as listed, and 24 blobbities, two of each color and shape, so the blobbity deck cannot run out. Decided 2026-10-10 by the maintainer.
 - The ordinary win count is 4. Setup can require another positive count.
 - Colors, non-scoring symbols, the patterns in play, and the win count are setup data. The ordinary catalog is red, blue, green, purple, blank, rotate, stack, bounce, a wildcard cell, and the row, square, and L. Of the non-scoring symbols setup lists, those that are rotate, stack, or bounce are the powers in play; any other listed symbol is non-scoring with no power, and a power symbol setup does not list is a blank.
 - Rotate and bounce are used before the drawn tile is placed, one use per cell, one at a time, each on a tile already on the board. The drawn tile is never a target. A bounce may empty the board; an empty board accepts the drawn tile only at the origin. Stack is the placement itself, on an occupied position. Decided 2026-10-09 from the physical game, replacing an earlier after-placement reading.
 - When the draw deck runs out, every tile on the board, buried ones included, is gathered and shuffled into a new draw deck; the top tile is placed at the origin as a new start tile (not a placement; no claim); claims, hands, and turn order are unchanged and play continues — except in a one-tile game, where the reshuffle leaves nothing to draw and play stops. The library takes the order from outside; the table supplies it from its seed. Decided 2026-10-10 by the maintainer, replacing an open ruling.
-- Only cells the acting seat wrote this turn complete a mission, claimed when written: a placement writes the placed tile's cells, and a rotate writes the rotated tile's cells and claims at once without ending the turn. A bounce writes nothing and never claims. Decided 2026-10-13 by the maintainer (#72).
+- Only cells the acting seat wrote this turn complete a blobbity, claimed when written: a placement writes the placed tile's cells, and a rotate writes the rotated tile's cells and claims at once without ending the turn. A bounce writes nothing and never claims. Decided 2026-10-13 by the maintainer (#72).
 - The match accepts one action type per ruleset: a closed, typed set, never a string. Powers are composable: each power's legality and effect lives in its own part of the rules engine, and a ruleset enables a set of them. Whether customization ships as preset rulesets or per-power toggles is decided when a second ruleset is wanted.
 
 Assumptions, labeled as such:

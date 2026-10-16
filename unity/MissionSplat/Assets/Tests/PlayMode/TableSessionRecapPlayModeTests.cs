@@ -107,7 +107,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
 
         // Nothing of the incoming player's is on the table while the outgoing player watches.
         Assert.That(LiveRect("Blobbity0"), Is.Null, "no secret blobbity card is drawn");
-        Assert.That(LiveText("Title").text, Is.EqualTo("Missions hidden"));
+        Assert.That(LiveText("Title").text, Is.EqualTo("Blobbities hidden"));
 
         table.ConfirmIncomingSeat();
         Assert.That(recap.IsPlaying, Is.True, "a confirm during the recap is ignored");

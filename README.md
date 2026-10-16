@@ -1,4 +1,4 @@
-# Mission Splat
+# Blobbity
 
 Place tiles. Claim the shape.
 

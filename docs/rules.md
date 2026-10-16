@@ -1,25 +1,25 @@
 # Rules
 
-This file is the behavioral contract for Mission Splat. Schematic drawings in [`diagrams/`](diagrams/) illustrate it. They are not a second source of truth. Source photographs of the physical game are intentionally absent.
+This file is the behavioral contract for Blobbity. Schematic drawings in [`diagrams/`](diagrams/) illustrate it. They are not a second source of truth. Source photographs of the physical game are intentionally absent.
 
-Names below are original. They describe the same structure as the photographed instructions: secret mission cards, square match tiles, orthogonal placement, and a claim that only the seat that wrote the completing cells, by placing or rotating, may take.
+Names below are original. They describe the same structure as the photographed instructions: secret blobbities, square match tiles, orthogonal placement, and a claim that only the seat that wrote the completing cells, by placing or rotating, may take.
 
 ## Pieces
 
 - A **match tile** is a square 2×2 of cells. A cell is a scoring color, a non-scoring symbol, or a wildcard.
-- A **scoring color** is an id in the color catalog passed at setup. The ordinary catalog is red, blue, green, and purple. A pattern check compares the mission's color id to the cell. It does not special-case those four names, so another color passed at setup matches the same way.
+- A **scoring color** is an id in the color catalog passed at setup. The ordinary catalog is red, blue, green, and purple. A pattern check compares the blobbity's color id to the cell. It does not special-case those four names, so another color passed at setup matches the same way.
 - A **non-scoring symbol** does not complete a pattern. The ordinary symbols are blank, rotate, stack, and bounce. Blank has no power. Rotate, stack, and bounce are the power symbols, drawn gray. Gray is not a scoring color. Another symbol passed at setup is the same kind of data and also does not score.
-- A **wildcard** is a quartered cell. It is not gray. It is always wild. No action names a color for it, and nothing stores a chosen color. Each mission check counts the cell as that mission's color, so one cell can count as red for one mission and blue for another. A wildcard on the starting tile stays wild.
-- A **mission card** is a secret objective: four in a row, four in a square, or four in an L, in one scoring color. The patterns in play are the set passed at setup. The ordinary set is the row, the square, and the L. A shape that was not passed in does not claim.
-- A **claim** is a mission card laid face up in front of the seat that completed it. The claim row is not part of the board.
+- A **wildcard** is a quartered cell. It is not gray. It is always wild. No action names a color for it, and nothing stores a chosen color. Each blobbity check counts the cell as that blobbity's color, so one cell can count as red for one blobbity and blue for another. A wildcard on the starting tile stays wild.
+- A **blobbity** is a secret objective: four in a row, four in a square, or four in an L, in one scoring color. The patterns in play are the set passed at setup. The ordinary set is the row, the square, and the L. A shape that was not passed in does not claim.
+- A **claim** is a blobbity laid face up in front of the seat that completed it. The claim row is not part of the board.
 
 ## Setup
 
-The library does not shuffle. It takes the seats in turn order, the first seat, the color catalog, the non-scoring symbols, the patterns in play, the claims required to win, and the mission and match decks already ordered. The base deck is [`census.md`](census.md). A fixture may use a smaller deck if it names that deck. The ordinary game uses the ordinary catalog above and 4 claims. Setup can pass another positive count.
+The library does not shuffle. It takes the seats in turn order, the first seat, the color catalog, the non-scoring symbols, the patterns in play, the claims required to win, and the blobbity and match decks already ordered. The base deck is [`census.md`](census.md). A fixture may use a smaller deck if it names that deck. The ordinary game uses the ordinary catalog above and 4 claims. Setup can pass another positive count.
 
 Of the non-scoring symbols passed at setup, those that are rotate, stack, or bounce are the powers in play. Any other listed symbol is non-scoring and grants no use. A rotate, stack, or bounce symbol that setup does not list is read as a blank: it does not score and grants no use.
 
-1. Deal two missions from the front of the mission deck to each seat, in the seat order given to setup.
+1. Deal two blobbities from the front of the blobbity deck to each seat, in the seat order given to setup.
 2. Place the front match tile at the origin of the board, in the orientation it has in the deck.
 
 A game has two, three, or four seats. Who is first: the physical rule is the youngest seat. The session takes the first seat as an explicit start input: the humans agree on it, and with an AI seat the human chooses. Rules never compute it. That choice is an assumption recorded in the brief. A starting tile is not a placement, so no claim resolves at setup, even when its cells already show a pattern.
@@ -31,7 +31,7 @@ A game has two, three, or four seats. Who is first: the physical rule is the you
 3. The seat places the drawn tile, choosing a quarter-turn orientation as it is set down. Quarter-turns are clockwise. That choice is part of placement, not the rotate power. Ordinary placement must share at least one full side with a tile already on the board. Corner-only contact is illegal. See [`diagrams/placement.svg`](diagrams/placement.svg). If the drawn tile shows stack, the seat may instead place it on top of a tile already on the board. Stack is this placement, not a separate step. If the board is empty, the drawn tile is placed at the origin.
 4. Resolve the placement's claims. Then the next seat plays. A rotate win ends the game with the turn still on the acting seat.
 
-When a placement leaves the draw deck empty and the game is not won (or setup supplies no tile beyond the start tile), the board is reshuffled before the next seat draws. Every tile on the board, buried ones included, is gathered and shuffled into a new draw deck. The top tile is placed at the origin as a new start tile: that is not a placement, and it claims nothing. Claims, hands, the mission deck, and turn order are unchanged, and the next seat draws as usual, except that when the board and draw deck together hold only one tile (a one-tile game), a reshuffle cannot produce a tile to draw and play cannot continue. Until the reshuffle is played the match accepts nothing else. The library does not shuffle: it takes the new order from outside, as it takes the decks at setup.
+When a placement leaves the draw deck empty and the game is not won (or setup supplies no tile beyond the start tile), the board is reshuffled before the next seat draws. Every tile on the board, buried ones included, is gathered and shuffled into a new draw deck. The top tile is placed at the origin as a new start tile: that is not a placement, and it claims nothing. Claims, hands, the blobbity deck, and turn order are unchanged, and the next seat draws as usual, except that when the board and draw deck together hold only one tile (a one-tile game), a reshuffle cannot produce a tile to draw and play cannot continue. Until the reshuffle is played the match accepts nothing else. The library does not shuffle: it takes the new order from outside, as it takes the decks at setup.
 
 A rejected use or placement does not change the board, the decks, or whose turn it is. A use that was accepted stays applied even if a later use or the placement is rejected; the seat chooses again. A tile that cannot be placed legally does not get discarded by a rule the photographs state. That case is an open edge: stop and return it to the user rather than inventing a discard rule.
 
@@ -44,9 +44,9 @@ A rejected use or placement does not change the board, the decks, or whose turn 
 - An empty board has no side to share. The drawn tile is then placed at the origin, in the orientation the seat chooses.
 - A square may be four corner cells from four different tiles, one from each tile, where the four tiles meet.
 
-## Missions
+## Blobbities
 
-A mission looks at one scoring color on the cell grid. A wildcard counts as the color of the mission being checked. It is not assigned a color first. A blank or any other non-scoring symbol does not complete the color.
+A blobbity looks at one scoring color on the cell grid. A wildcard counts as the color of the blobbity being checked. It is not assigned a color first. A blank or any other non-scoring symbol does not complete the color.
 
 - **Four in a row.** Four cells in a horizontal, vertical, or diagonal line. See [`diagrams/mission-row.svg`](diagrams/mission-row.svg).
 - **Four in a square.** Four cells in a 2×2 block. See [`diagrams/mission-square.svg`](diagrams/mission-square.svg). The block may be the four cells where four tiles meet.
@@ -56,17 +56,17 @@ Only a pattern in the set passed at setup can be claimed. A seat claims a patter
 
 ## Claim
 
-A seat claims a mission only by writing cells that complete that mission's pattern, on that seat's turn: by placing the match tile, or by rotating a tile already on the board. If another seat's placement or rotate completes your pattern, you do not claim it, including when you later place a tile that adds no cell to that pattern.
+A seat claims a blobbity only by writing cells that complete that blobbity's pattern, on that seat's turn: by placing the match tile, or by rotating a tile already on the board. If another seat's placement or rotate completes your pattern, you do not claim it, including when you later place a tile that adds no cell to that pattern.
 
-One placement or rotate claims every secret mission the acting seat currently holds whose pattern that resolution completed, but each claimed mission must be completed by its own four cells. Cells may be shared between claims, but two claims never use the identical four cells. The comparison is by cells, not colour: four wildcards in a row complete a red line and a blue line on the same four cells, so they claim only one of them. When missions compete for the same cells, the resolution claims as many as it can, and earlier cards in the hand win ties. A mission left unclaimed stays in hand. Other seats do not claim from that placement or rotate.
+One placement or rotate claims every secret blobbity the acting seat currently holds whose pattern that resolution completed, but each claimed blobbity must be completed by its own four cells. Cells may be shared between claims, but two claims never use the identical four cells. The comparison is by cells, not colour: four wildcards in a row complete a red line and a blue line on the same four cells, so they claim only one of them. When blobbities compete for the same cells, the resolution claims as many as it can, and earlier cards in the hand win ties. A blobbity left unclaimed stays in hand. Other seats do not claim from that placement or rotate.
 
-Only cells the acting seat wrote this turn can complete a mission, and a claim resolves when the cells are written. A placement writes the placed tile's four cells. A rotate writes the rotated tile's four cells in their new orientation, so it resolves claims at once, scoped to those four cells, the same way a placement does. A rotate writes all four of the tile's cells even if their colours come out unchanged; a turn of 1 to 3 quarters is what counts. A bounce writes nothing: it removes a tile and reveals cells nobody wrote this turn, so it never claims, and a pattern it exposes is claimed only if the placed tile's cells complete it. Stack writes the drawn tile's cells on top of the covered position, so a pattern through those cells claims normally.
+Only cells the acting seat wrote this turn can complete a blobbity, and a claim resolves when the cells are written. A placement writes the placed tile's four cells. A rotate writes the rotated tile's four cells in their new orientation, so it resolves claims at once, scoped to those four cells, the same way a placement does. A rotate writes all four of the tile's cells even if their colours come out unchanged; a turn of 1 to 3 quarters is what counts. A bounce writes nothing: it removes a tile and reveals cells nobody wrote this turn, so it never claims, and a pattern it exposes is claimed only if the placed tile's cells complete it. Stack writes the drawn tile's cells on top of the covered position, so a pattern through those cells claims normally.
 
-Distinct cells apply per resolution: each rotate and each placement is its own resolution, so the same four cells may complete one mission on a rotate and a different one on the turn's placement. A replacement drawn after a rotate claim may be claimed later that turn by the placement, if the placement completes it.
+Distinct cells apply per resolution: each rotate and each placement is its own resolution, so the same four cells may complete one blobbity on a rotate and a different one on the turn's placement. A replacement drawn after a rotate claim may be claimed later that turn by the placement, if the placement completes it.
 
 On those claims, as one resolution:
 
-1. For each such mission, lay it face up in the seat's claim row and draw one replacement.
+1. For each such blobbity, lay it face up in the seat's claim row and draw one replacement.
 2. Do not claim a replacement drawn during this resolution, even if the board already shows its pattern.
 3. A placement then ends the turn, and one placement resolution passes the turn once. A rotate resolution does not end the turn: the seat keeps the drawn tile and may place it, or use another power.
 
@@ -85,7 +85,7 @@ A tile may show more than one cell of the same power. Each rotate or bounce cell
 
 ## AI
 
-The AI seat has its own two secret missions. It does not observe any other seat's missions, human or AI. It must play a legal placement. A heuristic that prefers its own missions is enough for the POC. Search with hidden information is out of scope.
+The AI seat has its own two secret blobbities. It does not observe any other seat's blobbities, human or AI. It must play a legal placement. A heuristic that prefers its own blobbities is enough for the POC. Search with hidden information is out of scope.
 
 ## What the photographs do not decide
 

@@ -106,7 +106,7 @@ internal sealed class TurnTray
         _conceal.gameObject.SetActive(covered);
         if (covered)
         {
-            _concealLabel.text = Seats.NameOf(snapshot.View.CurrentSeat) + ", confirm to see your missions.";
+            _concealLabel.text = Seats.NameOf(snapshot.View.CurrentSeat) + ", confirm to see your blobbities.";
         }
     }
 
@@ -276,7 +276,7 @@ internal sealed class TurnTray
 
         var title = Ui.Label("Title", _secrets, 30, SplatPalette.Ink, TextAnchor.MiddleCenter);
         Ui.Anchored(title.rectTransform, new Vector2(0f, 0f), new Vector2(1f, 0.12f), Vector2.zero, Vector2.zero);
-        title.text = snapshot.SecretsVisible ? "Your secret shapes" : "Missions hidden";
+        title.text = snapshot.SecretsVisible ? "Your secret shapes" : "Blobbities hidden";
         if (!snapshot.SecretsVisible)
         {
             return;

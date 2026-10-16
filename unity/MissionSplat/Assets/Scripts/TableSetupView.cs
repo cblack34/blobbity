@@ -51,7 +51,7 @@ internal sealed class TableSetupView
         var top = PaddingUnits;
         var title = Ui.Label("Title", face, 80, SplatPalette.Ink, TextAnchor.MiddleCenter, FontWeight.ExtraBold);
         Band(title.rectTransform, 0.05f, 0.95f, top, TitleUnits);
-        title.text = "Mission Splat";
+        title.text = "Blobbity";
         top += TitleUnits + SectionGapUnits;
         PaintSeatCount(face, top);
         top += ChoiceRowUnits + SectionGapUnits;

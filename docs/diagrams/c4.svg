@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 1680" width="960" height="1680" role="img" aria-labelledby="title desc">
-  <title id="title">Mission Splat C4 architecture</title>
-  <desc id="desc">System context, containers, and components for the on-device Mission Splat POC, with the later authoritative room shown as a dashed future.</desc>
+  <title id="title">Blobbity C4 architecture</title>
+  <desc id="desc">System context, containers, and components for the on-device Blobbity POC, with the later authoritative room shown as a dashed future.</desc>
   <defs>
     <style>
       .h1 { font: 700 28px system-ui, Segoe UI, sans-serif; fill: #0b1f33; }
@@ -25,7 +25,7 @@
   </defs>
 
   <rect width="960" height="1680" fill="#f4f7fb"/>
-  <text x="40" y="46" class="h1">Mission Splat — C4</text>
+  <text x="40" y="46" class="h1">Blobbity — C4</text>
   <text x="40" y="70" class="sub">On-device POC. Same action and event seam for a later authoritative room. Desktop is another player build, not another system.</text>
 
   <!-- LEVEL 1 -->
@@ -37,7 +37,7 @@
   <text x="147" y="246" text-anchor="middle" class="box-body">Person, on device</text>
 
   <rect x="360" y="160" width="250" height="148" rx="10" fill="#1168bd"/>
-  <text x="485" y="214" text-anchor="middle" class="box-title">Mission Splat player</text>
+  <text x="485" y="214" text-anchor="middle" class="box-title">Blobbity player</text>
   <text x="485" y="236" text-anchor="middle" class="box-body">Unity 6 game. Offline, 2-4 seats</text>
   <text x="485" y="252" text-anchor="middle" class="box-body">any human/AI mix. iOS,</text>
   <text x="485" y="268" text-anchor="middle" class="box-body">Android, later desktop.</text>
