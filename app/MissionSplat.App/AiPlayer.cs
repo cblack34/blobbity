@@ -32,7 +32,7 @@ public sealed class AiPlayer : IPlayer
             throw new ArgumentException("The view is for a different seat.", nameof(view));
         }
 
-        var ownBlobbities = IdsOf(view.UnclaimedBlobbities);
+        var ownBlobbityIds = IdsOf(view.UnclaimedBlobbities);
         Place? firstAccepted = null;
         for (var quarterTurns = 0; quarterTurns < 4; quarterTurns++)
         {
@@ -50,7 +50,7 @@ public sealed class AiPlayer : IPlayer
                     continue;
                 }
 
-                if (ClaimsOwnBlobbity(preview.ClaimedBlobbityIds, ownBlobbities))
+                if (ClaimsOwnBlobbity(preview.ClaimedBlobbityIds, ownBlobbityIds))
                 {
                     return place;
                 }
@@ -71,11 +71,11 @@ public sealed class AiPlayer : IPlayer
         throw new InvalidOperationException(message);
     }
 
-    private static bool ClaimsOwnBlobbity(IReadOnlyList<BlobbityId> claimed, HashSet<BlobbityId> ownBlobbities)
+    private static bool ClaimsOwnBlobbity(IReadOnlyList<BlobbityId> claimed, HashSet<BlobbityId> ownBlobbityIds)
     {
         for (var i = 0; i < claimed.Count; i++)
         {
-            if (ownBlobbities.Contains(claimed[i]))
+            if (ownBlobbityIds.Contains(claimed[i]))
             {
                 return true;
             }

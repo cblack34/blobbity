@@ -52,12 +52,12 @@ internal sealed class ClaimsPanel
             none.text = "No claims yet.";
         }
 
-        for (var m = 0; m < claims.Blobbities.Count; m++)
+        for (var claimIndex = 0; claimIndex < claims.Blobbities.Count; claimIndex++)
         {
-            var slot = Ui.Rect("Claim" + m, cards);
-            var (min, max) = CardAnchors(m, claims.Blobbities.Count);
+            var slot = Ui.Rect("Claim" + claimIndex, cards);
+            var (min, max) = CardAnchors(claimIndex, claims.Blobbities.Count);
             Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
-            BlobbityCardPainter.Paint(slot, claims.Blobbities[m]);
+            BlobbityCardPainter.Paint(slot, claims.Blobbities[claimIndex]);
         }
     }
 
