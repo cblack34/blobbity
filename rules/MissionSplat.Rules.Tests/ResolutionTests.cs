@@ -149,7 +149,7 @@ public class ResolutionTests
     [Test]
     public void OneReplacement_ThrowsWhenThePlacementWouldClaimTwo_AndTheGameStays()
     {
-        // Same both-blobbities placement as OneTile_ClaimsBothBlobbities, with one replacement left.
+        // Same both-blobbities placement as OneTile_ClaimsBothBlobbitiesTheActingSeatHolds_AndPassesOnce, with one replacement left.
         var game = RepresentativeDeck.Start(
             ["a", "b"],
             "a",
