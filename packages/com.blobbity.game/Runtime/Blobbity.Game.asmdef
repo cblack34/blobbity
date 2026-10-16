@@ -1,6 +1,6 @@
 {
-  "name": "MissionSplat.Game",
-  "rootNamespace": "MissionSplat.Game",
+  "name": "Blobbity.Game",
+  "rootNamespace": "Blobbity.GamePackage",
   "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],

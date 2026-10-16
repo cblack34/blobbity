@@ -1,8 +1,8 @@
-namespace MissionSplat.Player.Tests
+namespace Blobbity.Player.Tests
 {
 
 using System.Linq;
-using MissionSplat.Player;
+using Blobbity.Player;
 using Blobbity.Rules;
 using NUnit.Framework;
 using UnityEngine;

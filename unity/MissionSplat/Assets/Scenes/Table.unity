@@ -162,7 +162,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9d7ed5bb823954e3d9a602093a49e761, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: MissionSplat.Player::MissionSplat.Player.TableSession
+  m_EditorClassIdentifier: Blobbity.Player::Blobbity.Player.TableSession
 --- !u!1 &790981279
 GameObject:
   m_ObjectHideFlags: 0

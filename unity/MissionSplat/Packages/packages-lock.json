@@ -1,7 +1,7 @@
 {
   "dependencies": {
-    "com.mission-splat.game": {
-      "version": "file:../../../packages/com.mission-splat.game",
+    "com.blobbity.game": {
+      "version": "file:../../../packages/com.blobbity.game",
       "depth": 0,
       "source": "local",
       "dependencies": {}

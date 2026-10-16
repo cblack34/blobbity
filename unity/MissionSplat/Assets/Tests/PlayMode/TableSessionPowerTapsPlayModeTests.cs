@@ -1,4 +1,4 @@
-namespace MissionSplat.Player.Tests
+namespace Blobbity.Player.Tests
 {
 
 using System.Linq;

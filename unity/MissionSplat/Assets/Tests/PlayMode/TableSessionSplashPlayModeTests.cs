@@ -1,10 +1,10 @@
-namespace MissionSplat.Player.Tests
+namespace Blobbity.Player.Tests
 {
 
 using System.Collections.Generic;
 using System.Linq;
 using Blobbity.App;
-using MissionSplat.Player;
+using Blobbity.Player;
 using Blobbity.Rules;
 using System;
 using System.Text.RegularExpressions;
