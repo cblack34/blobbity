@@ -88,9 +88,9 @@ public class LocalSessionCommandTests
         var preview = session.Preview(new SeatId("a"), new Place(1, 0, 0));
 
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedBlobbityIds.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
-        Assert.That(preview.ClaimedBlobbityIds.Select(mission => mission.Value), Does.Not.Contain("b-square"));
-        Assert.That(preview.ClaimedBlobbityIds.Select(mission => mission.Value), Does.Not.Contain("a-row"));
+        Assert.That(preview.ClaimedBlobbityIds.Select(blobbity => blobbity.Value), Is.EqualTo(new[] { "a-square" }));
+        Assert.That(preview.ClaimedBlobbityIds.Select(blobbity => blobbity.Value), Does.Not.Contain("b-square"));
+        Assert.That(preview.ClaimedBlobbityIds.Select(blobbity => blobbity.Value), Does.Not.Contain("a-row"));
         Assert.That(Take(session), Is.EqualTo(before));
 
         var placed = session.Submit(new SeatId("a"), new Place(1, 0, 0));
@@ -98,7 +98,7 @@ public class LocalSessionCommandTests
         Assert.That(session.View(new SeatId("b")).CurrentSeat, Is.EqualTo(new SeatId("b")));
         Assert.That(session.View(new SeatId("b")).Board.Tiles, Has.Count.EqualTo(2));
         Assert.That(
-            session.View(new SeatId("b")).Claims.Single(row => row.Seat.Value == "a").Blobbities.Select(mission => mission.Id.Value),
+            session.View(new SeatId("b")).Claims.Single(row => row.Seat.Value == "a").Blobbities.Select(blobbity => blobbity.Id.Value),
             Is.EqualTo(new[] { "a-square" }));
     }
 
@@ -124,7 +124,7 @@ public class LocalSessionCommandTests
     }
 
     [Test]
-    public void PreviewFromAnotherSeat_IsRejected_AndNamesNoMission()
+    public void PreviewFromAnotherSeat_IsRejected_AndNamesNoBlobbity()
     {
         var session = ClaimingTable.Open(3).Session;
         var before = Take(session);
@@ -238,11 +238,11 @@ public class LocalSessionCommandTests
             seats.Select(seat =>
             {
                 var view = session.View(new SeatId(seat));
-                return seat + "=" + string.Join(",", view.UnclaimedBlobbities.Select(mission => mission.Id.Value));
+                return seat + "=" + string.Join(",", view.UnclaimedBlobbities.Select(blobbity => blobbity.Id.Value));
             }));
         var claims = string.Join(
             ";",
-            first.Claims.Select(row => row.Seat.Value + "=" + string.Join(",", row.Blobbities.Select(mission => mission.Id.Value))));
+            first.Claims.Select(row => row.Seat.Value + "=" + string.Join(",", row.Blobbities.Select(blobbity => blobbity.Id.Value))));
         var cells = string.Join(
             ";",
             first.Board.Cells.Select(cell => cell.CellX + "," + cell.CellY + ":" + cell.Value));

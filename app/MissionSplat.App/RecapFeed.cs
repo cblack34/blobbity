@@ -81,14 +81,14 @@ internal sealed class RecapFeed(GameSetup setup)
 
     private BlobbityCard BlobbityOf(BlobbityId id)
     {
-        foreach (var mission in _setup.BlobbityDeck)
+        foreach (var blobbity in _setup.BlobbityDeck)
         {
-            if (mission.Id.Equals(id))
+            if (blobbity.Id.Equals(id))
             {
-                return mission;
+                return blobbity;
             }
         }
 
-        throw new InvalidOperationException("A claimed mission is not in the setup's deck.");
+        throw new InvalidOperationException("A claimed blobbity is not in the setup's deck.");
     }
 }

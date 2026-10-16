@@ -326,7 +326,7 @@ public class RecapTests
     }
 
     [Test]
-    public void AClaimAndTheWin_ProduceClaimedAndWonItems_WithTheMissionCard()
+    public void AClaimAndTheWin_ProduceClaimedAndWonItems_WithTheBlobbityCard()
     {
         var square = Cards.BlobbityCard("one-square", BlobbityPattern.Square, OrdinaryCatalog.Red);
         var setup = new GameSetup(
@@ -444,8 +444,8 @@ public class RecapTests
     private static GameSetup Setup(int seatCount, Tile[] tiles)
     {
         var seats = Enumerable.Range(1, seatCount).Select(number => number.ToString()).ToArray();
-        var missions = seats.SelectMany(seat => new[] { Cards.Row(seat + "-a"), Cards.Row(seat + "-b"), Cards.Row(seat + "-replacement") }).ToList();
-        missions.Add(Cards.Row("spare"));
-        return RepresentativeDeck.Setup(seats, "1", missions.ToArray(), tiles);
+        var blobbities = seats.SelectMany(seat => new[] { Cards.Row(seat + "-a"), Cards.Row(seat + "-b"), Cards.Row(seat + "-replacement") }).ToList();
+        blobbities.Add(Cards.Row("spare"));
+        return RepresentativeDeck.Setup(seats, "1", blobbities.ToArray(), tiles);
     }
 }

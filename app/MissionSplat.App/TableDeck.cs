@@ -14,12 +14,12 @@ public static class TableDeck
             throw new ArgumentNullException(nameof(seats));
         }
 
-        var missions = Missions();
+        var blobbities = Blobbities();
         var tiles = Tiles();
         if (shuffleSeed is int seed)
         {
             var rng = new Random(seed);
-            Shuffle.InPlace(missions, rng);
+            Shuffle.InPlace(blobbities, rng);
             Shuffle.InPlace(tiles, rng);
         }
 
@@ -30,28 +30,28 @@ public static class TableDeck
             OrdinaryCatalog.NonScoringSymbols,
             OrdinaryCatalog.Patterns,
             OrdinaryCatalog.ClaimsRequiredToWin,
-            missions,
+            blobbities,
             tiles);
     }
 
-    // Two of each colour and shape: the digital deck doubles the twelve printed cards so the mission deck cannot run out.
-    private static BlobbityCard[] Missions()
+    // Two of each colour and shape: the digital deck doubles the twelve printed cards so the blobbity deck cannot run out.
+    private static BlobbityCard[] Blobbities()
     {
         var shapes = new[] { (BlobbityPattern.Row, "line"), (BlobbityPattern.Square, "square"), (BlobbityPattern.L, "l") };
         const int copies = 2;
-        var missions = new List<BlobbityCard>();
+        var blobbities = new List<BlobbityCard>();
         foreach (var (pattern, name) in shapes)
         {
             for (var copy = 1; copy <= copies; copy++)
             {
                 foreach (var color in OrdinaryCatalog.Colors)
                 {
-                    missions.Add(new BlobbityCard(new BlobbityId(name + "-" + color.Value + "-" + copy), pattern, color));
+                    blobbities.Add(new BlobbityCard(new BlobbityId(name + "-" + color.Value + "-" + copy), pattern, color));
                 }
             }
         }
 
-        return missions.ToArray();
+        return blobbities.ToArray();
     }
 
     // Rows follow docs/census.md: each lists top-left, top-right, bottom-left, bottom-right.

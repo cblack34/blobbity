@@ -236,10 +236,10 @@ public abstract class TableSessionFixture
     protected static GameSetup SetupFrom(params Tile[] tiles) =>
         SetupFrom(new[] { "a1", "a2", "b1", "b2", "spare" }, tiles);
 
-    // A seat that claims draws a replacement, so a test that claims needs missions beyond the opening hands.
+    // A seat that claims draws a replacement, so a test that claims needs blobbities beyond the opening hands.
     protected static GameSetup SetupFrom(string[] blobbityIds, params Tile[] tiles)
     {
-        var missions = blobbityIds
+        var blobbities = blobbityIds
             .Select(id => new BlobbityCard(new BlobbityId(id), BlobbityPattern.Row, OrdinaryCatalog.Purple))
             .ToArray();
         var seats = TableStart.PassAndPlayDraft().SeatsInTurnOrder();
@@ -250,7 +250,7 @@ public abstract class TableSessionFixture
             OrdinaryCatalog.NonScoringSymbols,
             OrdinaryCatalog.Patterns,
             OrdinaryCatalog.ClaimsRequiredToWin,
-            missions,
+            blobbities,
             tiles);
     }
 

@@ -6,7 +6,7 @@ using MissionSplat.Rules;
 public class SeatViewTests
 {
     [Test]
-    public void View_ShowsThatSeatsUnclaimedMissions_AndEverySeatsClaims()
+    public void View_ShowsThatSeatsUnclaimedBlobbities_AndEverySeatsClaims()
     {
         Assert.That(RepresentativeDeck.Label, Is.EqualTo("representative"));
         var session = ClaimingTable.Open(3).Session;
@@ -43,7 +43,7 @@ public class SeatViewTests
         Assert.That(ClaimIds(fromB, "a"), Is.EqualTo(new[] { "a-square" }));
         Assert.That(ClaimIds(fromB, "b"), Is.Empty);
         Assert.That(ClaimIds(fromB, "c"), Is.Empty);
-        AssertAbsent(fromB, "a-row", "a-replacement", "c-square", "c-row", "spare-mission");
+        AssertAbsent(fromB, "a-row", "a-replacement", "c-square", "c-row", "spare-blobbity");
 
         var fromC = session.View(new SeatId("c"));
         Assert.That(ClaimIds(fromC, "a"), Is.EqualTo(new[] { "a-square" }));
@@ -76,8 +76,8 @@ public class SeatViewTests
         }
     }
 
-    private static string[] Ids(IReadOnlyList<BlobbityCard> missions) =>
-        missions.Select(mission => mission.Id.Value).ToArray();
+    private static string[] Ids(IReadOnlyList<BlobbityCard> blobbities) =>
+        blobbities.Select(blobbity => blobbity.Id.Value).ToArray();
 
     private static string[] ClaimIds(SeatView view, string seat) =>
         Ids(view.Claims.Single(row => row.Seat.Value == seat).Blobbities);

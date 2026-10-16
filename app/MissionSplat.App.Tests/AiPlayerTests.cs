@@ -7,7 +7,7 @@ using MissionSplat.Rules;
 public class AiPlayerTests
 {
     [Test]
-    public void ChooseAction_OnTheClaimingTable_ClaimsOwnMission_AndHidesOtherHands()
+    public void ChooseAction_OnTheClaimingTable_ClaimsOwnBlobbity_AndHidesOtherHands()
     {
         Assert.That(RepresentativeDeck.Label, Is.EqualTo("representative"));
         var session = ClaimingTable.Open(3).Session;
@@ -28,7 +28,7 @@ public class AiPlayerTests
         Assert.That(chosen, Is.EqualTo(new Place(-1, 0, 0)));
         var preview = session.Preview(seat, chosen);
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedBlobbityIds.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
+        Assert.That(preview.ClaimedBlobbityIds.Select(blobbity => blobbity.Value), Is.EqualTo(new[] { "a-square" }));
 
         var placed = session.Submit(seat, chosen);
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
@@ -49,7 +49,7 @@ public class AiPlayerTests
                 Cards.Row("b-row"),
                 Cards.Row("b-other"),
                 Cards.Row("a-replacement"),
-                Cards.Row("spare-mission"),
+                Cards.Row("spare-blobbity"),
             ],
             [
                 new Tile(new TileId("start"), Cards.Blank, Cards.Red, Cards.Blank, Cards.Red),
@@ -66,7 +66,7 @@ public class AiPlayerTests
         Assert.That(chosen, Is.EqualTo(new Place(1, 0, 0)));
         var preview = session.Preview(seat, chosen);
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedBlobbityIds.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
+        Assert.That(preview.ClaimedBlobbityIds.Select(blobbity => blobbity.Value), Is.EqualTo(new[] { "a-square" }));
         var placed = session.Submit(seat, chosen);
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
     }
@@ -183,16 +183,16 @@ public class AiPlayerTests
     private static AiPlayer Ai(LocalSession session, SeatId seat) =>
         new(seat, quarterTurns => session.LegalPlacements(seat, quarterTurns), action => session.Preview(seat, action));
 
-    private static LocalSession Open(BlobbityCard[] missions, Tile[] tiles)
+    private static LocalSession Open(BlobbityCard[] blobbities, Tile[] tiles)
     {
         var session = new LocalSession();
-        var started = session.Start(RepresentativeDeck.Setup(["a", "b"], "a", missions, tiles));
+        var started = session.Start(RepresentativeDeck.Setup(["a", "b"], "a", blobbities, tiles));
         Assert.That(started.IsAccepted, Is.True, RepresentativeDeck.Label + ": " + started.Rejection?.Message);
         return session;
     }
 
-    private static string[] Ids(IReadOnlyList<BlobbityCard> missions) =>
-        missions.Select(mission => mission.Id.Value).ToArray();
+    private static string[] Ids(IReadOnlyList<BlobbityCard> blobbities) =>
+        blobbities.Select(blobbity => blobbity.Id.Value).ToArray();
 
     private static void AssertNoneOf(Type type, Type[] forbidden, string site)
     {

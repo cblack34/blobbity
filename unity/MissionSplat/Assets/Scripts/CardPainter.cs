@@ -22,7 +22,7 @@ internal static class CardPainter
     // so the shadow stays inside the block and neighbours never touch it.
     public const float InsetFraction = 0.06f;
 
-    // The shadow, edge and face of a card, shared by tiles and mission cards: a white face in a thick ink edge over a hard ink shadow that
+    // The shadow, edge and face of a card, shared by tiles and blobbity cards: a white face in a thick ink edge over a hard ink shadow that
     // reaches down and right. edge is a fraction of the block's width; blockWidth is the width in canvas units that block will have,
     // which sets the edge and shadow thickness in units. The same fraction of the height is as many pixels on a portrait sprite,
     // so the border stays even whatever the sprite's shape.

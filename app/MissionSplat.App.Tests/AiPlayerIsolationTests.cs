@@ -36,7 +36,7 @@ public class AiPlayerIsolationTests
             reachable.UnionWith(BlobbityIds.In(recorder.Answers));
             reachable.UnionWith(BlobbityIds.In(recorder));
             Assert.That(reachable.Intersect(hidden), Is.Empty);
-            Assert.That(reachable, Is.SupersetOf(view.UnclaimedBlobbities.Select(mission => mission.Id.Value)));
+            Assert.That(reachable, Is.SupersetOf(view.UnclaimedBlobbities.Select(blobbity => blobbity.Id.Value)));
 
             var result = session.Submit(seat, chosen);
             Assert.That(result.IsAccepted, Is.True, result.Rejection?.Message);
@@ -52,21 +52,21 @@ public class AiPlayerIsolationTests
         Assert.That(() => ai.ChooseAction(session.View(new SeatId("b"))), Throws.ArgumentException);
     }
 
-    // The seats' unclaimed mission ids that the given seat must never see.
+    // The seats' unclaimed blobbity ids that the given seat must never see.
     private static HashSet<string> HiddenBlobbityIds(LocalSession session, SeatId seat)
     {
         var hidden = new HashSet<string>();
         foreach (var other in new[] { "a", "b", "c" }.Where(name => name != seat.Value))
         {
-            foreach (var mission in session.View(new SeatId(other)).UnclaimedBlobbities)
+            foreach (var blobbity in session.View(new SeatId(other)).UnclaimedBlobbities)
             {
-                hidden.Add(mission.Id.Value);
+                hidden.Add(blobbity.Id.Value);
             }
         }
 
-        foreach (var mission in session.View(seat).UnclaimedBlobbities)
+        foreach (var blobbity in session.View(seat).UnclaimedBlobbities)
         {
-            hidden.Remove(mission.Id.Value);
+            hidden.Remove(blobbity.Id.Value);
         }
 
         return hidden;

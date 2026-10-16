@@ -25,11 +25,11 @@ internal static class BlobbityCardPainter
             BlobbityPattern.Row => new[] { (0f, 0f), (1f / 3f, 1f), (2f / 3f, 2f), (1f, 3f) },
             BlobbityPattern.Square => new[] { (0f, 1f), (1f, 1f), (0f, 2f), (1f, 2f) },
             BlobbityPattern.L => new[] { (0f, 2.5f), (0f, 1.5f), (0f, 0.5f), (1f, 0.5f) },
-            _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown mission pattern."),
+            _ => throw new ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown blobbity pattern."),
         };
 
-    // Draws the mission as a portrait card centred in slot, whatever shape slot is, and sized by it.
-    public static void Paint(RectTransform slot, BlobbityCard mission)
+    // Draws the blobbity as a portrait card centred in slot, whatever shape slot is, and sized by it.
+    public static void Paint(RectTransform slot, BlobbityCard blobbity)
     {
         var card = Ui.Rect("Card", slot);
         // The fitter resizes the card at layout time; stretching first gives it a sane rect before then.
@@ -38,7 +38,7 @@ internal static class BlobbityCardPainter
         fit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         fit.aspectRatio = Ui.BlobbityCard.rect.width / Ui.BlobbityCard.rect.height;
         CardPainter.Paint(card, Ui.BlobbityCard, CardEdge, FittedWidth(slot));
-        PaintPattern(card, mission);
+        PaintPattern(card, blobbity);
     }
 
     // The width the fitter will give the card inside slot, which sets how thick its edge line must be to stay visible.
@@ -51,7 +51,7 @@ internal static class BlobbityCardPainter
         return width > 1f ? width : 100f;
     }
 
-    private static void PaintPattern(RectTransform card, BlobbityCard mission)
+    private static void PaintPattern(RectTransform card, BlobbityCard blobbity)
     {
         // The lattice fits its own ratio inside the card less a margin, so the splats stay round at any card size and clear of the edge.
         var area = Ui.Rect("Pattern", card);
@@ -61,14 +61,14 @@ internal static class BlobbityCardPainter
         var latticeFit = lattice.gameObject.AddComponent<AspectRatioFitter>();
         latticeFit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
         latticeFit.aspectRatio = LatticeWidth / (float)LatticeHeight;
-        var cells = Pattern(mission.Pattern);
+        var cells = Pattern(blobbity.Pattern);
         for (var i = 0; i < cells.Length; i++)
         {
             var splat = Ui.Rect("Splat" + i, lattice);
             var (x, y) = cells[i];
             Ui.Anchored(splat, new Vector2(x / LatticeWidth, y / LatticeHeight), new Vector2((x + 1f) / LatticeWidth, (y + 1f) / LatticeHeight), Vector2.zero, Vector2.zero);
-            // One turn per splat, keyed by the mission, so the card looks the same wherever it is drawn.
-            CellPainter.ColourSplat(splat, mission.Color, Vector2.zero, Vector2.one, CellPainter.SplatAngle(mission.Id.Value + ":" + i), SplatOverfill);
+            // One turn per splat, keyed by the blobbity, so the card looks the same wherever it is drawn.
+            CellPainter.ColourSplat(splat, blobbity.Color, Vector2.zero, Vector2.one, CellPainter.SplatAngle(blobbity.Id.Value + ":" + i), SplatOverfill);
         }
     }
 }

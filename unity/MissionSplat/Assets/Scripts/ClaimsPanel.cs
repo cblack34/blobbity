@@ -6,7 +6,7 @@ using MissionSplat.App;
 using UnityEngine;
 using UnityEngine.UI;
 
-// A seat's claimed missions over a dimmed table. A tap anywhere closes it, and so does any render of the table
+// A seat's claimed blobbities over a dimmed table. A tap anywhere closes it, and so does any render of the table
 // (TablePlayView.Render calls Hide), because an action may have changed the claims it shows.
 internal sealed class ClaimsPanel
 {
@@ -71,10 +71,10 @@ internal sealed class ClaimsPanel
         rect.offsetMax = new Vector2(0f, PanelHeightUnits / 2f);
     }
 
-    // A row holds the claims needed to win. One placement can claim both held missions, so a row one short of the win count can end one over it and must stay inside the panel.
-    private static (Vector2 Min, Vector2 Max) CardAnchors(int index, int missionCount)
+    // A row holds the claims needed to win. One placement can claim both held blobbities, so a row one short of the win count can end one over it and must stay inside the panel.
+    private static (Vector2 Min, Vector2 Max) CardAnchors(int index, int blobbityCount)
     {
-        var slots = Math.Max(Seats.ClaimsToWin, missionCount);
+        var slots = Math.Max(Seats.ClaimsToWin, blobbityCount);
         const float margin = 0.04f;
         const float gap = 0.02f;
         var width = (1f - (2f * margin) - ((slots - 1) * gap)) / slots;

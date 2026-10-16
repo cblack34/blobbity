@@ -51,14 +51,14 @@ internal sealed class SeatBar
         }
     }
 
-    // The pip a claimed mission fills in the seat's entry, as last painted; null when it is not drawn.
-    public RectTransform PipOf(SeatId seat, BlobbityId mission)
+    // The pip a claimed blobbity fills in the seat's entry, as last painted; null when it is not drawn.
+    public RectTransform PipOf(SeatId seat, BlobbityId id)
     {
         if (_pips.TryGetValue(seat, out var pips))
         {
             foreach (var (claimed, pip) in pips)
             {
-                if (claimed.Equals(mission) && pip != null)
+                if (claimed.Equals(id) && pip != null)
                 {
                     return pip;
                 }

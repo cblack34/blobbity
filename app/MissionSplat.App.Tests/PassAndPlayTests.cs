@@ -39,7 +39,7 @@ public class PassAndPlayTests
         foreach (var player in table.Players)
         {
             var row = published.Claims.Single(claim => claim.Seat.Equals(player.Seat));
-            Assert.That(row.Blobbities.Select(mission => mission.Id.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
+            Assert.That(row.Blobbities.Select(blobbity => blobbity.Id.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
         }
     }
 }

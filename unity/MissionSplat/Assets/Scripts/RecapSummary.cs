@@ -93,7 +93,7 @@ internal static class RecapSummary
         BlobbityPattern.Row => "a row",
         BlobbityPattern.Square => "a square",
         BlobbityPattern.L => "an L",
-        _ => throw new System.ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown mission pattern."),
+        _ => throw new System.ArgumentOutOfRangeException(nameof(pattern), pattern, "Unknown blobbity pattern."),
     };
 
     // "a", "a and b", "a, b and c"; commas only when a part already holds an "and", so no sentence says "and" twice.

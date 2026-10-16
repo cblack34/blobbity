@@ -3,7 +3,7 @@ namespace MissionSplat.App;
 using MissionSplat.Rules;
 
 // One public fact a human missed since they last held the device. The set is closed: only this assembly can derive,
-// so a GUI can switch over every kind. Nothing here names a hidden mission, a buried tile, or the draw order.
+// so a GUI can switch over every kind. Nothing here names a hidden blobbity, a buried tile, or the draw order.
 public abstract record RecapItem
 {
     private protected RecapItem(SeatId seat)
@@ -96,7 +96,7 @@ public sealed record RecapBounced : RecapItem
     public IReadOnlyList<OccupiedCell> RevealedCells { get; }
 }
 
-// A claimed mission is public, so the card itself rides along.
+// A claimed blobbity is public, so the card itself rides along.
 public sealed record RecapClaimed(SeatId Seat, BlobbityCard Card) : RecapItem(Seat);
 
 public sealed record RecapWon(SeatId Seat, int ClaimCount) : RecapItem(Seat);
