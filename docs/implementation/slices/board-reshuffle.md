@@ -75,7 +75,7 @@ Treat exhaustion as a state the match reports, not an exception it throws. The o
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:board-reshuffle` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Aboard-reshuffle
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:board-reshuffle` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Aboard-reshuffle
 
 ## Delivery shape
 
@@ -98,5 +98,5 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
 - **Verification:** On `e224b3b` (after the PR review round, which added a test pinning full power uses on the tile pending after a reshuffle and aligned two doc sentences), `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 214, `dotnet test app/Blobbity.App.sln --configuration Release` passed 60, and `unity test unity/Blobbity --mode PlayMode` passed 12 of 12, run by the implementation lead independently of the execution agents' receipts (Unity and the clean import on `08d996a`; the review round changed only a Rules test and docs); a clean import in a detached worktree passed the same 12 with no tracked file altered. A fresh-context design review of all eleven production files found no blocking or issue-level finding; five of eight suggestions were applied.
 - **Deviations:** A one-tile match deck at setup starts the game awaiting a reshuffle and the table stops with a message. The notice lasts until the next human action rather than the next action, so an AI turn cannot hide it.
 - **Unresolved gates or risks:** Blobbity-deck exhaustion is resolved by deck size in the census slice; the distinct-cells claim rule follows; the GUI redesign is deferred.
-- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/mission-splat/pull/36, and on issues #34 and #35.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/36
+- **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/blobbity/pull/36, and on issues #34 and #35.
+- **Final PR:** https://github.com/cblack34/blobbity/pull/36

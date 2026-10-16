@@ -98,7 +98,7 @@ GitHub issues are the WIP tracker and source of task-level detail.
 
 | Issue | Purpose | Dependencies |
 | --- | --- | --- |
-| [#13](https://github.com/cblack34/mission-splat/issues/13) — Stack the drawn tile and match the top cells | Stack placement, top-cell matching, retained covered tiles, and the rules and architecture sentences. | None |
+| [#13](https://github.com/cblack34/blobbity/issues/13) — Stack the drawn tile and match the top cells | Stack placement, top-cell matching, retained covered tiles, and the rules and architecture sentences. | None |
 
 ## Delivery shape
 
@@ -117,5 +117,5 @@ None.
 - **Verification:** On `94f999f`, `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 94, failed 0, and `dotnet test app/Blobbity.App.sln --configuration Release` passed 15, failed 0. The implementation lead ran both. A read-only design review on `grok-4.7` found no structural change. Evidence is on #13 and #14. This delivery-record commit does not change code.
 - **Deviations:** None. The covered tiles are retained, and uncover stays unresolved. `ISession` and the Unity table are unchanged.
 - **Unresolved gates or risks:** Uncover, rotate, bounce, bounce of the last tile, a tile with nowhere legal, deck exhaustion, and the uncorrected census rows. The player still declines stack.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/14
+- **Final PR:** https://github.com/cblack34/blobbity/pull/14
 - **Merge state:** Ready for the human to merge; agents do not merge to `main`.

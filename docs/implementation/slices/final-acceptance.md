@@ -77,7 +77,7 @@ Close the two automated gaps with focused fixtures. Retake the Presentation capt
 
 ## Execution issues
 
-GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:final-acceptance` label; this plan links the query, not the issues: https://github.com/cblack34/mission-splat/issues?q=label%3Aslice%3Afinal-acceptance
+GitHub issues are the WIP tracker and source of task-level detail. Every issue for this slice carries the `slice:final-acceptance` label; this plan links the query, not the issues: https://github.com/cblack34/blobbity/issues?q=label%3Aslice%3Afinal-acceptance
 
 ## Delivery shape
 

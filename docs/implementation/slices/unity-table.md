@@ -103,14 +103,14 @@ GitHub issues are the WIP tracker and source of task-level detail.
 
 | Issue | Purpose | Dependencies |
 | --- | --- | --- |
-| [#10](https://github.com/cblack34/mission-splat/issues/10) — Bootstrap the Unity player and local UPM package | Create the Unity 6.3 URP project, the local UPM package, and the untracked DLL copy. | None |
-| [#11](https://github.com/cblack34/mission-splat/issues/11) — Bind the table to the local session | Composition, `HumanPlayer`, the named deck, the table, highlights, and play-mode evidence. | #10 |
+| [#10](https://github.com/cblack34/blobbity/issues/10) — Bootstrap the Unity player and local UPM package | Create the Unity 6.3 URP project, the local UPM package, and the untracked DLL copy. | None |
+| [#11](https://github.com/cblack34/blobbity/issues/11) — Bind the table to the local session | Composition, `HumanPlayer`, the named deck, the table, highlights, and play-mode evidence. | #10 |
 
 ## Delivery shape
 
 - **Topology:** Direct PR to `main`.
 - **Branch or spine:** `feat/unity-table`, cut from `origin/main`. Upstream is unset so a plain push cannot target `main`.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/12 Title `feat: add the Unity table bound to the local session`.
+- **Final PR:** https://github.com/cblack34/blobbity/pull/12 Title `feat: add the Unity table bound to the local session`.
 - **Human merge gate:** Only the human may physically merge the final PR to `main`. Agents must stop when it is ready.
 
 ## Amendments
@@ -125,7 +125,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
 - **Verification:** `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed, 78 tests, 0 failed. `dotnet test app/Blobbity.App.sln --configuration Release` passed, 15 tests, 0 failed. `unity test unity/Blobbity --mode PlayMode` passed 4, failed 0 (`ScriptedHumanPlacement_ThenOneAiTurn_PlacesThroughLocalSession`, `InteractiveLayoutsSitInsideTheReportedSafeArea`, `RuntimeInputModule_BindsPointClickAndSubmit`, `StatusStopTextWrapsInsideItsRect`). Captures are in `unity/Blobbity/Assets/Captures/`.
 - **Deviations:** Package Manager pinned the URP blank template, including packages the table does not use. The pending tile is drawn with the same clockwise map as placement. `board.png`, `secrets.png`, and `highlights.png` are one post-confirm frame. `claim-row.png` and `conceal-between-humans.png` are one post-place frame.
 - **Unresolved gates or risks:** Rotate, stack-on-top, bounce, and the open rulings in `docs/rules.md`. Uncorrected census rows. Device play. A long game that never claims can still exhaust a deck.
-- **Final PR:** https://github.com/cblack34/mission-splat/pull/12
+- **Final PR:** https://github.com/cblack34/blobbity/pull/12
 - **Merge state:** Ready for review. Agents do not merge to `main`.
 
 ## Refactor and handoff receipt
