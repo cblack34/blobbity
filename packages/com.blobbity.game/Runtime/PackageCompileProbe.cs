@@ -1,4 +1,4 @@
-namespace MissionSplat.Game
+namespace Blobbity.Game
 {
     internal static class PackageCompileProbe
     {

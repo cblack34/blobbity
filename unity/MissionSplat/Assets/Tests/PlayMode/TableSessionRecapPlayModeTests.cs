@@ -1,4 +1,4 @@
-namespace MissionSplat.Player.Tests
+namespace Blobbity.Player.Tests
 {
 
 using System;
@@ -6,7 +6,7 @@ using System.Collections;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Blobbity.App;
-using MissionSplat.Player;
+using Blobbity.Player;
 using Blobbity.Rules;
 using NUnit.Framework;
 using UnityEngine;

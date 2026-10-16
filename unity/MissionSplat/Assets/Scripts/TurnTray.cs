@@ -1,4 +1,4 @@
-namespace MissionSplat.Player
+namespace Blobbity.Player
 {
 
 using System;

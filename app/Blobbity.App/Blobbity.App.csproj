@@ -18,7 +18,7 @@
   <!-- Release output already contains Rules, so one copy publishes both assemblies. A Debug build must not replace those DLLs. -->
   <Target Name="CopyGameAssemblies" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
     <PropertyGroup>
-      <GamePackagePlugins>$(MSBuildThisFileDirectory)..\..\packages\com.mission-splat.game\Runtime\Plugins\</GamePackagePlugins>
+      <GamePackagePlugins>$(MSBuildThisFileDirectory)..\..\packages\com.blobbity.game\Runtime\Plugins\</GamePackagePlugins>
     </PropertyGroup>
     <ItemGroup>
       <GameAssembly Include="$(TargetDir)Blobbity.App.dll" />
