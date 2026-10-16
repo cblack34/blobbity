@@ -10,7 +10,7 @@ Blobbity is a 2–4 seat tile game for one phone. Each seat has two secret blobb
 
 The POC is offline. One human can play every seat (pass-and-play), or play alongside AI seats. Any seat count from 2 to 4 and any human/AI mix is allowed. A later room service is a seam, not a deliverable.
 
-Intended users are the people at the table, including a child who can follow a secret card. The player is Unity 6, URP, C#. iOS and Android are the phone targets. A desktop player is the same Unity project, built when a laptop demo is needed.
+Intended users are the people at the table, including a child who can follow a secret blobbity. The player is Unity 6, URP, C#. iOS and Android are the phone targets. A desktop player is the same Unity project, built when a laptop demo is needed.
 
 ## In scope
 
