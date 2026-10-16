@@ -1,7 +1,7 @@
 namespace MissionSplat.App.Tests;
 
 using MissionSplat.App;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 // Every fixture deals a representative deck: ordered for the test, not a census of a physical box.
 internal static class RepresentativeDeck

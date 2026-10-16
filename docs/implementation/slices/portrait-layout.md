@@ -63,7 +63,7 @@ Lay the screen out from a portrait reference so regions are sized for the phone.
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
 - Every capture retaken in portrait, and the maintainer's look on the phone.

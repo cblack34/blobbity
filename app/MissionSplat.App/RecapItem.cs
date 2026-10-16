@@ -1,6 +1,6 @@
 namespace MissionSplat.App;
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 // One public fact a human missed since they last held the device. The set is closed: only this assembly can derive,
 // so a GUI can switch over every kind. Nothing here names a hidden blobbity, a buried tile, or the draw order.

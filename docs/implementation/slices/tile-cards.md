@@ -60,7 +60,7 @@ Keep artwork as SVG source and ship tintable white PNGs, the usual practice for 
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
 - Retaken captures in the PR, and the maintainer's look on the phone.

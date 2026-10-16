@@ -66,7 +66,7 @@ Keep one card painter so tiles and blobbities change together. Draw outlines and
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release`
 - `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
 - Every capture retaken in portrait, and the maintainer's look on the phone.

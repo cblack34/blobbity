@@ -4,7 +4,7 @@ namespace MissionSplat.Player.Tests
 using System.Linq;
 using MissionSplat.App;
 using MissionSplat.Player;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using System.Collections;
 using NUnit.Framework;
 using UnityEngine;

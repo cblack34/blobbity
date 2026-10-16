@@ -79,7 +79,7 @@
   <text x="475" y="626" text-anchor="middle" class="box-body">Imported as a UPM DLL.</text>
 
   <rect x="200" y="688" width="280" height="150" rx="8" fill="#1168bd"/>
-  <text x="340" y="722" text-anchor="middle" class="box-title">MissionSplat.Rules</text>
+  <text x="340" y="722" text-anchor="middle" class="box-title">Blobbity.Rules</text>
   <text x="340" y="744" text-anchor="middle" class="box-body">Library · netstandard2.1</text>
   <text x="340" y="764" text-anchor="middle" class="box-body">Rules engine and match: board,</text>
   <text x="340" y="780" text-anchor="middle" class="box-body">powers, matcher, claim, turn phase.</text>

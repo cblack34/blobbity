@@ -2,7 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System.Collections.Generic;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using UnityEngine;
 using UnityEngine.UI;
 

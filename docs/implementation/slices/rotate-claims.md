@@ -69,7 +69,7 @@ Reuse the placement's claim pass with the rotated tile's cells as the written ce
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`, with tests for:
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`, with tests for:
   - a rotate claim;
   - a replacement claimed later by the placement;
   - a win on a rotate that ends the game before the placement;

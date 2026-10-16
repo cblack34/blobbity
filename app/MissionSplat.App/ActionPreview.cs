@@ -1,6 +1,6 @@
 namespace MissionSplat.App;
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 public sealed class ActionPreview
 {

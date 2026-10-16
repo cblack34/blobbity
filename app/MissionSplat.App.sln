@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissionSplat.App", "Mission
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissionSplat.App.Tests", "MissionSplat.App.Tests\MissionSplat.App.Tests.csproj", "{C2198152-FD77-45F8-AEEF-C4E8910CC4E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissionSplat.Rules", "..\rules\MissionSplat.Rules\MissionSplat.Rules.csproj", "{DC28F790-0F18-4E8A-A210-A03ED91E9D8A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blobbity.Rules", "..\rules\Blobbity.Rules\Blobbity.Rules.csproj", "{DC28F790-0F18-4E8A-A210-A03ED91E9D8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using MissionSplat.App;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 internal enum PreviewKind
 {

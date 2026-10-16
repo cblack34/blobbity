@@ -5,7 +5,7 @@ The active scope is complete when every criterion below holds and every required
 ## Run and verify
 
 ```bash
-dotnet test rules/MissionSplat.Rules.sln --configuration Release
+dotnet test rules/Blobbity.Rules.sln --configuration Release
 dotnet test app/MissionSplat.App.sln --configuration Release
 ```
 

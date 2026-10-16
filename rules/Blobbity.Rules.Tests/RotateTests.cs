@@ -1,0 +1,690 @@
+namespace Blobbity.Rules.Tests;
+
+public class RotateTests
+{
+    private static readonly Cell Rotate = Cell.Symbol(OrdinaryCatalog.Rotate);
+
+    private static readonly Cell Stack = Cell.Symbol(OrdinaryCatalog.Stack);
+
+    private static readonly Cell Green = Cell.Color(OrdinaryCatalog.Green);
+
+    private static readonly Cell Purple = Cell.Color(OrdinaryCatalog.Purple);
+
+    [TestCase(1)]
+    [TestCase(2)]
+    [TestCase(3)]
+    public void RotateOnATileWithAFreeSide_TurnsOnlyThatTilesCells_EmitsOneEvent_AndLeavesTheDrawnTilePending(
+        int quarterTurns)
+    {
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), Cards.BlankTile("pad"), OneRotate("drawn"));
+        var padded = See.Game(RepresentativeDeck.Play(game, 1, 0));
+
+        var result = RepresentativeDeck.Rotate(padded, 0, 0, quarterTurns);
+        var next = See.Game(result);
+
+        Expect.Tile(next, 0, 0, Oriented.Cross(quarterTurns));
+        Expect.Tile(next, 1, 0, [Cards.Blank, Cards.Blank, Cards.Blank, Cards.Blank]);
+        Assert.That(next.CellAt(4, 4), Is.Null);
+        Assert.That(next.TileCount, Is.EqualTo(2));
+        Assert.That(next.CoveredTileIds(0, 0), Is.Empty);
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
+        Assert.That(next.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
+        Assert.That(next.MatchDeckRemaining, Is.EqualTo(1));
+        Assert.That(next.Claims(Cards.Seat("b")), Is.Empty);
+        Assert.That(result.Events, Is.EqualTo(new[] { new TileRotated(Cards.Seat("b"), 0, 0, quarterTurns) }));
+        Expect.Tile(padded, 0, 0, Oriented.Cross(0));
+    }
+
+    [Test]
+    public void RotateBeforeThePlacement_AndThePlacementQuarterTurns_AreIndependent()
+    {
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), Cards.Tile("spun", Rotate, Cards.Red, Cards.Blue, Green));
+
+        var rotated = See.Game(RepresentativeDeck.Rotate(game, 0, 0));
+        var placed = RepresentativeDeck.Play(rotated, 1, 0, 2);
+        var next = See.Game(placed);
+
+        Expect.Tile(next, 0, 0, Oriented.Cross(1));
+        Expect.Tile(next, 1, 0, [Green, Cards.Blue, Cards.Red, Rotate]);
+        Assert.That(((TilePlaced)placed.Events[0]).QuarterTurnsClockwise, Is.EqualTo(2));
+        Assert.That(next.TileCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void FourOrthogonalNeighbors_RejectTheRotate_AndLeaveTheMatchUnchanged()
+    {
+        var game = SurroundedCenter();
+        var handA = See.Ids(game.Hand(Cards.Seat("a")));
+        var blobbitiesLeft = game.BlobbityDeckRemaining;
+
+        var rejected = RepresentativeDeck.Try(game, new UseRotate(0, 0, 1));
+
+        Expect.Rejected(game, rejected, RejectionReason.TileSurrounded);
+        Expect.Tile(game, 0, 0, Oriented.Cross(0));
+        Assert.That(game.TileCount, Is.EqualTo(5));
+        Assert.That(game.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
+        Assert.That(game.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+        Assert.That(game.MatchDeckRemaining, Is.EqualTo(1));
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(blobbitiesLeft));
+        Assert.That(See.Ids(game.Hand(Cards.Seat("a"))), Is.EqualTo(handA));
+
+        var chargeIntact = RepresentativeDeck.Rotate(game, 1, 0);
+        Assert.That(chargeIntact.Events, Has.Count.EqualTo(1), "the rejected use did not spend the rotate cell");
+    }
+
+    [Test]
+    public void TheDrawnTile_IsNotOnTheBoard_SoItNeverSurroundsATarget()
+    {
+        var game = CenterWithAnOpenSouth();
+
+        var result = RepresentativeDeck.Rotate(game, 0, 0);
+        var next = See.Game(result);
+
+        Expect.Tile(next, 0, 0, Oriented.Cross(1));
+        Assert.That(next.TileCount, Is.EqualTo(4));
+        Assert.That(next.HasTileAt(0, -1), Is.False);
+        Assert.That(next.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
+    }
+
+    [Test]
+    public void DiagonalNeighbors_DoNotCountAsSurrounded()
+    {
+        var game = RepresentativeDeck.TwoSeats(
+            Cards.Cross("center"),
+            Cards.BlankTile("east"),
+            Cards.BlankTile("west"),
+            Cards.BlankTile("north"),
+            Cards.BlankTile("southeast"),
+            Cards.BlankTile("southwest"),
+            OneRotate("drawn"));
+        foreach (var (x, y) in new[] { (1, 0), (-1, 0), (0, 1), (1, -1), (-1, -1) })
+        {
+            game = See.Game(RepresentativeDeck.Play(game, x, y));
+        }
+
+        var result = RepresentativeDeck.Rotate(game, 0, 0);
+        var next = See.Game(result);
+
+        Expect.Tile(next, 0, 0, Oriented.Cross(1));
+        Assert.That(next.TileCount, Is.EqualTo(6));
+        Assert.That(next.HasTileAt(0, -1), Is.False);
+    }
+
+    [Test]
+    public void CoveredStack_TurnsOnlyItsVisibleCells_AndAStackedNeighborStillSurrounds()
+    {
+        var game = RepresentativeDeck.TwoSeats(
+            Cards.Cross("buried"),
+            Cards.Tile("top", Cards.Red, Cards.Blue, Green, Stack),
+            OneRotate("drawn"));
+        var covered = See.Game(RepresentativeDeck.Play(game, 0, 0));
+
+        var next = See.Game(RepresentativeDeck.Rotate(covered, 0, 0));
+
+        Expect.Tile(next, 0, 0, [Cards.Blue, Stack, Cards.Red, Green]);
+        Assert.That(See.Ids(next.CoveredTileIds(0, 0)), Is.EqualTo(new[] { "buried" }));
+        Assert.That(next.TileCount, Is.EqualTo(1));
+
+        var blocked = StackedEastSurroundsCenter();
+        var rejected = RepresentativeDeck.Try(blocked, new UseRotate(0, 0, 1));
+
+        Expect.Rejected(blocked, rejected, RejectionReason.TileSurrounded);
+        Assert.That(See.Ids(blocked.CoveredTileIds(1, 0)), Is.EqualTo(new[] { "east" }));
+        Assert.That(blocked.CellAt(2, 0), Is.EqualTo(Stack));
+        Assert.That(blocked.CellAt(0, 0), Is.EqualTo(Cards.Red));
+        Assert.That(blocked.TileCount, Is.EqualTo(5));
+    }
+
+    [Test]
+    public void TwoRotateCells_AllowTwoUsesOnTwoTilesOrOneTile_AndAThirdUseIsRejected()
+    {
+        var drawn = Cards.Tile("drawn", Rotate, Rotate, Cards.Red, Cards.Blue);
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), Cards.BlankTile("pad"), drawn);
+        var afterPad = See.Game(RepresentativeDeck.Play(game, 1, 0));
+
+        var afterFirst = See.Game(RepresentativeDeck.Rotate(afterPad, 0, 0));
+        var afterSecond = See.Game(RepresentativeDeck.Rotate(afterFirst, 1, 0, 2));
+        var third = RepresentativeDeck.Try(afterSecond, new UseRotate(0, 0, 1));
+
+        Expect.Rejected(afterSecond, third, RejectionReason.NoUseRemaining);
+        Expect.Tile(afterSecond, 0, 0, Oriented.Cross(1));
+        Assert.That(afterSecond.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
+        Assert.That(afterSecond.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
+
+        var sameTileTwice = See.Game(RepresentativeDeck.Rotate(afterFirst, 0, 0));
+        Expect.Tile(sameTileTwice, 0, 0, Oriented.Cross(2));
+        Assert.That(
+            RepresentativeDeck.Try(sameTileTwice, new UseRotate(0, 0, 1)).Rejection?.Reason,
+            Is.EqualTo(RejectionReason.NoUseRemaining));
+    }
+
+    [Test]
+    public void ARejectedSecondUse_LeavesTheFirstApplied_AndTheRemainingChargeIntact()
+    {
+        var drawn = Cards.Tile("drawn", Rotate, Rotate, Cards.Blank, Cards.Blank);
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), drawn);
+        var afterFirst = See.Game(RepresentativeDeck.Rotate(game, 0, 0));
+
+        var rejected = RepresentativeDeck.Try(afterFirst, new UseRotate(3, 3, 1));
+
+        Expect.Rejected(afterFirst, rejected, RejectionReason.NoTileToRotate);
+        Expect.Tile(afterFirst, 0, 0, Oriented.Cross(1));
+        Assert.That(afterFirst.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
+        Assert.That(afterFirst.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+
+        var afterSecond = See.Game(RepresentativeDeck.Rotate(afterFirst, 0, 0));
+        Expect.Tile(afterSecond, 0, 0, Oriented.Cross(2));
+    }
+
+    [Test]
+    public void ARejectedPlacement_AfterAnAcceptedUse_LeavesTheUseApplied_TheDrawnTilePending_AndTheSameSeat()
+    {
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), OneRotate("drawn"));
+        var afterUse = See.Game(RepresentativeDeck.Rotate(game, 0, 0));
+
+        var occupied = RepresentativeDeck.Try(afterUse, new Place(0, 0, 0));
+        var corner = RepresentativeDeck.Try(afterUse, new Place(1, 1, 0));
+
+        Expect.Rejected(afterUse, occupied, RejectionReason.CellOccupied);
+        Expect.Rejected(afterUse, corner, RejectionReason.DoesNotShareFullSide);
+        Expect.Tile(afterUse, 0, 0, Oriented.Cross(1));
+        Assert.That(afterUse.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
+        Assert.That(afterUse.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+        Assert.That(afterUse.MatchDeckRemaining, Is.EqualTo(1));
+        Assert.That(afterUse.TileCount, Is.EqualTo(1));
+        Assert.That(
+            RepresentativeDeck.Try(afterUse, new UseRotate(0, 0, 1)).Rejection?.Reason,
+            Is.EqualTo(RejectionReason.NoUseRemaining),
+            "the accepted use stays spent");
+
+        var placed = See.Game(RepresentativeDeck.Play(afterUse, 1, 0));
+        Expect.Tile(placed, 0, 0, Oriented.Cross(1));
+        Assert.That(placed.TileCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void AUseAfterThePlacement_IsRejected_AndEachNewDrawnTileCarriesItsOwnCharge()
+    {
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), OneRotate("first"), OneRotate("second"), Cards.BlankTile("third"));
+        var used = See.Game(RepresentativeDeck.Rotate(game, 0, 0));
+        var afterPlacement = RepresentativeDeck.Play(used, 1, 0);
+        var next = See.Game(afterPlacement);
+
+        var byThePlacingSeat = game.Apply(Cards.Seat("a"), new UseRotate(0, 0, 1));
+        var afterwards = next.Apply(Cards.Seat("a"), new UseRotate(0, 0, 1));
+
+        Assert.That(byThePlacingSeat.IsAccepted, Is.True, "a rotate before the placement is the seat's own turn");
+        Expect.Rejected(next, afterwards, RejectionReason.NotYourTurn);
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
+        Assert.That(next.PendingMatchTile!.Id.Value, Is.EqualTo("second"));
+        Assert.That(RepresentativeDeck.Rotate(next, 1, 0).Events, Has.Count.EqualTo(1), "a placement resets the charge");
+
+        var third = See.Game(RepresentativeDeck.Play(next, 0, 1));
+        var noCharge = RepresentativeDeck.Try(third, new UseRotate(0, 0, 1));
+        Expect.Rejected(third, noCharge, RejectionReason.NoUseRemaining);
+    }
+
+    [Test]
+    public void RotateSymbolAlreadyOnTheBoard_GrantsNothing()
+    {
+        var plain = RepresentativeDeck.TwoSeats(
+            Cards.Tile("start", Rotate, Cards.Red, Cards.Blue, Cards.Blank),
+            Cards.BlankTile("drawn"));
+        var blocked = RepresentativeDeck.Try(plain, new UseRotate(0, 0, 1));
+
+        Expect.Rejected(plain, blocked, RejectionReason.NoUseRemaining);
+        Assert.That(plain.CellAt(0, 0), Is.EqualTo(Rotate));
+        Assert.That(plain.TileCount, Is.EqualTo(1));
+
+        var charged = RepresentativeDeck.TwoSeats(
+            Cards.Tile("start", Rotate, Cards.Red, Cards.Blue, Cards.Blank),
+            OneRotate("drawn"));
+        var once = See.Game(RepresentativeDeck.Rotate(charged, 0, 0));
+        Expect.Tile(once, 0, 0, [Cards.Red, Cards.Blank, Rotate, Cards.Blue]);
+        Expect.Rejected(
+            once,
+            RepresentativeDeck.Try(once, new UseRotate(0, 0, 1)),
+            RejectionReason.NoUseRemaining);
+    }
+
+    [Test]
+    public void Place_DoesNotRotate_AndDoesNotClaimTheUnturnedRow()
+    {
+        var game = ReadyToFinishRedRow(OrdinaryCatalog.ClaimsRequiredToWin);
+
+        var placed = RepresentativeDeck.Play(game, 1, 0);
+        var next = See.Game(placed);
+
+        Assert.That(next.CellAt(0, 0), Is.EqualTo(Cards.Red));
+        Assert.That(next.CellAt(1, 0), Is.EqualTo(Cards.Blank));
+        Assert.That(next.CellAt(2, 0), Is.EqualTo(Cards.Red));
+        Assert.That(next.CellAt(3, 0), Is.EqualTo(Cards.Red));
+        Assert.That(next.Claims(Cards.Seat("a")), Is.Empty);
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "a2" }));
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
+        Assert.That(placed.Events, Has.Count.EqualTo(1));
+        Assert.That(placed.Events[0], Is.TypeOf<TilePlaced>());
+    }
+
+    [Test]
+    public void ARotateThatCompletesNothingItself_LeavesTheClaimToThePlacedCells()
+    {
+        var game = ReadyToFinishRedRow(OrdinaryCatalog.ClaimsRequiredToWin);
+
+        var rotated = RepresentativeDeck.Rotate(game, 0, 0, 3);
+        Assert.That(rotated.Events, Is.EqualTo(new[] { new TileRotated(Cards.Seat("a"), 0, 0, 3) }));
+        var afterRotate = See.Game(rotated);
+        Assert.That(afterRotate.Claims(Cards.Seat("a")), Is.Empty, "the rotated cells alone do not complete the row");
+        Assert.That(afterRotate.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+
+        var placed = RepresentativeDeck.Play(afterRotate, 1, 0);
+        var next = See.Game(placed);
+
+        Assert.That(next.CellAt(0, 0), Is.EqualTo(Cards.Red));
+        Assert.That(next.CellAt(1, 0), Is.EqualTo(Cards.Red));
+        Assert.That(next.CellAt(2, 0), Is.EqualTo(Cards.Red));
+        Assert.That(next.CellAt(3, 0), Is.EqualTo(Cards.Red));
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "repl" }));
+        Assert.That(next.Claims(Cards.Seat("b")), Is.Empty);
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
+        Assert.That(next.HasEnded, Is.False);
+        Assert.That(placed.Events, Has.Count.EqualTo(2));
+        Assert.That(placed.Events[0], Is.TypeOf<TilePlaced>());
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Id.Value, Is.EqualTo("red-row"));
+        Assert.That(placed.Events.OfType<GameWon>(), Is.Empty);
+        Assert.That(game.CellAt(1, 0), Is.EqualTo(Cards.Blank));
+    }
+
+    [Test]
+    public void ARotateBeforeAWinningPlacement_EmitsWonAfterTheClaim_AndLaterActionsAreRejected()
+    {
+        var game = ReadyToFinishRedRow(1, Cards.BlankTile("later"));
+
+        var afterRotate = See.Game(RepresentativeDeck.Rotate(game, 0, 0, 3));
+        var result = RepresentativeDeck.Play(afterRotate, 1, 0);
+        var won = See.Game(result);
+
+        Assert.That(result.Events, Has.Count.EqualTo(3));
+        Assert.That(result.Events[0], Is.TypeOf<TilePlaced>());
+        Assert.That(((BlobbityClaimed)result.Events[1]).Id.Value, Is.EqualTo("red-row"));
+        var gameWon = (GameWon)result.Events[2];
+        Assert.That(gameWon.Seat, Is.EqualTo(Cards.Seat("a")));
+        Assert.That(gameWon.ClaimCount, Is.EqualTo(1));
+        Assert.That(won.HasEnded, Is.True);
+        Assert.That(won.PendingMatchTile, Is.Null);
+
+        Expect.Rejected(
+            won,
+            RepresentativeDeck.Try(won, new UseRotate(0, 0, 1)),
+            RejectionReason.GameOver);
+        Expect.Rejected(won, RepresentativeDeck.Try(won, new Place(2, 0, 0)), RejectionReason.GameOver);
+        Assert.That(won.TileCount, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void ARotateThatCompletesABlobbity_ClaimsItAtOnce_DrawsAReplacement_AndKeepsTheTurnAndTheDrawnTile()
+    {
+        var game = ReadyToRotateEast(RedRowThenSpares());
+
+        var rotated = RepresentativeDeck.Rotate(game, 1, 0);
+        var next = See.Game(rotated);
+
+        Assert.That(
+            rotated.Events,
+            Is.EqualTo(new GameEvent[]
+            {
+                new TileRotated(Cards.Seat("a"), 1, 0, 1),
+                new BlobbityClaimed(Cards.Seat("a"), new BlobbityId("red-row")),
+            }));
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "blue-row" }));
+        Assert.That(next.BlobbityDeckRemaining, Is.EqualTo(1));
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("a")), "a rotate claim does not end the turn");
+        Assert.That(next.PendingMatchTile?.Id.Value, Is.EqualTo("drawn"));
+        Assert.That(next.HasEnded, Is.False);
+        Assert.That(next.RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(0));
+    }
+
+    [Test]
+    public void AReplacementDrawnAfterARotateClaim_IsClaimedLaterThatTurnByThePlacement()
+    {
+        var afterRotate = See.Game(RepresentativeDeck.Rotate(ReadyToRotateEast(RedRowThenSpares()), 1, 0));
+
+        var placed = RepresentativeDeck.Play(afterRotate, 1, 1);
+        var next = See.Game(placed);
+
+        Assert.That(
+            placed.Events.Select(e => e.GetType()),
+            Is.EqualTo(new[] { typeof(TilePlaced), typeof(BlobbityClaimed) }));
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Id.Value, Is.EqualTo("blue-row"));
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "spare" }));
+        Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")), "the placement ends the turn");
+    }
+
+    [Test]
+    public void ARotateClaimThatReachesTheWinCount_WinsAtOnce_AndTheDrawnTileIsNeverPlaced()
+    {
+        var game = ReadyToRotateEast(RedRowThenSpares(), claimsRequiredToWin: 1);
+
+        var rotated = RepresentativeDeck.Rotate(game, 1, 0);
+        var won = See.Game(rotated);
+
+        Assert.That(
+            rotated.Events,
+            Is.EqualTo(new GameEvent[]
+            {
+                new TileRotated(Cards.Seat("a"), 1, 0, 1),
+                new BlobbityClaimed(Cards.Seat("a"), new BlobbityId("red-row")),
+                new GameWon(Cards.Seat("a"), 1),
+            }));
+        Assert.That(won.HasEnded, Is.True);
+        Assert.That(won.PendingMatchTile, Is.Null);
+        Assert.That(won.CurrentSeat, Is.EqualTo(Cards.Seat("a")), "a rotate win leaves the turn with the acting seat");
+        Expect.Rejected(won, RepresentativeDeck.Try(won, new Place(1, 1, 0)), RejectionReason.GameOver);
+        Expect.Rejected(won, RepresentativeDeck.Try(won, new UseRotate(0, 0, 1)), RejectionReason.GameOver);
+        Assert.That(won.TileCount, Is.EqualTo(3), "the drawn tile was never placed");
+    }
+
+    [Test]
+    public void TwoBlobbitiesOnIdenticalCells_ClaimOnlyOnce_WithinOneRotatePass()
+    {
+        var game = ReadyToRotateEast(
+        [
+            Cards.BlobbityCard("red-row-1", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.BlobbityCard("red-row-2", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.Purple("b1"),
+            Cards.Purple("b2"),
+            Cards.Purple("repl"),
+            Cards.Purple("spare"),
+        ]);
+
+        var next = See.Game(RepresentativeDeck.Rotate(game, 1, 0));
+
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row-1" }));
+        Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row-2", "repl" }));
+    }
+
+    [Test]
+    public void ARotateThatWouldClaimWithNoReplacementLeft_Throws_AndLeavesTheMatchAndTheChargeUntouched()
+    {
+        var game = ReadyToRotateEast(
+        [
+            Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.Purple("a2"),
+            Cards.Purple("b1"),
+            Cards.Purple("b2"),
+        ]);
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(0));
+        var cells = new[] { game.CellAt(2, 0), game.CellAt(3, 0), game.CellAt(2, 1), game.CellAt(3, 1) };
+
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            Assert.That(
+                () => { RepresentativeDeck.Try(game, new UseRotate(1, 0, 1)); },
+                Throws.TypeOf<UnresolvedRulingException>());
+        }
+
+        Assert.That(
+            new[] { game.CellAt(2, 0), game.CellAt(3, 0), game.CellAt(2, 1), game.CellAt(3, 1) },
+            Is.EqualTo(cells));
+        Assert.That(See.Ids(game.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "a2" }));
+        Assert.That(See.Ids(game.Hand(Cards.Seat("b"))), Is.EqualTo(new[] { "b1", "b2" }));
+        Assert.That(game.Claims(Cards.Seat("a")), Is.Empty);
+        Assert.That(game.Claims(Cards.Seat("b")), Is.Empty);
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(0));
+        Assert.That(game.MatchDeckRemaining, Is.EqualTo(1));
+        Assert.That(game.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+        Assert.That(game.RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(1), "the charge is still unspent");
+    }
+
+    // Wild cells let one set of four serve a red row and a blue row alike, so two rotates of the same tile each
+    // complete the identical set; each resolution is judged alone, so each claims one of the two blobbities.
+    [Test]
+    public void TheSameFourCells_CompleteOneBlobbityOnARotate_AndAnotherOnALaterRotateThatTurn()
+    {
+        var game = RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            [
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+                Cards.Purple("b1"),
+                Cards.Purple("b2"),
+                Cards.Purple("repl-1"),
+                Cards.Purple("repl-2"),
+                Cards.Purple("spare"),
+            ],
+            [
+                Cards.Solid("start", Cards.Wild),
+                Cards.BlankTile("pad"),
+                Cards.Tile("east", Cards.Wild, Cards.Wild, Cards.Blank, Cards.Wild),
+                Cards.Tile("spinner", Rotate, Rotate, Cards.Blank, Cards.Blank),
+            ]);
+        var afterPad = See.Game(RepresentativeDeck.Play(game, 0, -1));
+        var ready = See.Game(RepresentativeDeck.Play(afterPad, 1, 0));
+        Assert.That(ready.Claims(Cards.Seat("a")), Is.Empty);
+
+        var first = RepresentativeDeck.Rotate(ready, 1, 0, 1);
+        var afterFirst = See.Game(first);
+        var second = RepresentativeDeck.Rotate(afterFirst, 1, 0, 3);
+        var afterSecond = See.Game(second);
+
+        Assert.That(
+            first.Events.OfType<BlobbityClaimed>().Select(e => e.Id.Value),
+            Is.EqualTo(new[] { "red-row" }));
+        Assert.That(
+            second.Events.OfType<BlobbityClaimed>().Select(e => e.Id.Value),
+            Is.EqualTo(new[] { "blue-row" }));
+        Assert.That(See.Ids(afterSecond.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
+        Assert.That(afterSecond.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+    }
+
+    // The maintainer's ruling: a turn of 1 to 3 quarters writes all four cells, even when no colour moves.
+    [Test]
+    public void ARotateOfASingleColourTile_WritesItsFourCellsUnchanged_AndStillClaimsTheLine()
+    {
+        var game = RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            RedRowThenSpares(),
+            [
+                Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
+                Cards.BlankTile("pad"),
+                Cards.Solid("east", Cards.Red),
+                Cards.Tile("spinner", Rotate, Cards.Blank, Cards.Blank, Cards.Blank),
+            ]);
+        var afterPad = See.Game(RepresentativeDeck.Play(game, 0, -1));
+        var ready = See.Game(RepresentativeDeck.Play(afterPad, 1, 0));
+        Assert.That(ready.Claims(Cards.Seat("a")), Is.Empty, "the row is on the board, but another seat wrote it");
+        var cells = new[] { ready.CellAt(2, 0), ready.CellAt(3, 0), ready.CellAt(2, 1), ready.CellAt(3, 1) };
+
+        var rotated = RepresentativeDeck.Rotate(ready, 1, 0, 1);
+        var next = See.Game(rotated);
+
+        Assert.That(
+            new[] { next.CellAt(2, 0), next.CellAt(3, 0), next.CellAt(2, 1), next.CellAt(3, 1) },
+            Is.EqualTo(cells),
+            "no colour moved");
+        Assert.That(
+            rotated.Events.OfType<BlobbityClaimed>().Select(e => e.Id.Value),
+            Is.EqualTo(new[] { "red-row" }));
+        Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
+    }
+
+    [Test]
+    public void ARotateThatCompletesAnotherSeatsBlobbity_DoesNotClaimItForThem()
+    {
+        var game = ReadyToRotateEast(
+        [
+            Cards.Purple("a1"),
+            Cards.Purple("a2"),
+            Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+            Cards.Purple("b2"),
+            Cards.Purple("repl"),
+        ]);
+
+        var rotated = RepresentativeDeck.Rotate(game, 1, 0);
+        var next = See.Game(rotated);
+
+        Assert.That(rotated.Events, Is.EqualTo(new[] { new TileRotated(Cards.Seat("a"), 1, 0, 1) }));
+        Assert.That(next.Claims(Cards.Seat("a")), Is.Empty);
+        Assert.That(next.Claims(Cards.Seat("b")), Is.Empty);
+        Assert.That(See.Ids(next.Hand(Cards.Seat("b"))), Is.EqualTo(new[] { "red-row", "b2" }));
+        Assert.That(next.CellAt(3, 0), Is.EqualTo(Cards.Red), "the pattern exists");
+    }
+
+    [TestCase(0)]
+    [TestCase(4)]
+    [TestCase(-1)]
+    public void RotateUseOutsideOneThroughThree_IsRejected(int quarterTurns)
+    {
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), OneRotate("drawn"));
+
+        var rejected = RepresentativeDeck.Try(game, new UseRotate(0, 0, quarterTurns));
+
+        Expect.Rejected(game, rejected, RejectionReason.InvalidRotateQuarterTurns);
+        Assert.That(rejected.Rejection?.Message, Is.EqualTo("A rotate use is 1, 2, or 3 quarter-turns."));
+        Assert.That(game.CellAt(0, 0), Is.EqualTo(Cards.Red));
+    }
+
+    [Test]
+    public void EmptyTarget_IsRejected()
+    {
+        var game = RepresentativeDeck.TwoSeats(Cards.Cross("start"), OneRotate("drawn"));
+
+        var rejected = RepresentativeDeck.Try(game, new UseRotate(3, 3, 1));
+
+        Expect.Rejected(game, rejected, RejectionReason.NoTileToRotate);
+        Assert.That(game.HasTileAt(3, 3), Is.False);
+        Assert.That(game.TileCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void EmptyMatchDeck_RejectsAsAwaitingReshuffle_AndLeavesTheGame()
+    {
+        var game = RepresentativeDeck.TwoSeats(Cards.BlankTile("start"));
+        var handA = See.Ids(game.Hand(Cards.Seat("a")));
+        var handB = See.Ids(game.Hand(Cards.Seat("b")));
+
+        Assert.That(game.MatchDeckRemaining, Is.EqualTo(0));
+        Expect.Rejected(game, RepresentativeDeck.Try(game, new UseRotate(0, 0, 1)), RejectionReason.AwaitingReshuffle);
+
+        Assert.That(game.TileCount, Is.EqualTo(1));
+        Assert.That(game.MatchDeckRemaining, Is.EqualTo(0));
+        Assert.That(game.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
+        Assert.That(See.Ids(game.Hand(Cards.Seat("a"))), Is.EqualTo(handA));
+        Assert.That(See.Ids(game.Hand(Cards.Seat("b"))), Is.EqualTo(handB));
+    }
+
+    private static Tile OneRotate(string id) => Cards.Tile(id, Rotate, Cards.Blank, Cards.Blank, Cards.Blank);
+
+    // Turning the start tile three quarter-turns brings its left column of red into the bottom row, so the
+    // finisher's own red cells then complete the row of four.
+    private static Game ReadyToFinishRedRow(int claimsRequiredToWin, params Tile[] following)
+    {
+        var tiles = new List<Tile>
+        {
+            Cards.Tile("start", Cards.Red, Cards.Blank, Cards.Red, Cards.Blank),
+            Cards.Tile("finisher", Cards.Red, Cards.Red, Rotate, Cards.Blank),
+        };
+        tiles.AddRange(following);
+        return RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            [
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.Purple("a2"),
+                Cards.Purple("b1"),
+                Cards.Purple("b2"),
+                Cards.Purple("repl"),
+                Cards.Purple("spare"),
+            ],
+            tiles.ToArray(),
+            claimsRequiredToWin);
+    }
+
+    // Start (red bottom row) and east (red at its bottom right) share the y=0 row; turning east once puts both of its
+    // red cells in that row, completing red-row from the rotate's own cells. Pad and the drawn tile hold a blue row
+    // that the drawn tile finishes at (1, 1), for a replacement blobbity to claim later in the turn.
+    private static Game ReadyToRotateEast(BlobbityCard[] blobbities, int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin)
+    {
+        var game = RepresentativeDeck.Start(
+            ["a", "b"],
+            "a",
+            blobbities,
+            [
+                Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
+                Cards.Tile("east", Cards.Blank, Cards.Red, Cards.Blank, Cards.Red),
+                Cards.Tile("pad", Cards.Blue, Cards.Blue, Cards.Blank, Cards.Blank),
+                Cards.Tile("drawn", Cards.Blue, Cards.Blue, Rotate, Cards.Blank),
+            ],
+            claimsRequiredToWin);
+        var afterEast = See.Game(RepresentativeDeck.Play(game, 1, 0));
+        return See.Game(RepresentativeDeck.Play(afterEast, 0, 1));
+    }
+
+    private static BlobbityCard[] RedRowThenSpares() =>
+    [
+        Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+        Cards.Purple("a2"),
+        Cards.Purple("b1"),
+        Cards.Purple("b2"),
+        Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+        Cards.Purple("spare"),
+    ];
+
+    private static Game CenterWithAnOpenSouth()
+    {
+        var game = RepresentativeDeck.TwoSeats(
+            Cards.Cross("center"),
+            Cards.BlankTile("east"),
+            Cards.BlankTile("west"),
+            Cards.Cross("north"),
+            OneRotate("drawn"));
+        foreach (var (x, y) in new[] { (1, 0), (-1, 0), (0, 1) })
+        {
+            game = See.Game(RepresentativeDeck.Play(game, x, y));
+        }
+
+        return game;
+    }
+
+    private static Game SurroundedCenter()
+    {
+        var game = RepresentativeDeck.TwoSeats(
+            Cards.Cross("center"),
+            Cards.BlankTile("east"),
+            Cards.BlankTile("west"),
+            Cards.BlankTile("north"),
+            Cards.BlankTile("south"),
+            OneRotate("drawn"));
+        foreach (var (x, y) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+        {
+            game = See.Game(RepresentativeDeck.Play(game, x, y));
+        }
+
+        return game;
+    }
+
+    private static Game StackedEastSurroundsCenter()
+    {
+        var game = RepresentativeDeck.TwoSeats(
+            Cards.Cross("center"),
+            Cards.BlankTile("east"),
+            Cards.Tile("lid", Stack, Cards.Blank, Cards.Blank, Cards.Blank),
+            Cards.BlankTile("west"),
+            Cards.BlankTile("north"),
+            Cards.BlankTile("south"),
+            OneRotate("drawn"));
+        game = See.Game(RepresentativeDeck.Play(game, 1, 0));
+        game = See.Game(RepresentativeDeck.Play(game, 1, 0));
+        foreach (var (x, y) in new[] { (-1, 0), (0, 1), (0, -1) })
+        {
+            game = See.Game(RepresentativeDeck.Play(game, x, y));
+        }
+
+        return game;
+    }
+}

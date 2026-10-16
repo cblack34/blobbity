@@ -89,7 +89,7 @@ Record every accepted session result's events in order. Give each human seat a c
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release`, including recap tests:
   - a human against an AI;
   - two humans with hand-off;

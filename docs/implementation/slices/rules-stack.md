@@ -79,7 +79,7 @@ The three-argument `Place` declines stack, rejects overlap, claims from the cell
 
 ## Verification
 
-- `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
+- `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release`
 - The existing occupied-cell tests still expect the three-argument `Place` to reject a stack tile.
 - A new fixture, on a named smaller deck, shows the covered color no longer completing a pattern and the top color completing the acting seat's blobbity.
@@ -114,7 +114,7 @@ None.
 ## Delivery record
 
 - **Outcome:** The rules library stacks a drawn tile on an occupied position. Matching reads the top cells. Covered tiles remain underneath, bottom to top. The three-argument `Place` still rejects overlap. The turn claims from the cells that stack wrote, then passes once.
-- **Verification:** On `94f999f`, `dotnet test rules/MissionSplat.Rules.sln --configuration Release` passed 94, failed 0, and `dotnet test app/MissionSplat.App.sln --configuration Release` passed 15, failed 0. The implementation lead ran both. A read-only design review on `grok-4.7` found no structural change. Evidence is on #13 and #14. This delivery-record commit does not change code.
+- **Verification:** On `94f999f`, `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 94, failed 0, and `dotnet test app/MissionSplat.App.sln --configuration Release` passed 15, failed 0. The implementation lead ran both. A read-only design review on `grok-4.7` found no structural change. Evidence is on #13 and #14. This delivery-record commit does not change code.
 - **Deviations:** None. The covered tiles are retained, and uncover stays unresolved. `ISession` and the Unity table are unchanged.
 - **Unresolved gates or risks:** Uncover, rotate, bounce, bounce of the last tile, a tile with nowhere legal, deck exhaustion, and the uncorrected census rows. The player still declines stack.
 - **Final PR:** https://github.com/cblack34/mission-splat/pull/14

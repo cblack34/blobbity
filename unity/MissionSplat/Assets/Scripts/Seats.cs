@@ -3,7 +3,7 @@ namespace MissionSplat.Player
 
 using System;
 using MissionSplat.App;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 // What the player calls a seat, and where it sits, in one place.
 internal static class Seats

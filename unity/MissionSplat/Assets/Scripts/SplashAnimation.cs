@@ -1,7 +1,7 @@
 namespace MissionSplat.Player
 {
 
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using UnityEngine;
 
 // The picture and the pace of a power splash: the badge leaves its cell on the drawn tile, spins out to the middle of the table,

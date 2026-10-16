@@ -1,7 +1,7 @@
 namespace MissionSplat.App.Tests;
 
 using MissionSplat.App;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 
 public class TableTests
 {

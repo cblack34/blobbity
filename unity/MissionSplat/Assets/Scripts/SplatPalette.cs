@@ -2,7 +2,7 @@ namespace MissionSplat.Player
 {
 
 using System;
-using MissionSplat.Rules;
+using Blobbity.Rules;
 using UnityEngine;
 
 public static class SplatPalette

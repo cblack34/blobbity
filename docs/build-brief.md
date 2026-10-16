@@ -107,7 +107,7 @@ Prefer the Unity CLI for project creation, editor driving, tests, builds, and pl
 An offline game of 2–4 seats can be played to the configured claim count on a device (four in the ordinary game), including a human-only table and a table with an AI seat, and the rules fixtures pass:
 
 ```bash
-dotnet test rules/MissionSplat.Rules.sln --configuration Release
+dotnet test rules/Blobbity.Rules.sln --configuration Release
 dotnet test app/MissionSplat.App.sln --configuration Release
 ```
 

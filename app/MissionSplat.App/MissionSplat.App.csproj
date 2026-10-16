@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\rules\MissionSplat.Rules\MissionSplat.Rules.csproj" />
+    <ProjectReference Include="..\..\rules\Blobbity.Rules\Blobbity.Rules.csproj" />
   </ItemGroup>
 
   <!-- Release output already contains Rules, so one copy publishes both assemblies. A Debug build must not replace those DLLs. -->
@@ -22,7 +22,7 @@
     </PropertyGroup>
     <ItemGroup>
       <GameAssembly Include="$(TargetDir)MissionSplat.App.dll" />
-      <GameAssembly Include="$(TargetDir)MissionSplat.Rules.dll" />
+      <GameAssembly Include="$(TargetDir)Blobbity.Rules.dll" />
     </ItemGroup>
     <Copy SourceFiles="@(GameAssembly)" DestinationFolder="$(GamePackagePlugins)" SkipUnchangedFiles="true" />
   </Target>
