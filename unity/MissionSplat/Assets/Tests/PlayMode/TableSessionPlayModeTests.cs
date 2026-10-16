@@ -383,7 +383,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(LiveButton("PlayAgain"), Is.Not.Null);
         Assert.That(LiveButton("NewSetup"), Is.Not.Null);
         Assert.That(HighlightedSeats(), Is.EqualTo(new[] { "Seat1" }), "the winner is highlighted, not the seat that would be next");
-        Assert.That(_root.GetComponentsInChildren<Text>(false).Any(text => text.text == "Pending tile" || text.text == "Missions hidden"), Is.False);
+        Assert.That(_root.GetComponentsInChildren<Text>(false).Any(text => text.text == "Pending tile" || text.text == "Blobbities hidden"), Is.False);
     }
 
     [Test]

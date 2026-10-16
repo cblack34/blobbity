@@ -1,4 +1,4 @@
-# AGENTS.md — Mission Splat
+# AGENTS.md — Blobbity
 
 Instructions for the AI agent that plans and builds this project. This file is the source of truth for **how** to work; the active strategic pack listed below defines **what** must be true.
 
@@ -6,7 +6,7 @@ Instructions for the AI agent that plans and builds this project. This file is t
 
 ## What this is
 
-Mission Splat is a 2–4 seat tile game for a phone: place a 2×2 splat tile, claim a secret shape only if the cells you wrote, by placing or rotating, finished it, first to the configured number of claims wins, four in the ordinary game. The POC is an offline Unity 6 player (iOS, Android, and a later desktop build of the same project). Rules live in a `netstandard2.1` library with no Unity reference. There is no server in the POC.
+Blobbity is a 2–4 seat tile game for a phone: place a 2×2 splat tile, claim a secret blobbity only if the cells you wrote, by placing or rotating, finished it, first to the configured number of claims wins, four in the ordinary game. The POC is an offline Unity 6 player (iOS, Android, and a later desktop build of the same project). Rules live in a `netstandard2.1` library with no Unity reference. There is no server in the POC.
 
 ## Prime directive
 

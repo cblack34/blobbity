@@ -1,12 +1,12 @@
 # Base deck census
 
-The physical base set, counted from the maintainer's photos on 2026-10-04, with the maintainer's corrections on the tile rows marked below. Photographs stay out of the repo. Decorations on the mission cards are not rules.
+The physical base set, counted from the maintainer's photos on 2026-10-04, with the maintainer's corrections on the tile rows marked below. Photographs stay out of the repo. Decorations on the blobbities are not rules.
 
-This is data, not a rule. A game is built from a deck definition: a multiset of mission cards and a multiset of match tiles. The matcher does not know this list. The base definition is the one below. A later rule set, or extra tiles, is another definition. Adding tiles must not require a change to placement, matching, or claim.
+This is data, not a rule. A game is built from a deck definition: a multiset of blobbities and a multiset of match tiles. The matcher does not know this list. The base definition is the one below. A later rule set, or extra tiles, is another definition. Adding tiles must not require a change to placement, matching, or claim.
 
 The physical match deck ran out in play. The maintainer has ruled on that edge: the board is reshuffled into a new draw deck, as `rules.md` records. A larger deck is a new definition, not a ruling on that edge.
 
-## Mission cards
+## Blobbities
 
 Twelve cards. Each color has one of each shape: a line, an L, and a square. The shapes are the three in `rules.md`. An L includes the rotations and reflections in that document.
 
@@ -57,6 +57,6 @@ Cells are listed top row first, read left to right: top-left, top-right, bottom-
 | 29 | purple, blank, rotate, green | corrected |
 | 30 | blue, blank, red, rotate | photo |
 
-## Digital adjustment: doubled missions
+## Digital adjustment: doubled blobbities
 
-The digital deck doubles the twelve mission cards to 24: each color has two lines, two Ls, and two squares. This is a deliberate adjustment, not a reading of the photographs. It makes the mission deck unable to run out. A four-seat game deals 8 and leaves 16. Before anyone wins, three seats hold at most 3 claims each; the winning placement can claim both of the fourth seat's missions from 3, so a game draws at most 9 + 5 = 14 replacements. One hand can now hold identical cards, which the distinct-cells claim rule in `rules.md` covers. The 30 match tiles are unchanged.
+The digital deck doubles the twelve blobbities to 24: each color has two lines, two Ls, and two squares. This is a deliberate adjustment, not a reading of the photographs. It makes the blobbity deck unable to run out. A four-seat game deals 8 and leaves 16. Before anyone wins, three seats hold at most 3 claims each; the winning placement can claim both of the fourth seat's blobbities from 3, so a game draws at most 9 + 5 = 14 replacements. One hand can now hold identical cards, which the distinct-cells claim rule in `rules.md` covers. The 30 match tiles are unchanged.
