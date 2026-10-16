@@ -45,19 +45,19 @@ internal sealed class ClaimsPanel
 
         var cards = Ui.Rect("Cards", face);
         Ui.Anchored(cards, new Vector2(0f, 0.04f), new Vector2(1f, 0.72f), Vector2.zero, Vector2.zero);
-        if (claims.Missions.Count == 0)
+        if (claims.Blobbities.Count == 0)
         {
             var none = Ui.Label("None", cards, 44, SplatPalette.Muted, TextAnchor.MiddleCenter);
             Ui.Stretch(none.rectTransform);
             none.text = "No claims yet.";
         }
 
-        for (var m = 0; m < claims.Missions.Count; m++)
+        for (var m = 0; m < claims.Blobbities.Count; m++)
         {
             var slot = Ui.Rect("Claim" + m, cards);
-            var (min, max) = CardAnchors(m, claims.Missions.Count);
+            var (min, max) = CardAnchors(m, claims.Blobbities.Count);
             Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
-            BlobbityCardPainter.Paint(slot, claims.Missions[m]);
+            BlobbityCardPainter.Paint(slot, claims.Blobbities[m]);
         }
     }
 

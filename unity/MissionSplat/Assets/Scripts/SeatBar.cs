@@ -26,7 +26,7 @@ internal sealed class SeatBar
     private const float TextLeftUnits = CritterMarginUnits + CritterUnits + 8f;
 
     private readonly RectTransform _bar;
-    private readonly Dictionary<SeatId, List<(BlobbityId Mission, RectTransform Pip)>> _pips = new Dictionary<SeatId, List<(BlobbityId, RectTransform)>>();
+    private readonly Dictionary<SeatId, List<(BlobbityId Id, RectTransform Pip)>> _pips = new Dictionary<SeatId, List<(BlobbityId, RectTransform)>>();
 
     public SeatBar(RectTransform bar)
     {
@@ -89,17 +89,17 @@ internal sealed class SeatBar
 
         // A win needs Seats.ClaimsToWin claims; a placement that crosses it can leave more, so the row grows to hold them.
         // The pips share what is left of the entry, so a longer row shrinks them instead of spilling out of the entry.
-        var pips = Math.Max(Seats.ClaimsToWin, claims.Missions.Count);
+        var pips = Math.Max(Seats.ClaimsToWin, claims.Blobbities.Count);
         var step = Math.Min(PipStepUnits, Math.Max(1f, (entryWidth - TextLeftUnits - CritterMarginUnits) / pips));
         var filled = new List<(BlobbityId, RectTransform)>();
         _pips[claims.Seat] = filled;
         for (var p = 0; p < pips; p++)
         {
-            var claimed = p < claims.Missions.Count;
+            var claimed = p < claims.Blobbities.Count;
             var pip = PaintPip(box.transform, TextLeftUnits + ((p + 0.5f) * step), Math.Min(PipUnits, step), claimed, index, p);
             if (claimed)
             {
-                filled.Add((claims.Missions[p].Id, pip));
+                filled.Add((claims.Blobbities[p].Id, pip));
             }
         }
     }

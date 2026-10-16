@@ -83,8 +83,8 @@ public sealed class DistinctClaimTests
 
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "row-1" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "row-2", "repl-1" }));
-        Assert.That(next.MissionDeckRemaining, Is.EqualTo(1));
-        Assert.That(placed.Events.OfType<BlobbityClaimed>().Select(e => e.Mission.Value), Is.EqualTo(new[] { "row-1" }));
+        Assert.That(next.BlobbityDeckRemaining, Is.EqualTo(1));
+        Assert.That(placed.Events.OfType<BlobbityClaimed>().Select(e => e.Id.Value), Is.EqualTo(new[] { "row-1" }));
     }
 
     [Test]
@@ -111,7 +111,7 @@ public sealed class DistinctClaimTests
 
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "blue-row" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "repl-1" }));
-        Assert.That(next.MissionDeckRemaining, Is.EqualTo(1));
+        Assert.That(next.BlobbityDeckRemaining, Is.EqualTo(1));
     }
 
     private static BlobbityCard BlueRow(string id) => Cards.BlobbityCard(id, BlobbityPattern.Row, OrdinaryCatalog.Blue);
@@ -120,6 +120,6 @@ public sealed class DistinctClaimTests
     private static List<BlobbityCard> Claim(Tile start, Tile finish, params BlobbityCard[] hand)
     {
         var (grid, located, _) = Ordinary.Place(Grid.FromStart(start), finish, new Place(1, 0, 0));
-        return Ordinary.CompletedMissions(grid, located, hand);
+        return Ordinary.CompletedBlobbities(grid, located, hand);
     }
 }

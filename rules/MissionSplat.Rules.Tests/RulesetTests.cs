@@ -104,11 +104,11 @@ public sealed class RulesetTests
         var east = Cards.Solid("east", purple);
         board = board.Place(1, 0, east, east.CellsAt(1, 0, 0));
 
-        Assert.That(Ordinary.CompletedMissions(board, Written(3, 0), [row]), Is.EqualTo(new[] { row }));
-        Assert.That(Ordinary.CompletedMissions(board, Written(9, 9), [row]), Is.Empty);
+        Assert.That(Ordinary.CompletedBlobbities(board, Written(3, 0), [row]), Is.EqualTo(new[] { row }));
+        Assert.That(Ordinary.CompletedBlobbities(board, Written(9, 9), [row]), Is.Empty);
 
         var squaresOnly = new Ruleset(OrdinaryCatalog.NonScoringSymbols, [BlobbityPattern.Square]);
-        Assert.That(squaresOnly.CompletedMissions(board, Written(3, 0), [row]), Is.Empty);
+        Assert.That(squaresOnly.CompletedBlobbities(board, Written(3, 0), [row]), Is.Empty);
     }
 
     [Test]

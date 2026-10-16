@@ -18,7 +18,7 @@ public sealed class GameSetup
         NonScoringSymbols = Copy(nonScoringSymbols, nameof(nonScoringSymbols));
         ActivePatterns = Copy(activePatterns, nameof(activePatterns));
         ClaimsRequiredToWin = claimsRequiredToWin;
-        MissionDeck = CopyItems(missionDeck, nameof(missionDeck));
+        BlobbityDeck = CopyItems(missionDeck, nameof(missionDeck));
         MatchDeck = CopyItems(matchDeck, nameof(matchDeck));
     }
 
@@ -34,7 +34,7 @@ public sealed class GameSetup
 
     public int ClaimsRequiredToWin { get; }
 
-    public IReadOnlyList<BlobbityCard> MissionDeck { get; }
+    public IReadOnlyList<BlobbityCard> BlobbityDeck { get; }
 
     public IReadOnlyList<Tile> MatchDeck { get; }
 

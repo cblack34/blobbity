@@ -102,7 +102,7 @@ public class StackTests
         Assert.That(placed.TileY, Is.EqualTo(0));
         Assert.That(placed.QuarterTurnsClockwise, Is.EqualTo(0));
         Assert.That(placed.Covered, Is.EqualTo(new TileId("covered")));
-        Assert.That(((BlobbityClaimed)stacked.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
+        Assert.That(((BlobbityClaimed)stacked.Events[1]).Id.Value, Is.EqualTo("blue-row"));
         Assert.That(stacked.Events.OfType<GameWon>(), Is.Empty);
         Assert.That(ready.CellAt(0, 0), Is.EqualTo(Cards.Red));
         Assert.That(ready.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
@@ -242,7 +242,7 @@ public class StackTests
 
         Assert.That(stacked.Events, Has.Count.EqualTo(3));
         Assert.That(stacked.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((BlobbityClaimed)stacked.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
+        Assert.That(((BlobbityClaimed)stacked.Events[1]).Id.Value, Is.EqualTo("blue-row"));
         var gameWon = (GameWon)stacked.Events[2];
         Assert.That(gameWon.Seat, Is.EqualTo(Cards.Seat("a")));
         Assert.That(gameWon.ClaimCount, Is.EqualTo(1));

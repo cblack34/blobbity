@@ -36,7 +36,7 @@ public class AiPlayerIsolationTests
             reachable.UnionWith(BlobbityIds.In(recorder.Answers));
             reachable.UnionWith(BlobbityIds.In(recorder));
             Assert.That(reachable.Intersect(hidden), Is.Empty);
-            Assert.That(reachable, Is.SupersetOf(view.UnclaimedMissions.Select(mission => mission.Id.Value)));
+            Assert.That(reachable, Is.SupersetOf(view.UnclaimedBlobbities.Select(mission => mission.Id.Value)));
 
             var result = session.Submit(seat, chosen);
             Assert.That(result.IsAccepted, Is.True, result.Rejection?.Message);
@@ -58,13 +58,13 @@ public class AiPlayerIsolationTests
         var hidden = new HashSet<string>();
         foreach (var other in new[] { "a", "b", "c" }.Where(name => name != seat.Value))
         {
-            foreach (var mission in session.View(new SeatId(other)).UnclaimedMissions)
+            foreach (var mission in session.View(new SeatId(other)).UnclaimedBlobbities)
             {
                 hidden.Add(mission.Id.Value);
             }
         }
 
-        foreach (var mission in session.View(seat).UnclaimedMissions)
+        foreach (var mission in session.View(seat).UnclaimedBlobbities)
         {
             hidden.Remove(mission.Id.Value);
         }

@@ -41,7 +41,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(table.Snapshot.ConcealVisible, Is.False);
         Assert.That(table.Snapshot.SecretsVisible, Is.True);
         Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.ToAct));
-        Assert.That(table.Snapshot.View.UnclaimedMissions.Count, Is.EqualTo(2));
+        Assert.That(table.Snapshot.View.UnclaimedBlobbities.Count, Is.EqualTo(2));
         Assert.That(table.Snapshot.View.PendingMatchTile?.Id.Value, Is.EqualTo("census-02"));
         Assert.That(placements, Is.Not.Empty);
         Assert.That(placements.Any(slot => slot.TileX == 1 && slot.TileY == 1), Is.False);
@@ -54,8 +54,8 @@ public class TableSessionPlayModeTests : TableSessionFixture
         Assert.That(view.CurrentSeat.Value, Is.EqualTo("1"));
         Assert.That(view.HasEnded, Is.False);
         // No line of four can finish beside census row 1: its top row starts with a blank and its bottom row mixes two colours.
-        Assert.That(view.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(0));
-        Assert.That(view.UnclaimedMissions.Count, Is.EqualTo(2));
+        Assert.That(view.Claims.Single(row => row.Seat.Value == "1").Blobbities.Count, Is.EqualTo(0));
+        Assert.That(view.UnclaimedBlobbities.Count, Is.EqualTo(2));
         // The same human holds the device after an AI turn, so the hand stays visible.
         Assert.That(table.Snapshot.ConcealVisible, Is.False);
         Assert.That(table.Snapshot.SecretsVisible, Is.True);
@@ -286,20 +286,20 @@ public class TableSessionPlayModeTests : TableSessionFixture
             BlankTile("pad")));
 
         // Secrets: the seat's two unclaimed missions, drawn in the turn tray.
-        AssertMissionCards("Mission", 2);
+        AssertBlobbityCards("Mission", 2);
         AssertPips("Seat1", filled: 0, empty: 4);
 
         // Placing the second purple tile beside the first finishes a purple row, so the seat claims both of its purple-row missions.
         table.Place(1, 0);
         Assert.That(table.Snapshot.View.Board.Tiles.Count, Is.EqualTo(2));
-        Assert.That(table.Snapshot.View.Claims.Single(row => row.Seat.Value == "1").Missions.Count, Is.EqualTo(2));
+        Assert.That(table.Snapshot.View.Claims.Single(row => row.Seat.Value == "1").Blobbities.Count, Is.EqualTo(2));
 
         // The score shows as pips; the claimed missions themselves open on a tap, drawn with the same painter.
         AssertPips("Seat1", filled: 2, empty: 2);
         AssertPips("Seat2", filled: 0, empty: 4);
         Assert.That(FindRect("ClaimsPanel").gameObject.activeSelf, Is.False);
         LiveButton("Seat1").onClick.Invoke();
-        AssertMissionCards("Claim", 2);
+        AssertBlobbityCards("Claim", 2);
     }
 
     [Test]
@@ -338,7 +338,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
         LiveButton("Seat1").onClick.Invoke();
 
         Assert.That(panel.gameObject.activeSelf, Is.True);
-        AssertMissionCards("Claim", 2);
+        AssertBlobbityCards("Claim", 2);
         Assert.That(FindText("Title", panel).text, Does.Contain("Seat 1"));
         Assert.That(table.Snapshot.ConcealVisible, Is.True, "reading claims does not confirm the hand-off");
 
@@ -398,7 +398,7 @@ public class TableSessionPlayModeTests : TableSessionFixture
 
         Assert.That(table.Snapshot.Status.Kind, Is.Not.EqualTo(TableStatusKind.Won));
         Assert.That(table.Snapshot.View.Claims.Count, Is.EqualTo(3));
-        Assert.That(table.Snapshot.View.Claims.All(claims => claims.Missions.Count == 0), Is.True);
+        Assert.That(table.Snapshot.View.Claims.All(claims => claims.Blobbities.Count == 0), Is.True);
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("2"));
         Assert.That(table.CurrentStart.Shuffle, Is.True, "Play again deals fresh even after an unshuffled game");
         Assert.That(FindRect("Winner").gameObject.activeInHierarchy, Is.False);

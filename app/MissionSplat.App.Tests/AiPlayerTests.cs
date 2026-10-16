@@ -15,7 +15,7 @@ public class AiPlayerTests
         var ai = Ai(session, seat);
         var view = session.View(ai.Seat);
 
-        Assert.That(Ids(view.UnclaimedMissions), Is.EqualTo(new[] { "a-square", "a-row" }));
+        Assert.That(Ids(view.UnclaimedBlobbities), Is.EqualTo(new[] { "a-square", "a-row" }));
         var visible = BlobbityIds.In(view);
         Assert.That(visible, Is.EquivalentTo(new[] { "a-square", "a-row" }));
         Assert.That(visible, Does.Not.Contain("b-square"));
@@ -28,12 +28,12 @@ public class AiPlayerTests
         Assert.That(chosen, Is.EqualTo(new Place(-1, 0, 0)));
         var preview = session.Preview(seat, chosen);
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedMissions.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
+        Assert.That(preview.ClaimedBlobbities.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
 
         var placed = session.Submit(seat, chosen);
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
         Assert.That(
-            placed.Events.OfType<BlobbityClaimed>().Select(claim => claim.Mission.Value),
+            placed.Events.OfType<BlobbityClaimed>().Select(claim => claim.Id.Value),
             Is.EqualTo(new[] { "a-square" }));
     }
 
@@ -58,7 +58,7 @@ public class AiPlayerTests
         var seat = new SeatId("a");
         var earlier = session.Preview(seat, new Place(-1, 0, 0));
         Assert.That(earlier.IsAccepted, Is.True, earlier.Rejection?.Message);
-        Assert.That(earlier.ClaimedMissions, Is.Empty);
+        Assert.That(earlier.ClaimedBlobbities, Is.Empty);
 
         var ai = Ai(session, seat);
         var chosen = ai.ChooseAction(session.View(ai.Seat));
@@ -66,7 +66,7 @@ public class AiPlayerTests
         Assert.That(chosen, Is.EqualTo(new Place(1, 0, 0)));
         var preview = session.Preview(seat, chosen);
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedMissions.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
+        Assert.That(preview.ClaimedBlobbities.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
         var placed = session.Submit(seat, chosen);
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
     }
@@ -97,7 +97,7 @@ public class AiPlayerTests
         Assert.That(chosen, Is.EqualTo(new Place(-1, 0, 0)));
         var preview = session.Preview(seat, chosen);
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedMissions, Is.Empty);
+        Assert.That(preview.ClaimedBlobbities, Is.Empty);
         var placed = session.Submit(seat, chosen);
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
     }

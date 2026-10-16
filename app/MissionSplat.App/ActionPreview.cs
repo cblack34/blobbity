@@ -4,20 +4,20 @@ using MissionSplat.Rules;
 
 public sealed class ActionPreview
 {
-    private ActionPreview(SessionRejection? rejection, IReadOnlyList<BlobbityId> claimedMissions)
+    private ActionPreview(SessionRejection? rejection, IReadOnlyList<BlobbityId> claimedBlobbities)
     {
         Rejection = rejection;
-        ClaimedMissions = claimedMissions;
+        ClaimedBlobbities = claimedBlobbities;
     }
 
     public SessionRejection? Rejection { get; }
 
     public bool IsAccepted => Rejection is null;
 
-    public IReadOnlyList<BlobbityId> ClaimedMissions { get; }
+    public IReadOnlyList<BlobbityId> ClaimedBlobbities { get; }
 
-    public static ActionPreview Accept(IReadOnlyList<BlobbityId> claimedMissions) =>
-        new(null, Copied.List(claimedMissions, nameof(claimedMissions)));
+    public static ActionPreview Accept(IReadOnlyList<BlobbityId> claimedBlobbities) =>
+        new(null, Copied.List(claimedBlobbities, nameof(claimedBlobbities)));
 
     public static ActionPreview Reject(SessionRejection rejection)
     {

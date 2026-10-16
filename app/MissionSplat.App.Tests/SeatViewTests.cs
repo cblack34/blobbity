@@ -12,11 +12,11 @@ public class SeatViewTests
         var session = ClaimingTable.Open(3).Session;
 
         var before = session.View(new SeatId("a"));
-        Assert.That(Ids(before.UnclaimedMissions), Is.EqualTo(new[] { "a-square", "a-row" }));
+        Assert.That(Ids(before.UnclaimedBlobbities), Is.EqualTo(new[] { "a-square", "a-row" }));
         Assert.That(BlobbityIds.In(before), Does.Contain("a-square"));
         Assert.That(BlobbityIds.In(before), Does.Contain("a-row"));
         Assert.That(before.Claims.Select(row => row.Seat.Value), Is.EqualTo(new[] { "a", "b", "c" }));
-        Assert.That(before.Claims.Select(row => row.Missions.Count), Is.All.EqualTo(0));
+        Assert.That(before.Claims.Select(row => row.Blobbities.Count), Is.All.EqualTo(0));
         Assert.That(before.CurrentSeat, Is.EqualTo(new SeatId("a")));
         Assert.That(before.HasEnded, Is.False);
         Assert.That(before.Board.Tiles, Has.Count.EqualTo(1));
@@ -39,7 +39,7 @@ public class SeatViewTests
         Assert.That(placed.IsAccepted, Is.True, placed.Rejection?.Message);
 
         var fromB = session.View(new SeatId("b"));
-        Assert.That(Ids(fromB.UnclaimedMissions), Is.EqualTo(new[] { "b-square", "b-row" }));
+        Assert.That(Ids(fromB.UnclaimedBlobbities), Is.EqualTo(new[] { "b-square", "b-row" }));
         Assert.That(ClaimIds(fromB, "a"), Is.EqualTo(new[] { "a-square" }));
         Assert.That(ClaimIds(fromB, "b"), Is.Empty);
         Assert.That(ClaimIds(fromB, "c"), Is.Empty);
@@ -47,11 +47,11 @@ public class SeatViewTests
 
         var fromC = session.View(new SeatId("c"));
         Assert.That(ClaimIds(fromC, "a"), Is.EqualTo(new[] { "a-square" }));
-        Assert.That(Ids(fromC.UnclaimedMissions), Is.EqualTo(new[] { "c-square", "c-row" }));
+        Assert.That(Ids(fromC.UnclaimedBlobbities), Is.EqualTo(new[] { "c-square", "c-row" }));
         AssertAbsent(fromC, "a-row", "a-replacement", "b-square", "b-row");
 
         var fromA = session.View(new SeatId("a"));
-        Assert.That(Ids(fromA.UnclaimedMissions), Is.EqualTo(new[] { "a-row", "a-replacement" }));
+        Assert.That(Ids(fromA.UnclaimedBlobbities), Is.EqualTo(new[] { "a-row", "a-replacement" }));
         Assert.That(ClaimIds(fromA, "a"), Is.EqualTo(new[] { "a-square" }));
         AssertAbsent(fromA, "b-square", "b-row", "c-square", "c-row");
     }
@@ -80,5 +80,5 @@ public class SeatViewTests
         missions.Select(mission => mission.Id.Value).ToArray();
 
     private static string[] ClaimIds(SeatView view, string seat) =>
-        Ids(view.Claims.Single(row => row.Seat.Value == seat).Missions);
+        Ids(view.Claims.Single(row => row.Seat.Value == seat).Blobbities);
 }

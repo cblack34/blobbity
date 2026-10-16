@@ -55,7 +55,7 @@ public class RotateTests
     {
         var game = SurroundedCenter();
         var handA = See.Ids(game.Hand(Cards.Seat("a")));
-        var missionsLeft = game.MissionDeckRemaining;
+        var missionsLeft = game.BlobbityDeckRemaining;
 
         var rejected = RepresentativeDeck.Try(game, new UseRotate(0, 0, 1));
 
@@ -65,7 +65,7 @@ public class RotateTests
         Assert.That(game.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
         Assert.That(game.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(1));
-        Assert.That(game.MissionDeckRemaining, Is.EqualTo(missionsLeft));
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(missionsLeft));
         Assert.That(See.Ids(game.Hand(Cards.Seat("a"))), Is.EqualTo(handA));
 
         var chargeIntact = RepresentativeDeck.Rotate(game, 1, 0);
@@ -291,7 +291,7 @@ public class RotateTests
         Assert.That(next.HasEnded, Is.False);
         Assert.That(placed.Events, Has.Count.EqualTo(2));
         Assert.That(placed.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((BlobbityClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("red-row"));
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Id.Value, Is.EqualTo("red-row"));
         Assert.That(placed.Events.OfType<GameWon>(), Is.Empty);
         Assert.That(game.CellAt(1, 0), Is.EqualTo(Cards.Blank));
     }
@@ -307,7 +307,7 @@ public class RotateTests
 
         Assert.That(result.Events, Has.Count.EqualTo(3));
         Assert.That(result.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((BlobbityClaimed)result.Events[1]).Mission.Value, Is.EqualTo("red-row"));
+        Assert.That(((BlobbityClaimed)result.Events[1]).Id.Value, Is.EqualTo("red-row"));
         var gameWon = (GameWon)result.Events[2];
         Assert.That(gameWon.Seat, Is.EqualTo(Cards.Seat("a")));
         Assert.That(gameWon.ClaimCount, Is.EqualTo(1));
@@ -339,7 +339,7 @@ public class RotateTests
             }));
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "blue-row" }));
-        Assert.That(next.MissionDeckRemaining, Is.EqualTo(1));
+        Assert.That(next.BlobbityDeckRemaining, Is.EqualTo(1));
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("a")), "a rotate claim does not end the turn");
         Assert.That(next.PendingMatchTile?.Id.Value, Is.EqualTo("drawn"));
         Assert.That(next.HasEnded, Is.False);
@@ -357,7 +357,7 @@ public class RotateTests
         Assert.That(
             placed.Events.Select(e => e.GetType()),
             Is.EqualTo(new[] { typeof(TilePlaced), typeof(BlobbityClaimed) }));
-        Assert.That(((BlobbityClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("blue-row"));
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Id.Value, Is.EqualTo("blue-row"));
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a2", "spare" }));
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")), "the placement ends the turn");
@@ -416,7 +416,7 @@ public class RotateTests
             Cards.Purple("b1"),
             Cards.Purple("b2"),
         ]);
-        Assert.That(game.MissionDeckRemaining, Is.EqualTo(0));
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(0));
         var cells = new[] { game.CellAt(2, 0), game.CellAt(3, 0), game.CellAt(2, 1), game.CellAt(3, 1) };
 
         for (var attempt = 0; attempt < 2; attempt++)
@@ -433,7 +433,7 @@ public class RotateTests
         Assert.That(See.Ids(game.Hand(Cards.Seat("b"))), Is.EqualTo(new[] { "b1", "b2" }));
         Assert.That(game.Claims(Cards.Seat("a")), Is.Empty);
         Assert.That(game.Claims(Cards.Seat("b")), Is.Empty);
-        Assert.That(game.MissionDeckRemaining, Is.EqualTo(0));
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(0));
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(1));
         Assert.That(game.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
         Assert.That(game.RemainingUses(OrdinaryCatalog.Rotate), Is.EqualTo(1), "the charge is still unspent");
@@ -472,10 +472,10 @@ public class RotateTests
         var afterSecond = See.Game(second);
 
         Assert.That(
-            first.Events.OfType<BlobbityClaimed>().Select(e => e.Mission.Value),
+            first.Events.OfType<BlobbityClaimed>().Select(e => e.Id.Value),
             Is.EqualTo(new[] { "red-row" }));
         Assert.That(
-            second.Events.OfType<BlobbityClaimed>().Select(e => e.Mission.Value),
+            second.Events.OfType<BlobbityClaimed>().Select(e => e.Id.Value),
             Is.EqualTo(new[] { "blue-row" }));
         Assert.That(See.Ids(afterSecond.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row", "blue-row" }));
         Assert.That(afterSecond.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
@@ -508,7 +508,7 @@ public class RotateTests
             Is.EqualTo(cells),
             "no colour moved");
         Assert.That(
-            rotated.Events.OfType<BlobbityClaimed>().Select(e => e.Mission.Value),
+            rotated.Events.OfType<BlobbityClaimed>().Select(e => e.Id.Value),
             Is.EqualTo(new[] { "red-row" }));
         Assert.That(See.Ids(next.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-row" }));
     }

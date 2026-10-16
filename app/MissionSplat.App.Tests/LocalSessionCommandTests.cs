@@ -88,9 +88,9 @@ public class LocalSessionCommandTests
         var preview = session.Preview(new SeatId("a"), new Place(1, 0, 0));
 
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedMissions.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
-        Assert.That(preview.ClaimedMissions.Select(mission => mission.Value), Does.Not.Contain("b-square"));
-        Assert.That(preview.ClaimedMissions.Select(mission => mission.Value), Does.Not.Contain("a-row"));
+        Assert.That(preview.ClaimedBlobbities.Select(mission => mission.Value), Is.EqualTo(new[] { "a-square" }));
+        Assert.That(preview.ClaimedBlobbities.Select(mission => mission.Value), Does.Not.Contain("b-square"));
+        Assert.That(preview.ClaimedBlobbities.Select(mission => mission.Value), Does.Not.Contain("a-row"));
         Assert.That(Take(session), Is.EqualTo(before));
 
         var placed = session.Submit(new SeatId("a"), new Place(1, 0, 0));
@@ -98,7 +98,7 @@ public class LocalSessionCommandTests
         Assert.That(session.View(new SeatId("b")).CurrentSeat, Is.EqualTo(new SeatId("b")));
         Assert.That(session.View(new SeatId("b")).Board.Tiles, Has.Count.EqualTo(2));
         Assert.That(
-            session.View(new SeatId("b")).Claims.Single(row => row.Seat.Value == "a").Missions.Select(mission => mission.Id.Value),
+            session.View(new SeatId("b")).Claims.Single(row => row.Seat.Value == "a").Blobbities.Select(mission => mission.Id.Value),
             Is.EqualTo(new[] { "a-square" }));
     }
 
@@ -133,7 +133,7 @@ public class LocalSessionCommandTests
 
         Assert.That(preview.IsAccepted, Is.False);
         Assert.That(preview.Rejection?.RulesRejection?.Reason, Is.EqualTo(RejectionReason.NotYourTurn));
-        Assert.That(preview.ClaimedMissions, Is.Empty);
+        Assert.That(preview.ClaimedBlobbities, Is.Empty);
         Assert.That(Take(session), Is.EqualTo(before));
     }
 
@@ -202,7 +202,7 @@ public class LocalSessionCommandTests
         Assert.That(session.LegalTargets(seat, OrdinaryCatalog.Rotate), Is.EqualTo(new[] { new BoardPosition(0, 0) }));
         var preview = session.Preview(seat, new UseRotate(0, 0, 1));
         Assert.That(preview.IsAccepted, Is.True, preview.Rejection?.Message);
-        Assert.That(preview.ClaimedMissions, Is.Empty);
+        Assert.That(preview.ClaimedBlobbities, Is.Empty);
         Assert.That(session.View(seat).RemainingUses[0].Remaining, Is.EqualTo(1));
 
         var rotated = session.Submit(seat, new UseRotate(0, 0, 1));
@@ -238,11 +238,11 @@ public class LocalSessionCommandTests
             seats.Select(seat =>
             {
                 var view = session.View(new SeatId(seat));
-                return seat + "=" + string.Join(",", view.UnclaimedMissions.Select(mission => mission.Id.Value));
+                return seat + "=" + string.Join(",", view.UnclaimedBlobbities.Select(mission => mission.Id.Value));
             }));
         var claims = string.Join(
             ";",
-            first.Claims.Select(row => row.Seat.Value + "=" + string.Join(",", row.Missions.Select(mission => mission.Id.Value))));
+            first.Claims.Select(row => row.Seat.Value + "=" + string.Join(",", row.Blobbities.Select(mission => mission.Id.Value))));
         var cells = string.Join(
             ";",
             first.Board.Cells.Select(cell => cell.CellX + "," + cell.CellY + ":" + cell.Value));

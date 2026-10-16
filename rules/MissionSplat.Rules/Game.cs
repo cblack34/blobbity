@@ -41,7 +41,7 @@ public sealed class Game
 
     public int TileCount => _grid.TileCount;
 
-    public int MissionDeckRemaining => _missionDeck.Length;
+    public int BlobbityDeckRemaining => _missionDeck.Length;
 
     public int MatchDeckRemaining => _matchDeck.Length;
 
@@ -205,7 +205,7 @@ public sealed class Game
         var next = Next(
             resolution.ActingSeat,
             (_currentIndex + 1) % _seats.Length,
-            resolution.MissionDeck,
+            resolution.BlobbityDeck,
             _matchDeck[1..],
             nextGrid,
             default,
@@ -219,7 +219,7 @@ public sealed class Game
     private ClaimResolution ResolveClaims(Grid grid, IReadOnlyList<(int X, int Y, Cell Value)> written)
     {
         var acting = _seats[_currentIndex];
-        var completed = _ruleset.CompletedMissions(grid, written, acting.Hand);
+        var completed = _ruleset.CompletedBlobbities(grid, written, acting.Hand);
         if (completed.Count > _missionDeck.Length)
         {
             throw new UnresolvedRulingException(
@@ -316,7 +316,7 @@ public sealed class Game
         var next = Next(
             resolution.ActingSeat,
             _currentIndex,
-            resolution.MissionDeck,
+            resolution.BlobbityDeck,
             _matchDeck,
             grid,
             _spent.WithUse(OrdinaryCatalog.Rotate),
@@ -474,18 +474,18 @@ public sealed class Game
         {
             var hand = new[]
             {
-                setup.MissionDeck[deckIndex],
-                setup.MissionDeck[deckIndex + 1],
+                setup.BlobbityDeck[deckIndex],
+                setup.BlobbityDeck[deckIndex + 1],
             };
             deckIndex += 2;
             seats[i] = new SeatSnapshot(setup.SeatsInTurnOrder[i], hand, []);
         }
 
-        var missionsLeft = setup.MissionDeck.Count - deckIndex;
+        var missionsLeft = setup.BlobbityDeck.Count - deckIndex;
         var missionDeck = new BlobbityCard[missionsLeft];
         for (var i = 0; i < missionsLeft; i++)
         {
-            missionDeck[i] = setup.MissionDeck[deckIndex + i];
+            missionDeck[i] = setup.BlobbityDeck[deckIndex + i];
         }
 
         var matchLeft = setup.MatchDeck.Count - 1;
@@ -523,7 +523,7 @@ public sealed class Game
     private sealed record ClaimResolution(
         IReadOnlyList<BlobbityCard> Claimed,
         SeatSnapshot ActingSeat,
-        BlobbityCard[] MissionDeck,
+        BlobbityCard[] BlobbityDeck,
         bool Won);
 
     private sealed class SeatSnapshot

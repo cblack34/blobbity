@@ -56,7 +56,7 @@ internal static class RecapSummary
         {
             if (item is RecapClaimed claimed)
             {
-                shapes.Add(Shape(claimed.Mission.Pattern));
+                shapes.Add(Shape(claimed.Card.Pattern));
                 continue;
             }
 
