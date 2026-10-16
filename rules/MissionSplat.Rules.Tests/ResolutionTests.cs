@@ -15,7 +15,7 @@ public class ResolutionTests
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
         Assert.That(placed.Events.OfType<TilePlaced>().Count(), Is.EqualTo(1));
         Assert.That(
-            placed.Events.OfType<BlobbityClaimed>().Select(claim => claim.Mission.Value).ToArray(),
+            placed.Events.OfType<BlobbityClaimed>().Select(claim => claim.Id.Value).ToArray(),
             Is.EqualTo(new[] { "red-row", "red-square" }));
         Assert.That(placed.Events.OfType<GameWon>(), Is.Empty);
         Assert.That(next.HasEnded, Is.False);
@@ -109,13 +109,13 @@ public class ResolutionTests
                 Cards.BlankTile("beside"),
             ]);
 
-        Assert.That(game.MissionDeckRemaining, Is.EqualTo(0));
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(0));
 
         var placed = RepresentativeDeck.Play(game, 1, 0);
         var next = See.Game(placed);
 
         Assert.That(next.TileCount, Is.EqualTo(2));
-        Assert.That(next.MissionDeckRemaining, Is.EqualTo(0));
+        Assert.That(next.BlobbityDeckRemaining, Is.EqualTo(0));
         Assert.That(next.Claims(Cards.Seat("a")), Is.Empty);
         Assert.That(next.Claims(Cards.Seat("b")), Is.Empty);
         Assert.That(See.Ids(next.Hand(Cards.Seat("a"))), Is.EqualTo(new[] { "a1", "a2" }));
@@ -141,8 +141,8 @@ public class ResolutionTests
                 Cards.Tile("finish", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
             ]);
 
-        Assert.That(game.MissionDeckRemaining, Is.EqualTo(0));
-        AssertMissionShortfallUnchanged(game);
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(0));
+        AssertBlobbityShortfallUnchanged(game);
         AssertCornerStillRejected(game);
     }
 
@@ -165,8 +165,8 @@ public class ResolutionTests
                 Cards.Solid("finish", Cards.Red),
             ]);
 
-        Assert.That(game.MissionDeckRemaining, Is.EqualTo(1));
-        AssertMissionShortfallUnchanged(game);
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(1));
+        AssertBlobbityShortfallUnchanged(game);
         AssertCornerStillRejected(game);
     }
 
@@ -195,7 +195,7 @@ public class ResolutionTests
         }
     }
 
-    private static void AssertMissionShortfallUnchanged(Game game)
+    private static void AssertBlobbityShortfallUnchanged(Game game)
     {
         var tiles = game.TileCount;
         var matchRemaining = game.MatchDeckRemaining;

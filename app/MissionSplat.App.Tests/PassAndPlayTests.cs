@@ -22,7 +22,7 @@ public class PassAndPlayTests
 
             var result = session.Submit(player.Seat, player.ChooseAction(view));
             Assert.That(result.IsAccepted, Is.True, result.Rejection?.Message);
-            Assert.That(result.Events.OfType<BlobbityClaimed>().Select(claim => claim.Mission.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
+            Assert.That(result.Events.OfType<BlobbityClaimed>().Select(claim => claim.Id.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
 
             var next = table.Players[(i + 1) % table.Players.Length];
             Assert.That(session.View(player.Seat).CurrentSeat, Is.EqualTo(next.Seat));
@@ -39,7 +39,7 @@ public class PassAndPlayTests
         foreach (var player in table.Players)
         {
             var row = published.Claims.Single(claim => claim.Seat.Equals(player.Seat));
-            Assert.That(row.Missions.Select(mission => mission.Id.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
+            Assert.That(row.Blobbities.Select(mission => mission.Id.Value), Is.EqualTo(new[] { player.Seat.Value + "-square" }));
         }
     }
 }

@@ -36,7 +36,7 @@ public class SetupTests
         Assert.That(game.ClaimsRequiredToWin, Is.EqualTo(OrdinaryCatalog.ClaimsRequiredToWin));
         Assert.That(game.ClaimsRequiredToWin, Is.EqualTo(4));
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(1));
-        Assert.That(game.MissionDeckRemaining, Is.EqualTo(1));
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(1));
 
         var dealt = new List<string>();
         for (var i = 0; i < seatCount; i++)

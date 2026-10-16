@@ -279,7 +279,7 @@ public class TableTests
         Assert.That(view.PendingMatchTile, Is.Not.Null);
         Assert.That(view.AwaitsReshuffle, Is.False);
         Assert.That(view.CurrentSeat, Is.EqualTo(First), "the reshuffle does not move the turn");
-        Assert.That(view.Claims.SelectMany(row => row.Missions), Is.Empty);
+        Assert.That(view.Claims.SelectMany(row => row.Blobbities), Is.Empty);
         Assert.That(HandOf(view), Is.EqualTo(handBefore), "the reshuffle leaves hands alone");
         Assert.That(table.Snapshot.Notice, Is.EqualTo(TableNotice.DeckReshuffled));
         Assert.That(table.Snapshot.Status.Kind, Is.EqualTo(TableStatusKind.ToConfirm), "the hand-over still hides the hand");
@@ -509,8 +509,8 @@ public class TableTests
         Assert.That(first.Snapshot.View.Board.Tiles[0].Id, Is.EqualTo(again.Snapshot.View.Board.Tiles[0].Id));
         Assert.That(first.Snapshot.View.PendingMatchTile?.Id, Is.EqualTo(again.Snapshot.View.PendingMatchTile?.Id));
         Assert.That(
-            first.Snapshot.View.UnclaimedMissions.Select(mission => mission.Id),
-            Is.EqualTo(again.Snapshot.View.UnclaimedMissions.Select(mission => mission.Id)));
+            first.Snapshot.View.UnclaimedBlobbities.Select(mission => mission.Id),
+            Is.EqualTo(again.Snapshot.View.UnclaimedBlobbities.Select(mission => mission.Id)));
     }
 
     [Test]
@@ -769,7 +769,7 @@ public class TableTests
         Assert.That(after.LegalPlacements, Is.Not.Empty);
     }
 
-    private static string[] HandOf(SeatView view) => view.UnclaimedMissions.Select(mission => mission.Id.Value).ToArray();
+    private static string[] HandOf(SeatView view) => view.UnclaimedBlobbities.Select(mission => mission.Id.Value).ToArray();
 
     private static void PlaceFirstLegal(Table table)
     {

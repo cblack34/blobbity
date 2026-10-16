@@ -65,7 +65,7 @@ public class ReshuffleTests
         Assert.That(See.Ids(next.Hand(Cards.Seat("b"))), Is.EqualTo(handB));
         Assert.That(next.Claims(Cards.Seat("a")), Is.Empty);
         Assert.That(next.Claims(Cards.Seat("b")), Is.Empty);
-        Assert.That(next.MissionDeckRemaining, Is.EqualTo(exhausted.MissionDeckRemaining));
+        Assert.That(next.BlobbityDeckRemaining, Is.EqualTo(exhausted.BlobbityDeckRemaining));
         var reshuffled = (BoardReshuffled)result.Events.Single();
         Assert.That(reshuffled.Seat, Is.EqualTo(seat));
         Assert.That(See.Ids(reshuffled.Order), Is.EqualTo(new[] { "t2", "start", "t1" }));

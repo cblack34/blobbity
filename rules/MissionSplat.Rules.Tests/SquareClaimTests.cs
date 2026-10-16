@@ -44,6 +44,6 @@ public class SquareClaimTests
         Assert.That(See.Ids(finished.Claims(Cards.Seat("a"))), Is.EqualTo(new[] { "red-square" }));
         Assert.That(finished.Claims(Cards.Seat("b")), Is.Empty);
         Assert.That(finished.Hand(Cards.Seat("a")), Has.Count.EqualTo(2));
-        Assert.That(placed.Events.OfType<BlobbityClaimed>().Single().Mission.Value, Is.EqualTo("red-square"));
+        Assert.That(placed.Events.OfType<BlobbityClaimed>().Single().Id.Value, Is.EqualTo("red-square"));
     }
 }

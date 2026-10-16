@@ -156,7 +156,7 @@ internal sealed class TurnTray
         title.text = heading;
         var count = Ui.Label("Claims", _winner, 40, SplatPalette.Muted, TextAnchor.UpperLeft);
         Ui.Anchored(count.rectTransform, new Vector2(0.34f, ResultBottom), new Vector2(1f, ResultSplit), Vector2.zero, Vector2.zero);
-        var total = snapshot.View.Claims[index].Missions.Count;
+        var total = snapshot.View.Claims[index].Blobbities.Count;
         count.text = total + (total == 1 ? " claim" : " claims");
     }
 
@@ -282,7 +282,7 @@ internal sealed class TurnTray
             return;
         }
 
-        var missions = snapshot.View.UnclaimedMissions;
+        var missions = snapshot.View.UnclaimedBlobbities;
         for (var i = 0; i < missions.Count; i++)
         {
             var slot = Ui.Rect("Mission" + i, _secrets);

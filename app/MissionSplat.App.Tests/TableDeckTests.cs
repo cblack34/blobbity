@@ -51,7 +51,7 @@ public class TableDeckTests
         Assert.That(setup.MatchDeck[1].Id.Value, Is.EqualTo("census-02"));
         Assert.That(setup.MatchDeck[29].Id.Value, Is.EqualTo("census-30"));
         Assert.That(Ids(TableDeck.Ordinary(Seats, Seats[0], null)), Is.EqualTo(Ids(setup)));
-        Assert.That(setup.MissionDeck, Has.Count.EqualTo(24));
+        Assert.That(setup.BlobbityDeck, Has.Count.EqualTo(24));
         Assert.That(setup.MatchDeck, Has.Count.EqualTo(30));
     }
 
@@ -84,7 +84,7 @@ public class TableDeckTests
     [Test]
     public void TheMissionDeck_HoldsTwoOfEveryColorAndShape()
     {
-        var missions = TableDeck.Ordinary(Seats, Seats[0], null).MissionDeck;
+        var missions = TableDeck.Ordinary(Seats, Seats[0], null).BlobbityDeck;
 
         foreach (var pattern in OrdinaryCatalog.Patterns)
         {
@@ -128,7 +128,7 @@ public class TableDeckTests
         var shuffled = TableDeck.Ordinary(Seats, Seats[0], 99);
 
         Assert.That(shuffled.MatchDeck.Select(tile => tile.Id.Value), Is.EquivalentTo(authored.MatchDeck.Select(tile => tile.Id.Value)));
-        Assert.That(shuffled.MissionDeck.Select(mission => mission.Id.Value), Is.EquivalentTo(authored.MissionDeck.Select(mission => mission.Id.Value)));
+        Assert.That(shuffled.BlobbityDeck.Select(mission => mission.Id.Value), Is.EquivalentTo(authored.BlobbityDeck.Select(mission => mission.Id.Value)));
         Assert.That(Game.Start(shuffled).IsAccepted, Is.True);
     }
 
@@ -141,5 +141,5 @@ public class TableDeckTests
     };
 
     private static string[] Ids(GameSetup setup) =>
-        setup.MatchDeck.Select(tile => tile.Id.Value).Concat(setup.MissionDeck.Select(mission => mission.Id.Value)).ToArray();
+        setup.MatchDeck.Select(tile => tile.Id.Value).Concat(setup.BlobbityDeck.Select(mission => mission.Id.Value)).ToArray();
 }

@@ -65,13 +65,13 @@ internal static class SetupCheck
                 : Invalid("The patterns in play list a pattern twice.");
         }
 
-        if (setup.MissionDeck.Count < seats.Count * 2)
+        if (setup.BlobbityDeck.Count < seats.Count * 2)
         {
             return Invalid("The mission deck does not have two cards for every seat.");
         }
 
         var blobbityIds = new HashSet<BlobbityId>();
-        foreach (var mission in setup.MissionDeck)
+        foreach (var mission in setup.BlobbityDeck)
         {
             if (IdText.IsMissing(mission.Id.Value))
             {

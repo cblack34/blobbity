@@ -201,7 +201,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         table.ConfirmIncomingSeat();
         SkipTheWholeRecap();
         Assert.That(table.Snapshot.View.CurrentSeat.Value, Is.EqualTo("1"));
-        Assert.That(table.Snapshot.View.Claims.Single(claims => claims.Seat.Value == "1").Missions, Is.Empty);
+        Assert.That(table.Snapshot.View.Claims.Single(claims => claims.Seat.Value == "1").Blobbities, Is.Empty);
 
         LiveButton("Target1_0").onClick.Invoke();
         LiveButton("Turn").onClick.Invoke();
@@ -213,7 +213,7 @@ public class TableSessionRecapPlayModeTests : TableSessionFixture
         Assert.That(table.Snapshot.View.PendingMatchTile.Id.Value, Is.EqualTo("spinner"));
         SkipTheWholeRecap();
         Assert.That(FindText("Notice").text, Does.Contain("claimed"));
-        Assert.That(table.Snapshot.View.Claims.Single(claims => claims.Seat.Value == "1").Missions.Single().Id.Value, Is.EqualTo("red-row"));
+        Assert.That(table.Snapshot.View.Claims.Single(claims => claims.Seat.Value == "1").Blobbities.Single().Id.Value, Is.EqualTo("red-row"));
     }
 
     // A tap, Turn, Confirm, or Bounce pressed while a recap plays does nothing. The buttons are kept from before the recap, as a late press would reach them.

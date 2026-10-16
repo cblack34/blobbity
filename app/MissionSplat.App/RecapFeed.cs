@@ -73,15 +73,15 @@ internal sealed class RecapFeed(GameSetup setup)
             bounced.TileY,
             before.CellsOf(bounced.TileX, bounced.TileY),
             bounced.Revealed is null ? [] : after.CellsOf(bounced.TileX, bounced.TileY)),
-        BlobbityClaimed claimed => new RecapClaimed(claimed.Seat, MissionOf(claimed.Mission)),
+        BlobbityClaimed claimed => new RecapClaimed(claimed.Seat, BlobbityOf(claimed.Id)),
         GameWon won => new RecapWon(won.Seat, won.ClaimCount),
         BoardReshuffled reshuffled => new RecapReshuffled(reshuffled.Seat),
         _ => throw new InvalidOperationException("The recap has no item for " + gameEvent.GetType().Name + "."),
     };
 
-    private BlobbityCard MissionOf(BlobbityId id)
+    private BlobbityCard BlobbityOf(BlobbityId id)
     {
-        foreach (var mission in _setup.MissionDeck)
+        foreach (var mission in _setup.BlobbityDeck)
         {
             if (mission.Id.Equals(id))
             {

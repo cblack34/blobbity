@@ -134,7 +134,7 @@ public abstract class TableSessionFixture
     }
 
     // Every live slot named prefix + index holds one 5:7 fit-in-parent Card whose pattern is four splats.
-    protected void AssertMissionCards(string prefix, int expected)
+    protected void AssertBlobbityCards(string prefix, int expected)
     {
         var slots = _root.GetComponentsInChildren<RectTransform>(false)
             .Where(rect => rect.name.StartsWith(prefix) && rect.name.Length > prefix.Length && char.IsDigit(rect.name[prefix.Length]))

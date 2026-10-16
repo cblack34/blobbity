@@ -14,7 +14,7 @@ public sealed record TilePlaced(
     int QuarterTurnsClockwise,
     TileId? Covered) : GameEvent;
 
-public sealed record BlobbityClaimed(SeatId Seat, BlobbityId Mission) : GameEvent;
+public sealed record BlobbityClaimed(SeatId Seat, BlobbityId Id) : GameEvent;
 
 public sealed record GameWon(SeatId Seat, int ClaimCount) : GameEvent;
 

@@ -34,7 +34,7 @@ public class RowClaimTests
         Assert.That(next.CurrentSeat, Is.EqualTo(Cards.Seat("b")));
         Assert.That(placed.Events, Has.Count.EqualTo(2));
         Assert.That(placed.Events[0], Is.TypeOf<TilePlaced>());
-        Assert.That(((BlobbityClaimed)placed.Events[1]).Mission.Value, Is.EqualTo("red-row"));
+        Assert.That(((BlobbityClaimed)placed.Events[1]).Id.Value, Is.EqualTo("red-row"));
         Assert.That(placed.Events.OfType<GameWon>(), Is.Empty);
     }
 
@@ -124,7 +124,7 @@ public class RowClaimTests
         var game = RepresentativeDeck.Start(
             ["a", "b"],
             "a",
-            RowMissions(),
+            RowBlobbities(),
             [
                 Cards.BlankTile("start"),
                 Cards.Tile("a-low", Cards.Blank, Cards.Blank, Cards.Blank, Cards.Red),
@@ -167,7 +167,7 @@ public class RowClaimTests
         Assert.That(finished.Claims(Cards.Seat("b")), Is.Empty);
     }
 
-    private static BlobbityCard[] RowMissions() =>
+    private static BlobbityCard[] RowBlobbities() =>
     [
         Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
         Cards.Purple("a2"),

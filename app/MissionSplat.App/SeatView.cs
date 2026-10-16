@@ -6,7 +6,7 @@ public sealed class SeatView
 {
     public SeatView(
         SeatId seat,
-        IReadOnlyList<BlobbityCard> unclaimedMissions,
+        IReadOnlyList<BlobbityCard> unclaimedBlobbities,
         IReadOnlyList<SeatClaims> claims,
         BoardView board,
         SeatId currentSeat,
@@ -17,7 +17,7 @@ public sealed class SeatView
         IReadOnlyList<TileId> tilesToReshuffle)
     {
         Seat = seat;
-        UnclaimedMissions = Copied.Items(unclaimedMissions, nameof(unclaimedMissions));
+        UnclaimedBlobbities = Copied.Items(unclaimedBlobbities, nameof(unclaimedBlobbities));
         Claims = Copied.Items(claims, nameof(claims));
         Board = board ?? throw new ArgumentNullException(nameof(board));
         CurrentSeat = currentSeat;
@@ -30,7 +30,7 @@ public sealed class SeatView
 
     public SeatId Seat { get; }
 
-    public IReadOnlyList<BlobbityCard> UnclaimedMissions { get; }
+    public IReadOnlyList<BlobbityCard> UnclaimedBlobbities { get; }
 
     public IReadOnlyList<SeatClaims> Claims { get; }
 
@@ -54,15 +54,15 @@ public sealed class SeatView
 
 public sealed class SeatClaims
 {
-    public SeatClaims(SeatId seat, IReadOnlyList<BlobbityCard> missions)
+    public SeatClaims(SeatId seat, IReadOnlyList<BlobbityCard> blobbities)
     {
         Seat = seat;
-        Missions = Copied.Items(missions, nameof(missions));
+        Blobbities = Copied.Items(blobbities, nameof(blobbities));
     }
 
     public SeatId Seat { get; }
 
-    public IReadOnlyList<BlobbityCard> Missions { get; }
+    public IReadOnlyList<BlobbityCard> Blobbities { get; }
 }
 
 public sealed class BoardView
