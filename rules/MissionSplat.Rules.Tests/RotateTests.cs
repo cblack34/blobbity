@@ -55,7 +55,7 @@ public class RotateTests
     {
         var game = SurroundedCenter();
         var handA = See.Ids(game.Hand(Cards.Seat("a")));
-        var missionsLeft = game.BlobbityDeckRemaining;
+        var blobbitiesLeft = game.BlobbityDeckRemaining;
 
         var rejected = RepresentativeDeck.Try(game, new UseRotate(0, 0, 1));
 
@@ -65,7 +65,7 @@ public class RotateTests
         Assert.That(game.PendingMatchTile!.Id.Value, Is.EqualTo("drawn"));
         Assert.That(game.CurrentSeat, Is.EqualTo(Cards.Seat("a")));
         Assert.That(game.MatchDeckRemaining, Is.EqualTo(1));
-        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(missionsLeft));
+        Assert.That(game.BlobbityDeckRemaining, Is.EqualTo(blobbitiesLeft));
         Assert.That(See.Ids(game.Hand(Cards.Seat("a"))), Is.EqualTo(handA));
 
         var chargeIntact = RepresentativeDeck.Rotate(game, 1, 0);
@@ -323,7 +323,7 @@ public class RotateTests
     }
 
     [Test]
-    public void ARotateThatCompletesAMission_ClaimsItAtOnce_DrawsAReplacement_AndKeepsTheTurnAndTheDrawnTile()
+    public void ARotateThatCompletesABlobbity_ClaimsItAtOnce_DrawsAReplacement_AndKeepsTheTurnAndTheDrawnTile()
     {
         var game = ReadyToRotateEast(RedRowThenSpares());
 
@@ -388,7 +388,7 @@ public class RotateTests
     }
 
     [Test]
-    public void TwoMissionsOnIdenticalCells_ClaimOnlyOnce_WithinOneRotatePass()
+    public void TwoBlobbitiesOnIdenticalCells_ClaimOnlyOnce_WithinOneRotatePass()
     {
         var game = ReadyToRotateEast(
         [
@@ -440,9 +440,9 @@ public class RotateTests
     }
 
     // Wild cells let one set of four serve a red row and a blue row alike, so two rotates of the same tile each
-    // complete the identical set; each resolution is judged alone, so each claims one of the two missions.
+    // complete the identical set; each resolution is judged alone, so each claims one of the two blobbities.
     [Test]
-    public void TheSameFourCells_CompleteOneMissionOnARotate_AndAnotherOnALaterRotateThatTurn()
+    public void TheSameFourCells_CompleteOneBlobbityOnARotate_AndAnotherOnALaterRotateThatTurn()
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],
@@ -514,7 +514,7 @@ public class RotateTests
     }
 
     [Test]
-    public void ARotateThatCompletesAnotherSeatsMission_DoesNotClaimItForThem()
+    public void ARotateThatCompletesAnotherSeatsBlobbity_DoesNotClaimItForThem()
     {
         var game = ReadyToRotateEast(
         [
@@ -607,13 +607,13 @@ public class RotateTests
 
     // Start (red bottom row) and east (red at its bottom right) share the y=0 row; turning east once puts both of its
     // red cells in that row, completing red-row from the rotate's own cells. Pad and the drawn tile hold a blue row
-    // that the drawn tile finishes at (1, 1), for a replacement mission to claim later in the turn.
-    private static Game ReadyToRotateEast(BlobbityCard[] missions, int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin)
+    // that the drawn tile finishes at (1, 1), for a replacement blobbity to claim later in the turn.
+    private static Game ReadyToRotateEast(BlobbityCard[] blobbities, int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin)
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],
             "a",
-            missions,
+            blobbities,
             [
                 Cards.Tile("start", Cards.Red, Cards.Red, Cards.Blank, Cards.Blank),
                 Cards.Tile("east", Cards.Blank, Cards.Red, Cards.Blank, Cards.Red),

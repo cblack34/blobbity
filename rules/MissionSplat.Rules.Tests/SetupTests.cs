@@ -5,23 +5,23 @@ public class SetupTests
     [TestCase(2)]
     [TestCase(3)]
     [TestCase(4)]
-    public void Setup_DealsTwoDistinctMissions_AndDoesNotClaim(int seatCount)
+    public void Setup_DealsTwoDistinctBlobbities_AndDoesNotClaim(int seatCount)
     {
         Assert.That(RepresentativeDeck.Label, Is.EqualTo("representative"));
 
         var names = new[] { "a", "b", "c", "d" }.Take(seatCount).ToArray();
         var first = names[^1];
-        var missions = new BlobbityCard[seatCount * 2 + 1];
-        missions[0] = Cards.BlobbityCard("square-red", BlobbityPattern.Square, OrdinaryCatalog.Red);
-        for (var i = 1; i < missions.Length; i++)
+        var blobbities = new BlobbityCard[seatCount * 2 + 1];
+        blobbities[0] = Cards.BlobbityCard("square-red", BlobbityPattern.Square, OrdinaryCatalog.Red);
+        for (var i = 1; i < blobbities.Length; i++)
         {
-            missions[i] = Cards.Purple("m" + i);
+            blobbities[i] = Cards.Purple("m" + i);
         }
 
         var result = RepresentativeDeck.Open(
             names,
             first,
-            missions,
+            blobbities,
             [Cards.Solid("start", Cards.Red), Cards.BlankTile("later")]);
 
         Assert.That(result.IsAccepted, Is.True, "representative deck: " + result.Rejection?.Message);
@@ -44,7 +44,7 @@ public class SetupTests
             var seat = Cards.Seat(names[i]);
             var hand = game.Hand(seat);
             Assert.That(hand, Has.Count.EqualTo(2));
-            Assert.That(See.Ids(hand), Is.EqualTo(new[] { missions[i * 2].Id.Value, missions[(i * 2) + 1].Id.Value }));
+            Assert.That(See.Ids(hand), Is.EqualTo(new[] { blobbities[i * 2].Id.Value, blobbities[(i * 2) + 1].Id.Value }));
             Assert.That(game.Claims(seat), Is.Empty);
             dealt.AddRange(See.Ids(hand));
         }
@@ -117,16 +117,16 @@ public class SetupTests
             Open(symbols: [default]),
             "A symbol id is required.");
         Rejects(
-            Open(missions:
+            Open(blobbities:
             [
                 new BlobbityCard(default, BlobbityPattern.Row, OrdinaryCatalog.Purple),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
             ]),
-            "A mission id is required.");
+            "A blobbity id is required.");
         Rejects(
-            Open(missions:
+            Open(blobbities:
             [
                 new BlobbityCard(new BlobbityId("a1"), BlobbityPattern.Row, default),
                 Cards.Purple("a2"),
@@ -142,7 +142,7 @@ public class SetupTests
     [Test]
     public void UnknownBlobbityPattern_IsRejected()
     {
-        var result = Open(missions:
+        var result = Open(blobbities:
         [
             new BlobbityCard(new BlobbityId("a1"), (BlobbityPattern)99, OrdinaryCatalog.Purple),
             Cards.Purple("a2"),
@@ -150,7 +150,7 @@ public class SetupTests
             Cards.Purple("b2"),
         ]);
 
-        Rejects(result, "Mission 'a1' is not a row, square, or L.");
+        Rejects(result, "Blobbity 'a1' is not a row, square, or L.");
     }
 
     [TestCase(1)]
@@ -158,16 +158,16 @@ public class SetupTests
     public void SeatCountOutsideTwoThroughFour_IsRejected(int seatCount)
     {
         var names = new[] { "a", "b", "c", "d", "e" }.Take(seatCount).ToArray();
-        var missions = new BlobbityCard[seatCount * 2];
-        for (var i = 0; i < missions.Length; i++)
+        var blobbities = new BlobbityCard[seatCount * 2];
+        for (var i = 0; i < blobbities.Length; i++)
         {
-            missions[i] = Cards.Purple("m" + i);
+            blobbities[i] = Cards.Purple("m" + i);
         }
 
         var result = RepresentativeDeck.Open(
             names,
             names[0],
-            missions,
+            blobbities,
             [Cards.BlankTile("only")]);
 
         Rejects(result, "A game has 2, 3, or 4 seats.");
@@ -214,41 +214,41 @@ public class SetupTests
     }
 
     [Test]
-    public void MissionDeckShortOfTwoPerSeat_IsRejected()
+    public void BlobbityDeckShortOfTwoPerSeat_IsRejected()
     {
         Rejects(
-            Open(missions: [Cards.Purple("a1"), Cards.Purple("a2"), Cards.Purple("b1")]),
-            "The mission deck does not have two cards for every seat.");
+            Open(blobbities: [Cards.Purple("a1"), Cards.Purple("a2"), Cards.Purple("b1")]),
+            "The blobbity deck does not have two cards for every seat.");
     }
 
     [Test]
     public void DuplicateBlobbityId_IsRejected()
     {
         Rejects(
-            Open(missions:
+            Open(blobbities:
             [
                 Cards.Purple("a1"),
                 Cards.Purple("a1"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
             ]),
-            "Mission 'a1' is in the deck twice.");
+            "Blobbity 'a1' is in the deck twice.");
     }
 
     [Test]
-    public void MissionColorOutsideTheCatalog_IsRejected()
+    public void BlobbityColorOutsideTheCatalog_IsRejected()
     {
         Rejects(
             Open(
                 colors: [OrdinaryCatalog.Purple],
-                missions:
+                blobbities:
                 [
                     Cards.BlobbityCard("a1", BlobbityPattern.Row, OrdinaryCatalog.Red),
                     Cards.Purple("a2"),
                     Cards.Purple("b1"),
                     Cards.Purple("b2"),
                 ]),
-            "Mission 'a1' uses color 'red', which is not in the catalog.");
+            "Blobbity 'a1' uses color 'red', which is not in the catalog.");
     }
 
     [Test]
@@ -302,7 +302,7 @@ public class SetupTests
     }
 
     private static CommandResult Open(
-        BlobbityCard[]? missions = null,
+        BlobbityCard[]? blobbities = null,
         Tile[]? tiles = null,
         IReadOnlyList<ColorId>? colors = null,
         IReadOnlyList<SymbolId>? symbols = null,
@@ -311,7 +311,7 @@ public class SetupTests
         return RepresentativeDeck.Open(
             ["a", "b"],
             "a",
-            missions ?? [Cards.Purple("a1"), Cards.Purple("a2"), Cards.Purple("b1"), Cards.Purple("b2")],
+            blobbities ?? [Cards.Purple("a1"), Cards.Purple("a2"), Cards.Purple("b1"), Cards.Purple("b2")],
             tiles ?? [Cards.BlankTile("only")],
             claimsRequiredToWin,
             colors,

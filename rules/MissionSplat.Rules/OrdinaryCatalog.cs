@@ -10,7 +10,7 @@ public static class OrdinaryCatalog
 
     public static ColorId Purple { get; } = new("purple");
 
-    // A wildcard is Cell.Wild(), not one of these symbols. It stays wild and counts as the mission color being checked.
+    // A wildcard is Cell.Wild(), not one of these symbols. It stays wild and counts as the blobbity color being checked.
     public static SymbolId Blank { get; } = new("blank");
 
     public static SymbolId Rotate { get; } = new("rotate");

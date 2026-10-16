@@ -113,7 +113,7 @@ public class ScoringCellTests
     }
 
     [Test]
-    public void Wildcard_CountsAsEachMissionColor_AndStaysWild()
+    public void Wildcard_CountsAsEachBlobbityColor_AndStaysWild()
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],

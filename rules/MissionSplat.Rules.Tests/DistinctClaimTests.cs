@@ -23,7 +23,7 @@ public sealed class DistinctClaimTests
     }
 
     [Test]
-    public void IdenticalMissions_WithOneCompletingSet_ClaimOnlyTheEarlierCard()
+    public void IdenticalBlobbities_WithOneCompletingSet_ClaimOnlyTheEarlierCard()
     {
         var claimed = Claim(
             Cards.Tile("start", Blue, Blue, Cards.Blank, Cards.Blank),
@@ -35,7 +35,7 @@ public sealed class DistinctClaimTests
     }
 
     [Test]
-    public void IdenticalMissions_WithTwoCompletingSets_BothClaim()
+    public void IdenticalBlobbities_WithTwoCompletingSets_BothClaim()
     {
         var claimed = Claim(
             Cards.Solid("start", Blue),
@@ -47,7 +47,7 @@ public sealed class DistinctClaimTests
     }
 
     [Test]
-    public void EarlierMissionWithTwoSets_LeavesTheOnlySetToALaterMission()
+    public void EarlierBlobbityWithTwoSets_LeavesTheOnlySetToALaterBlobbity()
     {
         // Wild cells on y=0 serve a blue row and a red row alike; only the blue row also has y=1.
         var claimed = Claim(
@@ -60,7 +60,7 @@ public sealed class DistinctClaimTests
     }
 
     [Test]
-    public void Game_IdenticalMissionsWithOneSet_ClaimsOnceAndDrawsOneReplacement()
+    public void Game_IdenticalBlobbitiesWithOneSet_ClaimsOnceAndDrawsOneReplacement()
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],

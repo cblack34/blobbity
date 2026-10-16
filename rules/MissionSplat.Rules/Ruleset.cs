@@ -35,8 +35,8 @@ internal sealed class Ruleset
     public int Remaining(Tile drawn, SymbolId power, SpentUses spent) =>
         IsInPlay(power) ? CountSymbol(drawn, power) - spent.Of(power) : 0;
 
-    // A mission completes only when a cell this placement or rotate wrote is part of its pattern, and each claim needs its own
-    // four cells, so the claims are the most missions, earliest in hand order, that can take distinct sets.
+    // A blobbity completes only when a cell this placement or rotate wrote is part of its pattern, and each claim needs its own
+    // four cells, so the claims are the most blobbities, earliest in hand order, that can take distinct sets.
     public List<BlobbityCard> CompletedBlobbities(
         Grid grid,
         IReadOnlyList<(int X, int Y, Cell Value)> located,
@@ -48,9 +48,9 @@ internal sealed class Ruleset
             written.Add(new CellCoord(x, y));
         }
 
-        var active = hand.Where(mission => PatternIsActive(mission.Pattern)).ToList();
+        var active = hand.Where(blobbity => PatternIsActive(blobbity.Pattern)).ToList();
         var completingSets = active
-            .Select(mission => PatternSearch.CompletingSets(mission.Pattern, mission.Color, grid.Cells, written))
+            .Select(blobbity => PatternSearch.CompletingSets(blobbity.Pattern, blobbity.Color, grid.Cells, written))
             .ToList();
 
         return DistinctAssignment.Choose(completingSets).Select(index => active[index]).ToList();

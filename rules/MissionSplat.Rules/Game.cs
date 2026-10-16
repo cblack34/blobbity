@@ -213,7 +213,7 @@ public sealed class Game
         return CommandResult.Accept(next, events);
     }
 
-    // The one claim pass, shared by a placement and a rotate: the acting seat claims each mission its hand completes
+    // The one claim pass, shared by a placement and a rotate: the acting seat claims each blobbity its hand completes
     // through the cells just written, draws a replacement per claim, and wins on reaching the claim count. It changes
     // nothing itself; the caller applies the resolution and appends its events.
     private ClaimResolution ResolveClaims(Grid grid, IReadOnlyList<(int X, int Y, Cell Value)> written)
@@ -223,19 +223,19 @@ public sealed class Game
         if (completed.Count > _blobbityDeck.Length)
         {
             throw new UnresolvedRulingException(
-                "The mission deck cannot replace every mission this command completed. Exhausting the mission deck is an open ruling, so this command was not applied.");
+                "The blobbity deck cannot replace every blobbity this command completed. Exhausting the blobbity deck is an open ruling, so this command was not applied.");
         }
 
         var hand = new List<BlobbityCard>(acting.Hand);
         var claims = new List<BlobbityCard>(acting.Claims);
         var blobbityDeck = new List<BlobbityCard>(_blobbityDeck);
-        foreach (var mission in completed)
+        foreach (var blobbity in completed)
         {
-            hand.Remove(mission);
+            hand.Remove(blobbity);
             var replacement = blobbityDeck[0];
             blobbityDeck.RemoveAt(0);
             hand.Add(replacement);
-            claims.Add(mission);
+            claims.Add(blobbity);
         }
 
         return new ClaimResolution(
@@ -247,9 +247,9 @@ public sealed class Game
 
     private static void AddClaimEvents(List<GameEvent> events, ClaimResolution resolution)
     {
-        foreach (var mission in resolution.Claimed)
+        foreach (var blobbity in resolution.Claimed)
         {
-            events.Add(new BlobbityClaimed(resolution.ActingSeat.Id, mission.Id));
+            events.Add(new BlobbityClaimed(resolution.ActingSeat.Id, blobbity.Id));
         }
 
         if (resolution.Won)
@@ -446,10 +446,10 @@ public sealed class Game
     private CommandResult Reject(RejectionReason reason, string message) =>
         CommandResult.Reject(this, new Rejection(reason, message));
 
-    private static BlobbityCard[] Copy(BlobbityCard[] missions)
+    private static BlobbityCard[] Copy(BlobbityCard[] blobbities)
     {
-        var copy = new BlobbityCard[missions.Length];
-        Array.Copy(missions, copy, missions.Length);
+        var copy = new BlobbityCard[blobbities.Length];
+        Array.Copy(blobbities, copy, blobbities.Length);
         return copy;
     }
 
@@ -481,9 +481,9 @@ public sealed class Game
             seats[i] = new SeatSnapshot(setup.SeatsInTurnOrder[i], hand, []);
         }
 
-        var missionsLeft = setup.BlobbityDeck.Count - deckIndex;
-        var blobbityDeck = new BlobbityCard[missionsLeft];
-        for (var i = 0; i < missionsLeft; i++)
+        var blobbitiesLeft = setup.BlobbityDeck.Count - deckIndex;
+        var blobbityDeck = new BlobbityCard[blobbitiesLeft];
+        for (var i = 0; i < blobbitiesLeft; i++)
         {
             blobbityDeck[i] = setup.BlobbityDeck[deckIndex + i];
         }

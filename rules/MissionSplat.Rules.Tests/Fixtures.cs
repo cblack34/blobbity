@@ -8,7 +8,7 @@ internal static class RepresentativeDeck
     public static CommandResult Open(
         string[] seatNames,
         string firstSeat,
-        BlobbityCard[] missions,
+        BlobbityCard[] blobbities,
         Tile[] tiles,
         int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin,
         IReadOnlyList<ColorId>? colors = null,
@@ -22,14 +22,14 @@ internal static class RepresentativeDeck
             symbols ?? OrdinaryCatalog.NonScoringSymbols,
             patterns ?? OrdinaryCatalog.Patterns,
             claimsRequiredToWin,
-            missions,
+            blobbities,
             tiles));
     }
 
     public static Game Start(
         string[] seatNames,
         string firstSeat,
-        BlobbityCard[] missions,
+        BlobbityCard[] blobbities,
         Tile[] tiles,
         int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin,
         IReadOnlyList<ColorId>? colors = null,
@@ -39,7 +39,7 @@ internal static class RepresentativeDeck
         var result = Open(
             seatNames,
             firstSeat,
-            missions,
+            blobbities,
             tiles,
             claimsRequiredToWin,
             colors,
@@ -159,8 +159,8 @@ internal static class See
         return game;
     }
 
-    public static string[] Ids(IReadOnlyList<BlobbityCard> missions) =>
-        missions.Select(mission => mission.Id.Value).ToArray();
+    public static string[] Ids(IReadOnlyList<BlobbityCard> blobbities) =>
+        blobbities.Select(blobbity => blobbity.Id.Value).ToArray();
 
     public static string[] Ids(IReadOnlyList<TileId> tiles) =>
         tiles.Select(tile => tile.Value).ToArray();

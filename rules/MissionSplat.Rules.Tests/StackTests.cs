@@ -43,7 +43,7 @@ public class StackTests
     }
 
     [Test]
-    public void CoveredColor_NoLongerCompletes_AndTopColorCompletesTheActingMission()
+    public void CoveredColor_NoLongerCompletes_AndTopColorCompletesTheActingBlobbity()
     {
         // Representative deck. The start tile is a red square. The bridge holds the other half of a blue row.
         // Covering the start removes that red square and writes the blue half, so only the acting seat's blue row completes.
@@ -371,7 +371,7 @@ public class StackTests
 
     private static Game BeforeCoveringRedSquare(
         Tile stackTile,
-        BlobbityCard[] missions,
+        BlobbityCard[] blobbities,
         int claimsRequiredToWin,
         Tile[] following)
     {
@@ -386,7 +386,7 @@ public class StackTests
         var game = RepresentativeDeck.Start(
             ["a", "b"],
             "a",
-            missions,
+            blobbities,
             tiles.ToArray(),
             claimsRequiredToWin);
         var afterBridge = See.Game(RepresentativeDeck.Play(game, 1, 0));

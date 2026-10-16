@@ -42,7 +42,7 @@ public class LClaimTests
     }
 
     [Test]
-    public void StraightRow_DoesNotSatisfyAnLMission()
+    public void StraightRow_DoesNotSatisfyAnLBlobbity()
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],
@@ -65,7 +65,7 @@ public class LClaimTests
     }
 
     [Test]
-    public void SquareTile_DoesNotSatisfyAnLMission()
+    public void SquareTile_DoesNotSatisfyAnLBlobbity()
     {
         var game = RepresentativeDeck.Start(
             ["a", "b"],
@@ -84,7 +84,7 @@ public class LClaimTests
     }
 
     [Test]
-    public void LShape_DoesNotSatisfyASquareMission()
+    public void LShape_DoesNotSatisfyASquareBlobbity()
     {
         var finished = Finish(
             0,
@@ -96,7 +96,7 @@ public class LClaimTests
     }
 
     [Test]
-    public void Tee_DoesNotSatisfyAnLMission()
+    public void Tee_DoesNotSatisfyAnLBlobbity()
     {
         // Vertical arm of three with the foot on the middle, not an end.
         var game = StartOpposite(
@@ -112,7 +112,7 @@ public class LClaimTests
     }
 
     [Test]
-    public void MissingArmMiddle_DoesNotSatisfyAnLMission()
+    public void MissingArmMiddle_DoesNotSatisfyAnLBlobbity()
     {
         // First L template without (0,1): (0,0), (0,2), (1,0). (0,2) is on tile (0,1).
         var game = RepresentativeDeck.Start(
@@ -141,7 +141,7 @@ public class LClaimTests
     }
 
     [Test]
-    public void Skew_DoesNotSatisfyAnLMission()
+    public void Skew_DoesNotSatisfyAnLBlobbity()
     {
         var game = StartOpposite(
             Cards.Tile("start", Cards.Blank, Cards.Red, Cards.Red, Cards.Red),
