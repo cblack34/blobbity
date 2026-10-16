@@ -97,7 +97,7 @@ The table looks right, but the game has no name it can keep, no icon, no logo, a
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs.
 - The drift check passes.
 - Captures are retaken after the rename and the colour pass.
 - A colour-blind simulation of the final palette and silhouettes.

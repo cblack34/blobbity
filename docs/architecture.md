@@ -9,7 +9,7 @@ The POC is one process on the device. The later room is the same action and even
 ```text
 rules/                 netstandard2.1 rules library and dotnet test
 app/                   ISession, IPlayer, LocalSession, AiPlayer, turn driver, deck content
-unity/MissionSplat/    player: setup form, input adapter, table view, composition
+unity/Blobbity/    player: setup form, input adapter, table view, composition
 packages/com.blobbity.game/   local UPM package holding the built Rules and App DLLs
 server/                absent in the POC; later ASP.NET project reference
 ```

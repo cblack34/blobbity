@@ -60,7 +60,7 @@ Give the blobbity its own 5:7 sprite rather than stretching the square tile spri
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs.
 - Retaken captures in the PR, and the maintainer's look on the phone.
 
 ## Risks and stop conditions
@@ -90,7 +90,7 @@ None.
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
 - **Outcome:** Secret blobbities and every claims row draw as portrait 5:7 cards: the shared shadow, edge, and cream face from `CardPainter`, and the pattern in tinted splats filling the face on a 2 × 4 lattice, with no caption. A row is drawn diagonally, as the physical cards show a line; the rules allow any direction. `BlobbityCardPainter` is the one routine; `AspectRatioFitter` keeps the sprite's own ratio in any slot. Wild cells draw their quarters unrotated, so they read as one split splat.
-- **Verification:** On `ada3e5a`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 13 of 13 on fresh Release DLLs; the thirteenth test checks that secret and claim slots each hold a 5:7 card with four splats. The maintainer play-tested the result and found it good. The Unity run used a scratch copy of the project, because the maintainer's editor had the project open. Every capture is now rendered in phone portrait at 1179×2556 instead of 1920×1080 landscape. A fresh-context design review raised 2 [Issue] and 7 [Suggestion], with no blockers; both issues and most suggestions are applied (see the receipt).
+- **Verification:** On `ada3e5a`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/Blobbity --mode PlayMode` passed 13 of 13 on fresh Release DLLs; the thirteenth test checks that secret and claim slots each hold a 5:7 card with four splats. The maintainer play-tested the result and found it good. The Unity run used a scratch copy of the project, because the maintainer's editor had the project open. Every capture is now rendered in phone portrait at 1179×2556 instead of 1920×1080 landscape. A fresh-context design review raised 2 [Issue] and 7 [Suggestion], with no blockers; both issues and most suggestions are applied (see the receipt).
 - **Deviations:** The maintainer's phone check found the cards wrong in portrait: oversized, uneven captions, and claim cards that looked cut off at the bottom. The maintainer then chose to drop captions entirely and enlarge the splats, with the row drawn diagonally; claim slots returned to the strip's bottom. Card edges and shadows gained a minimum thickness (3 and 2 canvas units), so small cards keep their outline when the simulator window downscales. A portrait render never reproduced a true clip. Captures moved to portrait, so they match the device. The plan's "readable caption" outcome is superseded by this choice.
 - **Unresolved gates or risks:** Portrait layout problems, all for the layout slice:
   - The board is tiny in long games.

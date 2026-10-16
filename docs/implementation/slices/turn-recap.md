@@ -97,7 +97,7 @@ Record every accepted session result's events in order. Give each human seat a c
   - a claim and a win;
   - a reshuffle with no order exposed;
   - acknowledge advancing only the holder's cursor.
-- PR 2: `unity test unity/MissionSplat --mode PlayMode`, captures of a placement and a claim mid-animation, and the maintainer's look on the phone.
+- PR 2: `unity test unity/Blobbity --mode PlayMode`, captures of a placement and a claim mid-animation, and the maintainer's look on the phone.
 
 ## Risks and stop conditions
 
@@ -138,7 +138,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - **Timing:** the outgoing player's own items play before the cover, and the incoming player's play after Confirm. A one-line summary stays until the next action.
 - **Verification:**
   - **PR 1:** on `823063b`, Rules 234 and App 85.
-  - **PR 2:** on `db888f1`, Rules 234, App 85, and `unity test unity/MissionSplat --mode PlayMode` 43 of 43 (11 recap tests). They cover:
+  - **PR 2:** on `db888f1`, Rules 234, App 85, and `unity test unity/Blobbity --mode PlayMode` 43 of 43 (11 recap tests). They cover:
     - human against AI;
     - two humans, where the outgoing recap plays before the cover, no incoming blobbities are drawn, and a Confirm during the recap is ignored;
     - one tap skips one item;

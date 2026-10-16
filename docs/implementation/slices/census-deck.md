@@ -61,7 +61,7 @@ Encode the census rows as data, translating its top-row-first cell order into th
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs.
 - Repository definition-of-done commands remain mandatory.
 
 ## Risks and stop conditions
@@ -91,7 +91,7 @@ None.
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
 - **Outcome:** The table ships the census, encoded row by row from `census.md`, and 24 blobbities, two of each colour and shape. There are 30 match tiles, `census-01` to `census-30`. The census lists cells top row first, and a `CensusTile` helper maps that order to the y-up tile constructor. The stand-in deck is gone. `census.md` records the doubled blobbities as a deliberate digital adjustment: a four-seat game draws at most 14 replacements against 16 remaining, so the blobbity deck cannot run out. Blobbity-deck exhaustion and the census leave the open list.
-- **Verification:** On `6ede632`, `dotnet test` passed Rules 226 and App 63, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 after a Release build. A script confirmed that all 30 `CensusTile` rows equal `census.md`. The census test checks every cell against its own literal copy of the rows. A fresh-context design review of `TableDeck.cs` raised one issue: the replacement bound stated as 13 should be 14, because the winning placement can claim two. It also made four suggestions. The issue and two suggestions are fixed (renamed helper, one shape table) along with a test comment; removing the unread `Name` constant was reverted in review to keep the public contract.
+- **Verification:** On `6ede632`, `dotnet test` passed Rules 226 and App 63, and `unity test unity/Blobbity --mode PlayMode` passed 12 of 12 after a Release build. A script confirmed that all 30 `CensusTile` rows equal `census.md`. The census test checks every cell against its own literal copy of the rows. A fresh-context design review of `TableDeck.cs` raised one issue: the replacement bound stated as 13 should be 14, because the winning placement can claim two. It also made four suggestions. The issue and two suggestions are fixed (renamed helper, one shape table) along with a test comment; removing the unread `Name` constant was reverted in review to keep the public contract.
 - **Deviations:** The play-mode first-turn test stays on the shipped deck; its first placement now claims nothing, because census row 1 cannot finish a pattern on turn one. `TableDeck.Name` was briefly removed during refactor-before-handoff and restored as `"census"` in review, as the plan's public-contract line requires.
 - **Unresolved gates or risks:** Captures still show the old deck; final acceptance retakes them on the census.
 - **Refactor and handoff receipt:** In the PR body and on issue #39.

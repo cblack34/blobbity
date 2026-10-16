@@ -63,7 +63,7 @@ Reuse the recap player's overlay, input blocking, and per-item skip. Queue one s
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs.
 - One mid-splash capture, and the maintainer's look on the phone.
 
 ## Risks and stop conditions
@@ -98,7 +98,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - a tap skips the current splash, and input is blocked while it plays.
 
   `RecapPlayer` runs a recap or a splash queue through one `Reel`, so the recap's acknowledgement still fires once. A drawn tile is announced once: re-renders, Spin, and previews don't replay it, and a new game resets it. There is no splash for AI seats, or behind the hand-off cover.
-- **Verification:** On `0472728`, Rules 241, App 86, and `unity test unity/MissionSplat --mode PlayMode` 84 of 84, run by the implementation lead. The 14 splash tests cover:
+- **Verification:** On `0472728`, Rules 241, App 86, and `unity test unity/Blobbity --mode PlayMode` 84 of 84, run by the implementation lead. The 14 splash tests cover:
   - a power tile splashes and a plain tile does not;
   - one splash per kind;
   - a tap skips exactly one;

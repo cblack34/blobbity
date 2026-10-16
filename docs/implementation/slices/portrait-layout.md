@@ -65,7 +65,7 @@ Lay the screen out from a portrait reference so regions are sized for the phone.
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs.
 - Every capture retaken in portrait, and the maintainer's look on the phone.
 
 ## Risks and stop conditions
@@ -107,7 +107,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - the hand-off cover sits over the blobbities only, and the tray names the winner at game end.
 
   New Player classes: `SeatBar`, `TurnTray`, `ClaimsPanel`, `BoardPanel`, `CritterPainter`, `Seats`, `RotateAmount`. No Rules or App change.
-- **Verification:** On `05316d4`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 24 of 24, run by the implementation lead. The tests cover Spin, score pips, the claims panel (open, close, closed by a render), the hand-off cover hiding the blobbities, the winner tray, a drag that scrolls without placing next to a tap that places, scroll memory across renders and its reset for a new game, and a greyed chip. Nine portrait captures are committed; `seat-claims.png` and `board-scrolled.png` are new, and `claim-row.png` is retired.
+- **Verification:** On `05316d4`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/Blobbity --mode PlayMode` passed 24 of 24, run by the implementation lead. The tests cover Spin, score pips, the claims panel (open, close, closed by a render), the hand-off cover hiding the blobbities, the winner tray, a drag that scrolls without placing next to a tap that places, scroll memory across renders and its reset for a new game, and a greyed chip. Nine portrait captures are committed; `seat-claims.png` and `board-scrolled.png` are new, and `claim-row.png` is retired.
 - **Deviations:** The amendment above, from the maintainer's decisions after the first design review.
 - **Unresolved gates or risks:**
   - #51: the configured win count.

@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "MissionSplat.slnx"
+    "dotnet.defaultSolution": "Blobbity.slnx"
 }

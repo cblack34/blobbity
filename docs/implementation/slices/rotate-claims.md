@@ -77,7 +77,7 @@ Reuse the placement's claim pass with the rotated tile's cells as the written ce
   - distinct cells within a rotate's pass;
   - a rotate claim that does not end the turn.
 - `dotnet test app/Blobbity.App.sln --configuration Release`, and a recap of a rotate claim.
-- `unity test unity/MissionSplat --mode PlayMode`, and the maintainer's look on the phone.
+- `unity test unity/Blobbity --mode PlayMode`, and the maintainer's look on the phone.
 
 ## Risks and stop conditions
 
@@ -110,7 +110,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - **Bounce:** it never claims.
   - **Unchanged colours:** by a later ruling, any rotate of 1–3 quarter turns writes all four cells, even if their colours come out unchanged.
   - **Contract wording:** non-negotiable 2, `rules.md` (intro, Turn, Claim, Powers), `acceptance.md` (the rotate and bounce criteria are split), `build-brief.md`, and `architecture.md` now state the rule as cells the acting seat writes, by placing or rotating.
-- **Verification:** On `eb01636`, `dotnet test` passed Rules 241 and App 86, and `unity test unity/MissionSplat --mode PlayMode` passed 57 of 57. Unity ran in a scratch copy because the maintainer's editor was open. The Rules tests cover:
+- **Verification:** On `eb01636`, `dotnet test` passed Rules 241 and App 86, and `unity test unity/Blobbity --mode PlayMode` passed 57 of 57. Unity ran in a scratch copy because the maintainer's editor was open. The Rules tests cover:
   - a rotate claim at once, with the turn and the drawn tile kept;
   - a replacement claimed later by the placement;
   - a rotate win, which leaves the turn on the acting seat and rejects any later action;

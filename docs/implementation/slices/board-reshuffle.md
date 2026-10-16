@@ -65,7 +65,7 @@ Treat exhaustion as a state the match reports, not an exception it throws. The o
 
 - `dotnet test rules/Blobbity.Rules.sln --configuration Release`
 - `dotnet test app/Blobbity.App.sln --configuration Release`
-- `unity test unity/MissionSplat --mode PlayMode` on freshly copied Release DLLs, with a clean-import run.
+- `unity test unity/Blobbity --mode PlayMode` on freshly copied Release DLLs, with a clean-import run.
 - Repository definition-of-done commands remain mandatory.
 
 ## Risks and stop conditions
@@ -95,7 +95,7 @@ None.
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
 - **Outcome:** A placement that empties the draw deck leaves the match awaiting a reshuffle; only `ReshuffleBoard(order)` is accepted, and only for an exact permutation of every board tile including buried ones. It rebuilds the board from the first tile at the origin, makes the rest the draw deck, and keeps seats, hands, claims, and the current seat. The App table supplies the order from a seeded `Random` (or the match's order when unshuffled) and submits it with no human tap; a notice shows until the next human action. The exhausted-deck open ruling is closed in the pack.
-- **Verification:** On `e224b3b` (after the PR review round, which added a test pinning full power uses on the tile pending after a reshuffle and aligned two doc sentences), `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 214, `dotnet test app/Blobbity.App.sln --configuration Release` passed 60, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12, run by the implementation lead independently of the execution agents' receipts (Unity and the clean import on `08d996a`; the review round changed only a Rules test and docs); a clean import in a detached worktree passed the same 12 with no tracked file altered. A fresh-context design review of all eleven production files found no blocking or issue-level finding; five of eight suggestions were applied.
+- **Verification:** On `e224b3b` (after the PR review round, which added a test pinning full power uses on the tile pending after a reshuffle and aligned two doc sentences), `dotnet test rules/Blobbity.Rules.sln --configuration Release` passed 214, `dotnet test app/Blobbity.App.sln --configuration Release` passed 60, and `unity test unity/Blobbity --mode PlayMode` passed 12 of 12, run by the implementation lead independently of the execution agents' receipts (Unity and the clean import on `08d996a`; the review round changed only a Rules test and docs); a clean import in a detached worktree passed the same 12 with no tracked file altered. A fresh-context design review of all eleven production files found no blocking or issue-level finding; five of eight suggestions were applied.
 - **Deviations:** A one-tile match deck at setup starts the game awaiting a reshuffle and the table stops with a message. The notice lasts until the next human action rather than the next action, so an AI turn cannot hide it.
 - **Unresolved gates or risks:** Blobbity-deck exhaustion is resolved by deck size in the census slice; the distinct-cells claim rule follows; the GUI redesign is deferred.
 - **Refactor and handoff receipt:** In the PR body, https://github.com/cblack34/mission-splat/pull/36, and on issues #34 and #35.

@@ -180,6 +180,6 @@
   <text x="560" y="1575" class="rel">Later, not in the POC</text>
   <rect x="40" y="1592" width="22" height="16" rx="8" fill="#08427b"/>
   <text x="70" y="1605" class="rel">Person</text>
-  <text x="40" y="1640" class="sub">Monorepo: rules/ and server/ are dotnet. unity/MissionSplat is the player.</text>
+  <text x="40" y="1640" class="sub">Monorepo: rules/ and server/ are dotnet. unity/Blobbity is the player.</text>
   <text x="40" y="1658" class="sub">packages/com.blobbity.game holds the Rules and App DLLs. Server is a project reference, not a Unity import.</text>
 </svg>
