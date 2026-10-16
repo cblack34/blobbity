@@ -26,7 +26,7 @@ Placed tiles currently merge into one surface: the board paints each tile's back
 
 ### Out of scope
 
-- The board backdrop and legal-spot glow, power icons, blank cells (they keep today's marks, drawn on the card), mission cards, the seat bar, buttons, and the pass-to-seat screen.
+- The board backdrop and legal-spot glow, power icons, blank cells (they keep today's marks, drawn on the card), blobbities, the seat bar, buttons, and the pass-to-seat screen.
 - Any UX change.
 - Any Rules or App change.
 

@@ -20,10 +20,10 @@ Each human sees every committed public event they have not yet seen, in order: p
   - a placement drops the tile into its position with a short pulse;
   - a rotate turns the tile;
   - a bounce lifts the tile off;
-  - a claim pops the mission card up large, then flies it into the claiming seat's score pip.
+  - a claim pops the blobbity up large, then flies it into the claiming seat's score pip.
 - **Input waits.** Nothing can be done while an item plays, and a tap skips only the current item.
 - **A trace stays.** A one-line summary of what the recap showed stays visible afterwards.
-- **Nothing hidden is revealed.** No item reveals hidden information: a reshuffle appears without the new deck order, and only claimed missions, which are public, are shown.
+- **Nothing hidden is revealed.** No item reveals hidden information: a reshuffle appears without the new deck order, and only claimed blobbities, which are public, are shown.
 
 ## Why this slice is next
 
@@ -56,7 +56,7 @@ In games with three or four seats, or pass-and-play, a returning player cannot t
 | --- | --- |
 | Rules do not reference Unity (non-negotiable 1) | The log and recap live in App; Unity only plays them. |
 | Pass-and-play on one in-process session (non-negotiable 3) | Per-human cursors on the one table; no network. |
-| Secret missions hidden between human seats | Recap items are a public projection, and the hand-off cover rules are unchanged. |
+| Secret blobbities hidden between human seats | Recap items are a public projection, and the hand-off cover rules are unchanged. |
 
 ## Gates and dependencies
 
@@ -76,7 +76,7 @@ In games with three or four seats, or pass-and-play, a returning player cannot t
 - **Public contracts:** Additive.
   - `TableSnapshot` gains the recap items for the human holding the device.
   - `Table` gains an acknowledge call.
-  - The recap item types are a closed set (placed, rotated, bounced, claimed, won, reshuffled). Each carries what a screen needs to draw it: the placed tile's cells and orientation, the position, the claimed mission, and the seat. They never carry deck order.
+  - The recap item types are a closed set (placed, rotated, bounced, claimed, won, reshuffled). Each carries what a screen needs to draw it: the placed tile's cells and orientation, the position, the claimed blobbity, and the seat. They never carry deck order.
 - **Viewer rule:** the recap is for the human holding the device.
   - That human's own events stay pending until acknowledged, even after the turn passes, so the outgoing player sees their claims before the cover.
   - The incoming human's recap appears once they confirm the hand-off.
@@ -140,7 +140,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - **PR 1:** on `823063b`, Rules 234 and App 85.
   - **PR 2:** on `db888f1`, Rules 234, App 85, and `unity test unity/MissionSplat --mode PlayMode` 43 of 43 (11 recap tests). They cover:
     - human against AI;
-    - two humans, where the outgoing recap plays before the cover, no incoming missions are drawn, and a Confirm during the recap is ignored;
+    - two humans, where the outgoing recap plays before the cover, no incoming blobbities are drawn, and a Confirm during the recap is ignored;
     - one tap skips one item;
     - the summary line;
     - a failing item still ends and acknowledges;

@@ -48,9 +48,9 @@ A rejected use or placement does not change the board, the decks, or whose turn 
 
 A blobbity looks at one scoring color on the cell grid. A wildcard counts as the color of the blobbity being checked. It is not assigned a color first. A blank or any other non-scoring symbol does not complete the color.
 
-- **Four in a row.** Four cells in a horizontal, vertical, or diagonal line. See [`diagrams/mission-row.svg`](diagrams/mission-row.svg).
-- **Four in a square.** Four cells in a 2×2 block. See [`diagrams/mission-square.svg`](diagrams/mission-square.svg). The block may be the four cells where four tiles meet.
-- **Four in an L.** Three cells in a line plus a fourth adjacent to one end, any rotation or reflection. That is eight orientations. It is not a T, a skew, or a square. See [`diagrams/mission-l.svg`](diagrams/mission-l.svg).
+- **Four in a row.** Four cells in a horizontal, vertical, or diagonal line. See [`diagrams/blobbity-row.svg`](diagrams/blobbity-row.svg).
+- **Four in a square.** Four cells in a 2×2 block. See [`diagrams/blobbity-square.svg`](diagrams/blobbity-square.svg). The block may be the four cells where four tiles meet.
+- **Four in an L.** Three cells in a line plus a fourth adjacent to one end, any rotation or reflection. That is eight orientations. It is not a T, a skew, or a square. See [`diagrams/blobbity-l.svg`](diagrams/blobbity-l.svg).
 
 Only a pattern in the set passed at setup can be claimed. A seat claims a pattern only when the cells it just wrote, by placing a tile or rotating one, completed it.
 

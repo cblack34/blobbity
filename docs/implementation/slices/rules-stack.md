@@ -20,7 +20,7 @@ Claim fixtures, the local session, and the Unity table are on `main`. Rotate and
 
 - An explicit stack placement, separate from the three-argument `Place`. That existing call still rejects an occupied cell, including when the drawn tile shows stack.
 - One or more stack cells on the drawn tile allow that placement once. A stack tile can still take an ordinary full-side square.
-- The top tile's four cells replace the covered cells for matching and can complete the acting seat's missions under the current written-cell rule.
+- The top tile's four cells replace the covered cells for matching and can complete the acting seat's blobbities under the current written-cell rule.
 - Every tile that position has covered stays underneath, in cover order. A later stack on the same position does not drop an earlier covered tile.
 - A rules read of the covered tile ids, so retention is observable.
 - The rules and architecture sentences that still describe stack-on-top as unplayed.
@@ -62,7 +62,7 @@ Claim fixtures, the local session, and the Unity table are on `main`. Rotate and
 ### Still open
 
 - Whether a later removal of the top tile reveals the covered tile or leaves it buried.
-- Bounce of the last tile, a drawn tile with no legal placement, claim by rotate or bounce, claim by a stack effect other than the cells the stacked tile wrote, and an exhausted mission or match deck.
+- Bounce of the last tile, a drawn tile with no legal placement, claim by rotate or bounce, claim by a stack effect other than the cells the stacked tile wrote, and an exhausted blobbity or match deck.
 - Uncorrected census rows.
 
 ## Architecture and contracts
@@ -82,7 +82,7 @@ The three-argument `Place` declines stack, rejects overlap, claims from the cell
 - `dotnet test rules/MissionSplat.Rules.sln --configuration Release`
 - `dotnet test app/MissionSplat.App.sln --configuration Release`
 - The existing occupied-cell tests still expect the three-argument `Place` to reject a stack tile.
-- A new fixture, on a named smaller deck, shows the covered color no longer completing a pattern and the top color completing the acting seat's mission.
+- A new fixture, on a named smaller deck, shows the covered color no longer completing a pattern and the top color completing the acting seat's blobbity.
 - No Unity run in this slice. The player does not change.
 
 ## Risks and stop conditions

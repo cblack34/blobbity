@@ -65,7 +65,7 @@ Stack is on `main`. Bounce removes a tile and still has an open last-tile ruling
 - Bounce, including bounce of the last tile.
 - Whether uncovering a stack reveals the covered tile.
 - A pattern completed by stack or bounce rather than by the placed tile's own cells.
-- A drawn tile with no legal placement, an exhausted mission or match deck, and the uncorrected census rows.
+- A drawn tile with no legal placement, an exhausted blobbity or match deck, and the uncorrected census rows.
 
 ## Architecture and contracts
 

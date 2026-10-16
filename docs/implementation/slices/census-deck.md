@@ -3,12 +3,12 @@
 ## Strategic source
 
 - **Active build pack:** [`docs/build-brief.md`](../../build-brief.md), [`docs/rules.md`](../../rules.md), [`docs/architecture.md`](../../architecture.md), [`docs/acceptance.md`](../../acceptance.md), [`docs/census.md`](../../census.md), [`docs/engineering/workflow.md`](../../engineering/workflow.md), [`docs/engineering/code-quality.md`](../../engineering/code-quality.md)
-- **Human approval:** Approved in session on 2026-10-10. The maintainer verified `census.md` when it was written, which clears the research gate on uncorrected rows. The maintainer chose to double the mission cards so the mission deck cannot run out, and asked for this as its own PR after the reshuffle and distinct-claims slices.
+- **Human approval:** Approved in session on 2026-10-10. The maintainer verified `census.md` when it was written, which clears the research gate on uncorrected rows. The maintainer chose to double the blobbities so the blobbity deck cannot run out, and asked for this as its own PR after the reshuffle and distinct-claims slices.
 - **Final acceptance advanced:** Clears the census gate in [`docs/acceptance.md`](../../acceptance.md) and adds a check that the shipped deck matches the census. It also removes the last two deck-related items from [`docs/rules.md`](../../rules.md)'s open list.
 
 ## Outcome
 
-The player ships the census: the 30 match tiles exactly as `census.md` lists them, and 24 mission cards, two of each colour and shape. The stand-in deck is gone. `census.md` records the doubled missions as a deliberate digital adjustment, with the arithmetic that rules out mission-deck exhaustion.
+The player ships the census: the 30 match tiles exactly as `census.md` lists them, and 24 blobbities, two of each colour and shape. The stand-in deck is gone. `census.md` records the doubled blobbities as a deliberate digital adjustment, with the arithmetic that rules out blobbity-deck exhaustion.
 
 ## Why this slice is next
 
@@ -34,7 +34,7 @@ It is the last decision gate before final acceptance. The two rulings this deck 
 | --- | --- |
 | The base deck is `census.md` | The shipped deck is the census, pinned by a test. |
 | A claim that the shipped deck matches the box uses the census definition | The test compares every cell against the census rows. |
-| Open edges return to the user | Mission-deck exhaustion is unreachable with 24 missions; it leaves the open list with the reason recorded. |
+| Open edges return to the user | Blobbity-deck exhaustion is unreachable with 24 blobbities; it leaves the open list with the reason recorded. |
 
 ## Gates and dependencies
 
@@ -55,7 +55,7 @@ It is the last decision gate before final acceptance. The two rulings this deck 
 
 ## High-level approach
 
-Encode the census rows as data, translating its top-row-first cell order into the tile constructor's y-up order. Double the missions. Pin the result with a test whose expected rows are written independently from `census.md`, so a transcription slip in either place fails. Move any test that relied on the stand-in deck's specific tiles onto the census or a small named deck.
+Encode the census rows as data, translating its top-row-first cell order into the tile constructor's y-up order. Double the blobbities. Pin the result with a test whose expected rows are written independently from `census.md`, so a transcription slip in either place fails. Move any test that relied on the stand-in deck's specific tiles onto the census or a small named deck.
 
 ## Verification
 
@@ -90,7 +90,7 @@ None.
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
-- **Outcome:** The table ships the census, encoded row by row from `census.md`, and 24 mission cards, two of each colour and shape. There are 30 match tiles, `census-01` to `census-30`. The census lists cells top row first, and a `CensusTile` helper maps that order to the y-up tile constructor. The stand-in deck is gone. `census.md` records the doubled missions as a deliberate digital adjustment: a four-seat game draws at most 14 replacements against 16 remaining, so the mission deck cannot run out. Mission-deck exhaustion and the census leave the open list.
+- **Outcome:** The table ships the census, encoded row by row from `census.md`, and 24 blobbities, two of each colour and shape. There are 30 match tiles, `census-01` to `census-30`. The census lists cells top row first, and a `CensusTile` helper maps that order to the y-up tile constructor. The stand-in deck is gone. `census.md` records the doubled blobbities as a deliberate digital adjustment: a four-seat game draws at most 14 replacements against 16 remaining, so the blobbity deck cannot run out. Blobbity-deck exhaustion and the census leave the open list.
 - **Verification:** On `6ede632`, `dotnet test` passed Rules 226 and App 63, and `unity test unity/MissionSplat --mode PlayMode` passed 12 of 12 after a Release build. A script confirmed that all 30 `CensusTile` rows equal `census.md`. The census test checks every cell against its own literal copy of the rows. A fresh-context design review of `TableDeck.cs` raised one issue: the replacement bound stated as 13 should be 14, because the winning placement can claim two. It also made four suggestions. The issue and two suggestions are fixed (renamed helper, one shape table) along with a test comment; removing the unread `Name` constant was reverted in review to keep the public contract.
 - **Deviations:** The play-mode first-turn test stays on the shipped deck; its first placement now claims nothing, because census row 1 cannot finish a pattern on turn one. `TableDeck.Name` was briefly removed during refactor-before-handoff and restored as `"census"` in review, as the plan's public-contract line requires.
 - **Unresolved gates or risks:** Captures still show the old deck; final acceptance retakes them on the census.
