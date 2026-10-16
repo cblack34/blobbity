@@ -22,7 +22,7 @@ When the drawn tile shows rotate or bounce with uses left, the player uses it by
   - The strip above the tray shows a turn button (↻), **Confirm**, and **Cancel**.
   - Each turn press rotates the selected tile a quarter on the board, live, as a view-only preview.
   - Confirm submits the rotate with that amount, and is disabled at zero turns. Cancel restores the tile.
-  - A rotate that completes a mission claims at once (#72), and the recap shows it.
+  - A rotate that completes a blobbity claims at once (#72), and the recap shows it.
 - **Bounce:** the strip shows **Bounce** and **Cancel**. Bounce submits; Cancel deselects.
 - **Removed:** the power chips, "Place instead", and the rotate-amount hint under Spin. Spin turns only the drawn tile for placement.
 - **Remaining uses:** each rotate or bounce badge on the drawn tile greys out as its use is spent.
@@ -106,7 +106,7 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
 
 - **Outcome:** Rotate and bounce are used by tapping a board tile.
   - **Tap routing:** `TilePreview` is the one home for the preview: a placement, a rotate, or a bounce. A tap creates only a preview that still holds for the snapshot.
-  - **Rotate:** the selected tile lifts with a green ring and turns live, previewed with ↻. Confirm submits `UseRotate` with that amount and is disabled at zero. A completed mission claims at once.
+  - **Rotate:** the selected tile lifts with a green ring and turns live, previewed with ↻. Confirm submits `UseRotate` with that amount and is disabled at zero. A completed blobbity claims at once.
   - **Bounce:** the strip shows Bounce and Cancel.
   - **Tap targets:** orange rings mark the tiles a power can act on.
   - **Removed:** the power chips, "Place instead", and the Spin rotate hint.

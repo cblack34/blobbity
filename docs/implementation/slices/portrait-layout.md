@@ -8,7 +8,7 @@
 
 ## Outcome
 
-On a portrait phone, the table follows the reference layout with today's art: a seat bar of splat critters with names and score pips, the current seat highlighted; a heading naming whose turn it is; the board filling the middle; and a turn tray holding a large drawn tile, one Spin button, power chips with remaining uses, and the secret missions. Tapping a player opens their claimed missions. The claims row is gone. The hand-off cover and the game-end state fit the new layout.
+On a portrait phone, the table follows the reference layout with today's art: a seat bar of splat critters with names and score pips, the current seat highlighted; a heading naming whose turn it is; the board filling the middle; and a turn tray holding a large drawn tile, one Spin button, power chips with remaining uses, and the secret blobbities. Tapping a player opens their claimed blobbities. The claims row is gone. The hand-off cover and the game-end state fit the new layout.
 
 ## Why this slice is next
 
@@ -22,9 +22,9 @@ The portrait captures show that most of what looks wrong is layout: a tiny board
 - The seat bar: critters (splat plus googly eyes), names, four score pips, current-seat highlight.
 - The heading and one instruction line.
 - The board sized to its region with a minimum tile size.
-- The turn tray: large drawn tile, Spin, power chips, secret missions.
+- The turn tray: large drawn tile, Spin, power chips, secret blobbities.
 - A tap-a-seat panel showing that seat's claims.
-- The hand-off cover over the secret missions only, and a game-end tray showing the winner.
+- The hand-off cover over the secret blobbities only, and a game-end tray showing the winner.
 - The design reference in `docs/design/`, the acceptance line, and the architecture render line.
 - Play-mode tests for Spin, score pips, and the claims panel; existing tests moved off the quarter-turn buttons; every capture retaken in portrait.
 
@@ -37,8 +37,8 @@ The portrait captures show that most of what looks wrong is layout: a tiny board
 
 | Strategic requirement or criterion | How this slice advances it |
 | --- | --- |
-| The table shows the board, the current seat's secret missions, and every seat's score, with claims on demand | Seat bar, tray, and claims panel; captures retaken. |
-| Missions are hidden between human seats until the incoming seat confirms | The hand-off cover moves with the missions into the tray. |
+| The table shows the board, the current seat's secret blobbities, and every seat's score, with claims on demand | Seat bar, tray, and claims panel; captures retaken. |
+| Blobbities are hidden between human seats until the incoming seat confirms | The hand-off cover moves with the blobbities into the tray. |
 | No physical-game art ships (non-negotiable 4) | Critters are built from the project's own splat. |
 
 ## Gates and dependencies
@@ -59,7 +59,7 @@ The portrait captures show that most of what looks wrong is layout: a tiny board
 
 ## High-level approach
 
-Lay the screen out from a portrait reference so regions are sized for the phone. Reuse the existing tile and mission-card painters at new sizes. Draw critters from the existing splat sprite tinted per seat, with eyes from the existing circle sprite. Keep Spin as a thin view action over the existing quarter-turn state.
+Lay the screen out from a portrait reference so regions are sized for the phone. Reuse the existing tile and blobbity-card painters at new sizes. Draw critters from the existing splat sprite tinted per seat, with eyes from the existing circle sprite. Keep Spin as a thin view action over the existing quarter-turn state.
 
 ## Verification
 
@@ -102,12 +102,12 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - a heading naming whose turn it is, with one instruction line;
   - a scrolling board panel;
   - a turn tray with a large drawn tile, Spin, and icon-only power chips, which show only for powers the drawn tile still has and grey out with no target;
-  - the secret missions;
+  - the secret blobbities;
   - tapping a seat opens its claims, and the claims row is gone;
-  - the hand-off cover sits over the missions only, and the tray names the winner at game end.
+  - the hand-off cover sits over the blobbities only, and the tray names the winner at game end.
 
   New Player classes: `SeatBar`, `TurnTray`, `ClaimsPanel`, `BoardPanel`, `CritterPainter`, `Seats`, `RotateAmount`. No Rules or App change.
-- **Verification:** On `05316d4`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 24 of 24, run by the implementation lead. The tests cover Spin, score pips, the claims panel (open, close, closed by a render), the hand-off cover hiding the missions, the winner tray, a drag that scrolls without placing next to a tap that places, scroll memory across renders and its reset for a new game, and a greyed chip. Nine portrait captures are committed; `seat-claims.png` and `board-scrolled.png` are new, and `claim-row.png` is retired.
+- **Verification:** On `05316d4`, `dotnet test` passed Rules 234 and App 66, and `unity test unity/MissionSplat --mode PlayMode` passed 24 of 24, run by the implementation lead. The tests cover Spin, score pips, the claims panel (open, close, closed by a render), the hand-off cover hiding the blobbities, the winner tray, a drag that scrolls without placing next to a tap that places, scroll memory across renders and its reset for a new game, and a greyed chip. Nine portrait captures are committed; `seat-claims.png` and `board-scrolled.png` are new, and `claim-row.png` is retired.
 - **Deviations:** The amendment above, from the maintainer's decisions after the first design review.
 - **Unresolved gates or risks:**
   - #51: the configured win count.

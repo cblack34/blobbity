@@ -3,12 +3,12 @@
 ## Strategic source
 
 - **Active build pack:** [`docs/build-brief.md`](../../build-brief.md), [`docs/rules.md`](../../rules.md), [`docs/architecture.md`](../../architecture.md), [`docs/acceptance.md`](../../acceptance.md), [`docs/engineering/workflow.md`](../../engineering/workflow.md), [`docs/engineering/code-quality.md`](../../engineering/code-quality.md)
-- **Human approval:** Approved in session on 2026-10-04. The wildcard stays wild. One placement may claim every aligning mission the acting seat holds. Win count and the tile vocabulary are supplied at setup.
+- **Human approval:** Approved in session on 2026-10-04. The wildcard stays wild. One placement may claim every aligning blobbity the acting seat holds. Win count and the tile vocabulary are supplied at setup.
 - **Final acceptance advanced:** The Rules checks in [`docs/acceptance.md`](../../acceptance.md) for placement, lattice claims, stolen claims, setup, replacement, and win. Session, presentation, and power-action checks wait for later slices.
 
 ## Outcome
 
-A `netstandard2.1` rules library can set up a 2–4 seat game, place a tile on the orthogonal board, and claim every secret mission of the acting seat that the placement completed on the splat grid. GitHub Actions runs that library's tests.
+A `netstandard2.1` rules library can set up a 2–4 seat game, place a tile on the orthogonal board, and claim every secret blobbity of the acting seat that the placement completed on the splat grid. GitHub Actions runs that library's tests.
 
 ## Why this slice is next
 
@@ -20,14 +20,14 @@ Matching and placement-owned claim are the hard dependency for every later adapt
 
 - Rules library and test project, callable from `dotnet test`, with no Unity reference.
 - CI for `dotnet test rules/MissionSplat.Rules.sln --configuration Release`.
-- Representative mission deck and match deck, ordered by the fixture, large enough that the fixtures do not exhaust either deck.
+- Representative blobbity deck and match deck, ordered by the fixture, large enough that the fixtures do not exhaust either deck.
 - Explicit first seat and explicit claims-to-win count. The ordinary game uses 4.
 - Orthogonal placement. Corner-only contact is illegal. A non-stack tile on an occupied cell is illegal. A tile that shows stack may still be placed on a legal full side.
 - Splat-grid matching for row, square, and L. A tile writes four cells. Matching reads the grid.
 - The four-tile corner square: four tiles meet, each contributing one corner splat, and only the seat who places the finishing tile claims.
-- Wildcard cells stay wild and count as the color of the mission being checked.
+- Wildcard cells stay wild and count as the color of the blobbity being checked.
 - Blank cells and power symbols do not score.
-- One placement claims every completed secret mission of the acting seat, draws one replacement per claim, and then ends the turn.
+- One placement claims every completed secret blobbity of the acting seat, draws one replacement per claim, and then ends the turn.
 - Setup composition: color catalog, non-scoring symbols, pattern list, and claims required to win. Today's ordinary catalog is four colors, blank, wild, rotate, stack, and bounce, with row, square, and L.
 - Pack edits that record the wildcard ruling, the configurable win count, the grid, and same-turn multi-claim.
 
@@ -49,13 +49,13 @@ Matching and placement-owned claim are the hard dependency for every later adapt
 | Corner-only placement is rejected | Fixture leaves the board unchanged. |
 | Row, square, and L, including across tiles | One fixture per shape. Row covers three directions. L covers 8 orientations. The square fixture is the four-tile corner. |
 | Blank and power symbols do not score | A pattern missing one scoring cell because of a blank or a power symbol does not claim. |
-| Wildcard | A wild cell completes the mission color and can count as another color for another mission. |
-| Claim, replacement, turn pass | Hand size is unchanged and the claim row grows by the number of missions that placement completed. |
+| Wildcard | A wild cell completes the blobbity color and can count as another color for another blobbity. |
+| Claim, replacement, turn pass | Hand size is unchanged and the claim row grows by the number of blobbities that placement completed. |
 | Win | The ordinary count of 4 wins at four and not at three. A different setup count wins at that count. Further commands after a win are rejected. |
-| Setup at 2, 3, and 4 seats | Hand size 2, distinct mission ids, one starting tile, empty claim rows. |
+| Setup at 2, 3, and 4 seats | Hand size 2, distinct blobbity ids, one starting tile, empty claim rows. |
 | Representative deck | Fixtures name the deck as representative. The census gate stays open. |
 | Occupied placement | A non-stack tile on an occupied cell is rejected. A stack-symbol tile may use a legal side. |
-| Same-turn multi-claim | Human ruling on 2026-10-04. Both of the acting seat's completed missions are claimed. |
+| Same-turn multi-claim | Human ruling on 2026-10-04. Both of the acting seat's completed blobbities are claimed. |
 | CI | The workflow runs the rules test command. The app command is omitted until that solution exists. |
 
 ## Gates and dependencies
@@ -71,12 +71,12 @@ Matching and placement-owned claim are the hard dependency for every later adapt
 ### Closed by the human for this slice
 
 - A wildcard is never assigned a color.
-- One placement may complete more than one mission the acting seat holds. Each of those missions is claimed.
+- One placement may complete more than one blobbity the acting seat holds. Each of those blobbities is claimed.
 
 ### Still open
 
 - Deck census.
-- How long a stack stays buried, bounce of the last tile, a drawn tile with no legal placement, claim by rotate, stack, or bounce, and an exhausted mission or match deck.
+- How long a stack stays buried, bounce of the last tile, a drawn tile with no legal placement, claim by rotate, stack, or bounce, and an exhausted blobbity or match deck.
 - This slice must not invent those rulings. Fixtures must avoid them.
 
 ## Architecture and contracts
@@ -88,13 +88,13 @@ Matching and placement-owned claim are the hard dependency for every later adapt
 
 ## High-level approach
 
-Fixtures build a scripted representative deck and a small board. Setup places the starting tile and deals two missions. It does not claim. A placement writes four cells onto the grid. Claim detection looks only at that grid and only at missions the acting seat holds. A wildcard matches the mission color under check. Cells written by earlier tiles do not by themselves award a claim to the seat who plays next.
+Fixtures build a scripted representative deck and a small board. Setup places the starting tile and deals two blobbities. It does not claim. A placement writes four cells onto the grid. Claim detection looks only at that grid and only at blobbities the acting seat holds. A wildcard matches the blobbity color under check. Cells written by earlier tiles do not by themselves award a claim to the seat who plays next.
 
-On one successful placement the acting seat claims every held mission that placement completed, in a single resolution. Each claim moves that mission to the claim row and draws one replacement. The turn then ends, so a replacement that already matches the board is not claimed until a later placement completes it. The win check runs after those claims. Reaching the configured count wins even when two claims cross it together. Both claims from the placement still count.
+On one successful placement the acting seat claims every held blobbity that placement completed, in a single resolution. Each claim moves that blobbity to the claim row and draws one replacement. The turn then ends, so a replacement that already matches the board is not claimed until a later placement completes it. The win check runs after those claims. Reaching the configured count wins even when two claims cross it together. Both claims from the placement still count.
 
-The ordinary catalog and a win count of 4 are what the standard fixtures pass in. A second fixture passes a different count. Pattern matching compares cell colors with the mission color. It does not branch on a fixed list of color names. Power symbols are stored as data and do not score. Their effects are not executed.
+The ordinary catalog and a win count of 4 are what the standard fixtures pass in. A second fixture passes a different count. Pattern matching compares cell colors with the blobbity color. It does not branch on a fixed list of color names. Power symbols are stored as data and do not score. Their effects are not executed.
 
-The behavior issue updates the strategic docs that still say the placer names a wildcard color, that the win count is fixed, and that two simultaneous missions are an open edge.
+The behavior issue updates the strategic docs that still say the placer names a wildcard color, that the win count is fixed, and that two simultaneous blobbities are an open edge.
 
 ## Verification
 
@@ -133,7 +133,7 @@ None.
 
 ## Delivery record
 
-- **Outcome:** The rules library deals a 2–4 seat game, places a tile on the cell grid, and claims every secret mission the acting seat's placement completed. A wildcard stays wild. The ordinary win count is 4, and setup can pass another count. CI runs the rules tests.
+- **Outcome:** The rules library deals a 2–4 seat game, places a tile on the cell grid, and claims every secret blobbity the acting seat's placement completed. A wildcard stays wild. The ordinary win count is 4, and setup can pass another count. CI runs the rules tests.
 - **Verification:** `dotnet test rules/MissionSplat.Rules.sln --configuration Release` passed, 75 tests, 0 failed. The `rules` check is green on `9c246d2`. This receipt update is the following commit. The app solution does not exist, so that command was omitted. Evidence is on #2, #3, and the pull request.
 - **Deviations:** CI landed in this slice because neither test solution existed. The base-deck census from `main` is included. Fixtures use smaller named decks and do not encode the 30 match tiles.
 - **Unresolved gates or risks:** Power effects, how long a stack stays buried, bounce of the last tile, a tile with no legal placement, and deck exhaustion. Exhaustion throws `UnresolvedRulingException` and does not change the game. Uncorrected census rows still need a maintainer pass.

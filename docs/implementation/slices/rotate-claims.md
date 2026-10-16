@@ -4,7 +4,7 @@
 
 - **Active build pack:** The POC pack. This slice changes one of its rules, by the maintainer's ruling on #72.
 - **Human approval:** Ruled and approved in session on 2026-10-13; the ruling is recorded on #72.
-  - A rotate that completes a mission claims it. A bounce never claims.
+  - A rotate that completes a blobbity claims it. A bounce never claims.
   - The rotated tile goes through the same claim check as a placed tile, scoped to its four cells.
   - It claims at the moment of the rotation, and only the acting seat claims.
   - A rotate claim does not end the turn. Placing a tile always ends it.
@@ -12,11 +12,11 @@
   - A rotate claim that reaches the win count wins at once.
   - Distinct cells apply per resolution.
   - The maintainer approved changing non-negotiable 2, `rules.md`, and `acceptance.md` to match.
-- **Final acceptance advanced:** The rotate-or-bounce criterion in [`docs/acceptance.md`](../../acceptance.md) splits in two. A rotate that completes a mission claims it. A bounce that exposes a pattern does not.
+- **Final acceptance advanced:** The rotate-or-bounce criterion in [`docs/acceptance.md`](../../acceptance.md) splits in two. A rotate that completes a blobbity claims it. A bounce that exposes a pattern does not.
 
 ## Outcome
 
-The principle: **cells the acting seat writes this turn can complete its missions, and are claimed when written.**
+The principle: **cells the acting seat writes this turn can complete its blobbities, and are claimed when written.**
 - A rotate writes the rotated tile's four cells in a new orientation, so the same claim pass a placement uses runs on those cells.
 - Each pass is pure and stateless: `(board after the write, cells just written, acting seat's hand) → claims`.
 - The match commits each pass's claims and replacement draws before the next action, and a claim that reaches the win count ends the game at once.
@@ -25,7 +25,7 @@ The principle: **cells the acting seat writes this turn can complete its mission
 
 ## Why this slice is next
 
-The maintainer found a rotate that formed a mission's shape and did not claim it. Powers by tapping (#59) adds a rotate preview, which should show the corrected rule.
+The maintainer found a rotate that formed a blobbity's shape and did not claim it. Powers by tapping (#59) adds a rotate preview, which should show the corrected rule.
 
 ## Scope
 
@@ -60,7 +60,7 @@ The maintainer found a rotate that formed a mission's shape and did not claim it
 ## Architecture and contracts
 
 - **Affected seams:** the Rules `Ruleset` claim pass and `Game` (rotate application, claim and win bookkeeping).
-- **Public contracts:** the event stream gains `MissionClaimed` (and `GameWon`) after `TileRotated` when a rotate completes a mission. No API shape change.
+- **Public contracts:** the event stream gains `BlobbityClaimed` (and `GameWon`) after `TileRotated` when a rotate completes a blobbity. No API shape change.
 - **Data and migration considerations:** none.
 
 ## High-level approach
@@ -104,7 +104,7 @@ None.
 
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
-- **Outcome:** A rotate now claims the missions its four written cells complete, at the moment of the rotation, through the same claim pass a placement uses.
+- **Outcome:** A rotate now claims the blobbities its four written cells complete, at the moment of the rotation, through the same claim pass a placement uses.
   - **Claim pass:** `Game.ResolveClaims(grid, writtenCells)` returns a result without changing anything. Placement and rotate both call it, and `Grid.CellsOfTile` supplies a rotated tile's cells.
   - **Turn:** a rotate claim draws replacements and keeps the turn and the drawn tile. Reaching the win count ends the game at once, on the acting seat.
   - **Bounce:** it never claims.
@@ -116,8 +116,8 @@ Complete once when the final PR is ready for human merge. Do not use this sectio
   - a rotate win, which leaves the turn on the acting seat and rejects any later action;
   - a bounce that exposes a pattern without claiming;
   - distinct cells within one rotate, and per resolution across two rotates;
-  - another seat's mission not claimed;
-  - a rotate whose claims the mission deck cannot replace, which leaves the match and the charge unchanged;
+  - another seat's blobbity not claimed;
+  - a rotate whose claims the blobbity deck cannot replace, which leaves the match and the charge unchanged;
   - a single-colour tile whose rotate leaves its cells unchanged but still claims.
 
   An App test shows the recap as rotated, then claimed.

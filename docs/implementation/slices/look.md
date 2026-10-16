@@ -9,7 +9,7 @@
 ## Outcome
 
 The table looks like the splat party reference:
-- toy-like tiles and cards, with white faces, a thick dark outline, a hard offset shadow, and chunkier corners; the drawn tile and mission cards share the style, and secret missions sit slightly tilted;
+- toy-like tiles and cards, with white faces, a thick dark outline, a hard offset shadow, and chunkier corners; the drawn tile and blobbities share the style, and secret blobbities sit slightly tilted;
 - big faint splats spilling off the screen edges, and paint drips from the top;
 - legal placements as dashed rounded squares with a faint "+";
 - stack and power-target highlights as a coloured outline around the tile instead of a tint over it;
@@ -27,7 +27,7 @@ The table looks like the splat party reference:
 
 ### In scope
 
-- Card styling shared by tiles and mission cards, highlights as outlines, legal-spot styling, coloured power badges, the background art, the tray edge, the font, seat bar spacing, and the setup restyle.
+- Card styling shared by tiles and blobbities, highlights as outlines, legal-spot styling, coloured power badges, the background art, the tray edge, the font, seat bar spacing, and the setup restyle.
 - New art through the existing pipeline (SVG in `art/`, exported sprites), and Baloo 2 as fixed-weight files cut from the variable font with its OFL licence.
 - Every capture retaken in portrait.
 
@@ -62,7 +62,7 @@ The table looks like the splat party reference:
 
 ## High-level approach
 
-Keep one card painter so tiles and mission cards change together. Draw outlines and hard shadows with sprite layers rather than shaders. Put the background art behind everything as non-interactive images. Load fonts through one `Ui` font accessor, so a later font change is one line.
+Keep one card painter so tiles and blobbities change together. Draw outlines and hard shadows with sprite layers rather than shaders. Put the background art behind everything as non-interactive images. Load fonts through one `Ui` font accessor, so a later font change is one line.
 
 ## Verification
 
@@ -98,7 +98,7 @@ GitHub issues are the WIP tracker and source of task-level detail. Every issue f
 Complete once when the final PR is ready for human merge. Do not use this section for WIP status.
 
 - **Outcome:** The table and setup screen wear the splat party look:
-  - toy cards for tiles, the drawn tile and mission cards (white face, thick ink edge, hard shadow, chunkier corners), with secret missions tilted ±4°;
+  - toy cards for tiles, the drawn tile and blobbities (white face, thick ink edge, hard shadow, chunkier corners), with secret blobbities tilted ±4°;
   - dashed "+" legal spots;
   - stack and power-target highlights as fixed-width rings instead of tints;
   - coloured power badges (rotate yellow with a bold arrow, stack blue +, bounce pink −);
