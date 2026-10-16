@@ -1,6 +1,6 @@
 {
   "name": "Blobbity.Game",
-  "rootNamespace": "Blobbity.Game",
+  "rootNamespace": "Blobbity.GamePackage",
   "references": [],
   "includePlatforms": [],
   "excludePlatforms": [],
