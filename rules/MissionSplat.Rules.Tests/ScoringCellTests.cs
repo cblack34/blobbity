@@ -67,11 +67,11 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("amber-row", BlobbityPattern.Row, amber),
-                Cards.Mission("amber-square", BlobbityPattern.Square, amber),
-                Cards.Mission("b1", BlobbityPattern.L, amber),
-                Cards.Mission("b2", BlobbityPattern.L, amber),
-                Cards.Mission("repl", BlobbityPattern.L, amber),
+                Cards.BlobbityCard("amber-row", BlobbityPattern.Row, amber),
+                Cards.BlobbityCard("amber-square", BlobbityPattern.Square, amber),
+                Cards.BlobbityCard("b1", BlobbityPattern.L, amber),
+                Cards.BlobbityCard("b2", BlobbityPattern.L, amber),
+                Cards.BlobbityCard("repl", BlobbityPattern.L, amber),
             ],
             [
                 Cards.Tile("start", amberCell, amberCell, Cards.Blank, Cards.Blank),
@@ -93,8 +93,8 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
-                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
                 Cards.Purple("repl"),
@@ -119,9 +119,9 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
-                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+                Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("b2"),
                 Cards.Purple("repl-a"),
                 Cards.Purple("repl-b"),
@@ -175,7 +175,7 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-pattern", pattern, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-pattern", pattern, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -194,7 +194,7 @@ public class ScoringCellTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),

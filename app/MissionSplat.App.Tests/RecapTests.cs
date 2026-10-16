@@ -328,7 +328,7 @@ public class RecapTests
     [Test]
     public void AClaimAndTheWin_ProduceClaimedAndWonItems_WithTheMissionCard()
     {
-        var square = Cards.Mission("one-square", BlobbityPattern.Square, OrdinaryCatalog.Red);
+        var square = Cards.BlobbityCard("one-square", BlobbityPattern.Square, OrdinaryCatalog.Red);
         var setup = new GameSetup(
             [First, Second],
             First,
@@ -354,7 +354,7 @@ public class RecapTests
     [Test]
     public void ARotateClaim_IsRecappedAsRotatedThenClaimed_ForTheActingSeat()
     {
-        var redRow = Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red);
+        var redRow = Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red);
         var setup = new GameSetup(
             [First, Second],
             First,

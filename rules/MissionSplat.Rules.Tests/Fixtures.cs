@@ -8,7 +8,7 @@ internal static class RepresentativeDeck
     public static CommandResult Open(
         string[] seatNames,
         string firstSeat,
-        Mission[] missions,
+        BlobbityCard[] missions,
         Tile[] tiles,
         int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin,
         IReadOnlyList<ColorId>? colors = null,
@@ -29,7 +29,7 @@ internal static class RepresentativeDeck
     public static Game Start(
         string[] seatNames,
         string firstSeat,
-        Mission[] missions,
+        BlobbityCard[] missions,
         Tile[] tiles,
         int claimsRequiredToWin = OrdinaryCatalog.ClaimsRequiredToWin,
         IReadOnlyList<ColorId>? colors = null,
@@ -86,10 +86,10 @@ internal static class Cards
 
     public static SeatId Seat(string name) => new(name);
 
-    public static Mission Mission(string id, BlobbityPattern pattern, ColorId color) =>
+    public static BlobbityCard BlobbityCard(string id, BlobbityPattern pattern, ColorId color) =>
         new(new BlobbityId(id), pattern, color);
 
-    public static Mission Purple(string id) => Mission(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
+    public static BlobbityCard Purple(string id) => BlobbityCard(id, BlobbityPattern.Row, OrdinaryCatalog.Purple);
 
     public static Tile Tile(string id, Cell x0y0, Cell x1y0, Cell x0y1, Cell x1y1) =>
         new(new TileId(id), x0y0, x1y0, x0y1, x1y1);
@@ -159,7 +159,7 @@ internal static class See
         return game;
     }
 
-    public static string[] Ids(IReadOnlyList<Mission> missions) =>
+    public static string[] Ids(IReadOnlyList<BlobbityCard> missions) =>
         missions.Select(mission => mission.Id.Value).ToArray();
 
     public static string[] Ids(IReadOnlyList<TileId> tiles) =>

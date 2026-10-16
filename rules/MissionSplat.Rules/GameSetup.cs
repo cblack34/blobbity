@@ -9,7 +9,7 @@ public sealed class GameSetup
         IReadOnlyList<SymbolId> nonScoringSymbols,
         IReadOnlyList<BlobbityPattern> activePatterns,
         int claimsRequiredToWin,
-        IReadOnlyList<Mission> missionDeck,
+        IReadOnlyList<BlobbityCard> missionDeck,
         IReadOnlyList<Tile> matchDeck)
     {
         SeatsInTurnOrder = Copy(seatsInTurnOrder, nameof(seatsInTurnOrder));
@@ -34,7 +34,7 @@ public sealed class GameSetup
 
     public int ClaimsRequiredToWin { get; }
 
-    public IReadOnlyList<Mission> MissionDeck { get; }
+    public IReadOnlyList<BlobbityCard> MissionDeck { get; }
 
     public IReadOnlyList<Tile> MatchDeck { get; }
 

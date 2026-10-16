@@ -44,7 +44,7 @@ public class AiPlayerTests
         // Start paints (1,0) and (1,1) red. Only (1, 0) quarter-turn 0 also paints (2,0) and (2,1).
         var session = Open(
             [
-                Cards.Mission("a-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("a-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
                 Cards.Row("a-row"),
                 Cards.Row("b-row"),
                 Cards.Row("b-other"),
@@ -183,7 +183,7 @@ public class AiPlayerTests
     private static AiPlayer Ai(LocalSession session, SeatId seat) =>
         new(seat, quarterTurns => session.LegalPlacements(seat, quarterTurns), action => session.Preview(seat, action));
 
-    private static LocalSession Open(Mission[] missions, Tile[] tiles)
+    private static LocalSession Open(BlobbityCard[] missions, Tile[] tiles)
     {
         var session = new LocalSession();
         var started = session.Start(RepresentativeDeck.Setup(["a", "b"], "a", missions, tiles));
@@ -191,7 +191,7 @@ public class AiPlayerTests
         return session;
     }
 
-    private static string[] Ids(IReadOnlyList<Mission> missions) =>
+    private static string[] Ids(IReadOnlyList<BlobbityCard> missions) =>
         missions.Select(mission => mission.Id.Value).ToArray();
 
     private static void AssertNoneOf(Type type, Type[] forbidden, string site)

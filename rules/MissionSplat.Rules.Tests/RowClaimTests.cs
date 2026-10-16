@@ -9,7 +9,7 @@ public class RowClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -45,7 +45,7 @@ public class RowClaimTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -76,7 +76,7 @@ public class RowClaimTests
             [
                 Cards.Purple("a1"),
                 Cards.Purple("a2"),
-                Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
                 Cards.Purple("b2"),
                 Cards.Purple("repl"),
             ],
@@ -167,9 +167,9 @@ public class RowClaimTests
         Assert.That(finished.Claims(Cards.Seat("b")), Is.Empty);
     }
 
-    private static Mission[] RowMissions() =>
+    private static BlobbityCard[] RowMissions() =>
     [
-        Cards.Mission("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
+        Cards.BlobbityCard("red-row", BlobbityPattern.Row, OrdinaryCatalog.Red),
         Cards.Purple("a2"),
         Cards.Purple("b1"),
         Cards.Purple("b2"),

@@ -454,7 +454,7 @@ public class TableTests
             OrdinaryCatalog.NonScoringSymbols,
             OrdinaryCatalog.Patterns,
             1,
-            [Cards.Mission("one-square", BlobbityPattern.Square, OrdinaryCatalog.Red), Cards.Row("one-row"), Cards.Row("two-1"), Cards.Row("two-2"), Cards.Row("spare")],
+            [Cards.BlobbityCard("one-square", BlobbityPattern.Square, OrdinaryCatalog.Red), Cards.Row("one-row"), Cards.Row("two-1"), Cards.Row("two-2"), Cards.Row("spare")],
             [Cards.BlankTile("start"), Cards.Solid("red", Cards.Red), Cards.BlankTile("next")]);
         var table = new Table(new LocalSession(), Humans(2), setup);
         table.Start();

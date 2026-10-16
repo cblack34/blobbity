@@ -51,9 +51,9 @@ public class StackTests
         var ready = BeforeCoveringRedSquare(
             top,
             [
-                Cards.Mission("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
-                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
-                Cards.Mission("b-blue", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+                Cards.BlobbityCard("red-square", BlobbityPattern.Square, OrdinaryCatalog.Red),
+                Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+                Cards.BlobbityCard("b-blue", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("b2"),
                 Cards.Purple("repl"),
                 Cards.Purple("spare"),
@@ -187,7 +187,7 @@ public class StackTests
             ["a", "b"],
             "a",
             [
-                Cards.Mission("green-square", BlobbityPattern.Square, OrdinaryCatalog.Green),
+                Cards.BlobbityCard("green-square", BlobbityPattern.Square, OrdinaryCatalog.Green),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -227,7 +227,7 @@ public class StackTests
         var ready = BeforeCoveringRedSquare(
             Cards.Tile("top", Cards.Blue, Cards.Blue, Stack, Cards.Blank),
             [
-                Cards.Mission("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
+                Cards.BlobbityCard("blue-row", BlobbityPattern.Row, OrdinaryCatalog.Blue),
                 Cards.Purple("a2"),
                 Cards.Purple("b1"),
                 Cards.Purple("b2"),
@@ -371,7 +371,7 @@ public class StackTests
 
     private static Game BeforeCoveringRedSquare(
         Tile stackTile,
-        Mission[] missions,
+        BlobbityCard[] missions,
         int claimsRequiredToWin,
         Tile[] following)
     {

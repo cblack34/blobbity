@@ -21,7 +21,7 @@ internal sealed class TurnTray
     public const float ReachUnits = HeightUnits + WaveUnits;
 
     // The secret missions lie a little askew, one each way, like cards dealt on a table.
-    private const float MissionTiltDegrees = 4f;
+    private const float BlobbityTiltDegrees = 4f;
 
     // The drawn tile's side before the first layout has given its slot a size.
     private const float FallbackTileUnits = 72f;
@@ -289,8 +289,8 @@ internal sealed class TurnTray
             var min = new Vector2(0.01f + (i * 0.5f), 0.14f);
             var max = new Vector2(0.49f + (i * 0.5f), 1f);
             Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
-            slot.localRotation = Quaternion.Euler(0f, 0f, i % 2 == 0 ? MissionTiltDegrees : -MissionTiltDegrees);
-            MissionCardPainter.Paint(slot, missions[i]);
+            slot.localRotation = Quaternion.Euler(0f, 0f, i % 2 == 0 ? BlobbityTiltDegrees : -BlobbityTiltDegrees);
+            BlobbityCardPainter.Paint(slot, missions[i]);
         }
     }
 

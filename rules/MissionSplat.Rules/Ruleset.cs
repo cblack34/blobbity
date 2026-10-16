@@ -37,10 +37,10 @@ internal sealed class Ruleset
 
     // A mission completes only when a cell this placement or rotate wrote is part of its pattern, and each claim needs its own
     // four cells, so the claims are the most missions, earliest in hand order, that can take distinct sets.
-    public List<Mission> CompletedMissions(
+    public List<BlobbityCard> CompletedMissions(
         Grid grid,
         IReadOnlyList<(int X, int Y, Cell Value)> located,
-        IReadOnlyList<Mission> hand)
+        IReadOnlyList<BlobbityCard> hand)
     {
         var written = new HashSet<CellCoord>(located.Count);
         foreach (var (x, y, _) in located)

@@ -4,7 +4,7 @@ public sealed class Game
 {
     private readonly SeatSnapshot[] _seats;
     private readonly int _currentIndex;
-    private readonly Mission[] _missionDeck;
+    private readonly BlobbityCard[] _missionDeck;
     private readonly Tile[] _matchDeck;
     private readonly Grid _grid;
     private readonly Ruleset _ruleset;
@@ -14,7 +14,7 @@ public sealed class Game
     private Game(
         SeatSnapshot[] seats,
         int currentIndex,
-        Mission[] missionDeck,
+        BlobbityCard[] missionDeck,
         Tile[] matchDeck,
         Grid grid,
         Ruleset ruleset,
@@ -172,9 +172,9 @@ public sealed class Game
         }
     }
 
-    public IReadOnlyList<Mission> Hand(SeatId seat) => Copy(Find(seat).Hand);
+    public IReadOnlyList<BlobbityCard> Hand(SeatId seat) => Copy(Find(seat).Hand);
 
-    public IReadOnlyList<Mission> Claims(SeatId seat) => Copy(Find(seat).Claims);
+    public IReadOnlyList<BlobbityCard> Claims(SeatId seat) => Copy(Find(seat).Claims);
 
     public Cell? CellAt(int cellX, int cellY) => _grid.At(cellX, cellY);
 
@@ -226,9 +226,9 @@ public sealed class Game
                 "The mission deck cannot replace every mission this command completed. Exhausting the mission deck is an open ruling, so this command was not applied.");
         }
 
-        var hand = new List<Mission>(acting.Hand);
-        var claims = new List<Mission>(acting.Claims);
-        var missionDeck = new List<Mission>(_missionDeck);
+        var hand = new List<BlobbityCard>(acting.Hand);
+        var claims = new List<BlobbityCard>(acting.Claims);
+        var missionDeck = new List<BlobbityCard>(_missionDeck);
         foreach (var mission in completed)
         {
             hand.Remove(mission);
@@ -262,7 +262,7 @@ public sealed class Game
     private Game Next(
         SeatSnapshot actingSeat,
         int currentIndex,
-        Mission[] missionDeck,
+        BlobbityCard[] missionDeck,
         Tile[] matchDeck,
         Grid grid,
         SpentUses spent,
@@ -446,9 +446,9 @@ public sealed class Game
     private CommandResult Reject(RejectionReason reason, string message) =>
         CommandResult.Reject(this, new Rejection(reason, message));
 
-    private static Mission[] Copy(Mission[] missions)
+    private static BlobbityCard[] Copy(BlobbityCard[] missions)
     {
-        var copy = new Mission[missions.Length];
+        var copy = new BlobbityCard[missions.Length];
         Array.Copy(missions, copy, missions.Length);
         return copy;
     }
@@ -482,7 +482,7 @@ public sealed class Game
         }
 
         var missionsLeft = setup.MissionDeck.Count - deckIndex;
-        var missionDeck = new Mission[missionsLeft];
+        var missionDeck = new BlobbityCard[missionsLeft];
         for (var i = 0; i < missionsLeft; i++)
         {
             missionDeck[i] = setup.MissionDeck[deckIndex + i];
@@ -521,14 +521,14 @@ public sealed class Game
     }
 
     private sealed record ClaimResolution(
-        IReadOnlyList<Mission> Claimed,
+        IReadOnlyList<BlobbityCard> Claimed,
         SeatSnapshot ActingSeat,
-        Mission[] MissionDeck,
+        BlobbityCard[] MissionDeck,
         bool Won);
 
     private sealed class SeatSnapshot
     {
-        public SeatSnapshot(SeatId id, Mission[] hand, Mission[] claims)
+        public SeatSnapshot(SeatId id, BlobbityCard[] hand, BlobbityCard[] claims)
         {
             Id = id;
             Hand = hand;
@@ -537,8 +537,8 @@ public sealed class Game
 
         public SeatId Id { get; }
 
-        public Mission[] Hand { get; }
+        public BlobbityCard[] Hand { get; }
 
-        public Mission[] Claims { get; }
+        public BlobbityCard[] Claims { get; }
     }
 }

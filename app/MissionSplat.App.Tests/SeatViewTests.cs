@@ -76,7 +76,7 @@ public class SeatViewTests
         }
     }
 
-    private static string[] Ids(IReadOnlyList<Mission> missions) =>
+    private static string[] Ids(IReadOnlyList<BlobbityCard> missions) =>
         missions.Select(mission => mission.Id.Value).ToArray();
 
     private static string[] ClaimIds(SeatView view, string seat) =>

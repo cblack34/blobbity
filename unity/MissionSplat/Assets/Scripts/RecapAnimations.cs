@@ -136,7 +136,7 @@ internal sealed class RecapAnimations
         Ui.Stretch(dim.rectTransform);
         var card = Ui.Centered("RecapClaim", screen, new Vector2(ClaimCardWidthUnits, ClaimCardHeightUnits));
         var cardGroup = card.gameObject.AddComponent<CanvasGroup>();
-        MissionCardPainter.Paint(card, item.Mission);
+        BlobbityCardPainter.Paint(card, item.Mission);
 
         var rest = new Vector2(0f, ClaimRestHeightUnits);
         var target = _stage.PipPosition(item.Seat, item.Mission.Id) ?? rest;

@@ -57,7 +57,7 @@ internal sealed class ClaimsPanel
             var slot = Ui.Rect("Claim" + m, cards);
             var (min, max) = CardAnchors(m, claims.Missions.Count);
             Ui.Anchored(slot, min, max, Vector2.zero, Vector2.zero);
-            MissionCardPainter.Paint(slot, claims.Missions[m]);
+            BlobbityCardPainter.Paint(slot, claims.Missions[m]);
         }
     }
 

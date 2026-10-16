@@ -35,18 +35,18 @@ public static class TableDeck
     }
 
     // Two of each colour and shape: the digital deck doubles the twelve printed cards so the mission deck cannot run out.
-    private static Mission[] Missions()
+    private static BlobbityCard[] Missions()
     {
         var shapes = new[] { (BlobbityPattern.Row, "line"), (BlobbityPattern.Square, "square"), (BlobbityPattern.L, "l") };
         const int copies = 2;
-        var missions = new List<Mission>();
+        var missions = new List<BlobbityCard>();
         foreach (var (pattern, name) in shapes)
         {
             for (var copy = 1; copy <= copies; copy++)
             {
                 foreach (var color in OrdinaryCatalog.Colors)
                 {
-                    missions.Add(new Mission(new BlobbityId(name + "-" + color.Value + "-" + copy), pattern, color));
+                    missions.Add(new BlobbityCard(new BlobbityId(name + "-" + color.Value + "-" + copy), pattern, color));
                 }
             }
         }

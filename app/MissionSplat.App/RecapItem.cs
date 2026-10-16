@@ -97,7 +97,7 @@ public sealed record RecapBounced : RecapItem
 }
 
 // A claimed mission is public, so the card itself rides along.
-public sealed record RecapClaimed(SeatId Seat, Mission Mission) : RecapItem(Seat);
+public sealed record RecapClaimed(SeatId Seat, BlobbityCard Mission) : RecapItem(Seat);
 
 public sealed record RecapWon(SeatId Seat, int ClaimCount) : RecapItem(Seat);
 
